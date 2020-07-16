@@ -1,11 +1,11 @@
 # Input Description
-Input should be in form of tabular data (ideally CSV).
+Input should be in form of tabular data (ideally CSV or excel).
 
 ## Data Structure
 Data consists of 5 tables
 
 ### XYZ Coordinates
-Describes the positions of locations in warehouse.  
+Describes the positions of locations in the warehouse.  
 Columns:
 
 - Location name
@@ -14,7 +14,7 @@ Columns:
 - Z coord.
 
 ### Location Master
-Describes properties of individual location. Optional columns are for areas storing intems.  
+Describes properties of individual location. Optional columns are for areas storing items.  
 Columns:
 - Location name (same as in XYZ table)
 - Location type
