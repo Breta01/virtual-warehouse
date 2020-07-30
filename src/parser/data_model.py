@@ -2,7 +2,7 @@
 from dataclasses import InitVar, dataclass
 from typing import List
 
-from utils import convert_dim, convert_weight
+from utils import convert_date, convert_dim, convert_weight
 
 
 @dataclass
@@ -27,10 +27,10 @@ class ItemUnit:
     weight: float
     weight_uom: InitVar[str]
 
-    def __post__init__(self, dim_uom, weight_uom):
+    def __post_init__(self, dim_uom, weight_uom):
         self.length = convert_dim(self.length, dim_uom)
         self.width = convert_dim(self.width, dim_uom)
-        self.height = conver_dim(self.height, dim_uom)
+        self.height = convert_dim(self.height, dim_uom)
         self.weight = convert_weight(self.weight, weight_uom)
 
 
@@ -63,7 +63,7 @@ class Location:
     zone: str = None
     coord: str = None
 
-    def __post__init__(self, dim_uom, weight_uom):
+    def __post_init__(self, dim_uom, weight_uom):
         self.length = convert_dim(self.length, dim_uom)
         self.width = convert_dim(self.width, dim_uom)
         self.height = convert_dim(self.height, dim_uom)
@@ -90,10 +90,10 @@ class Order:
     total_qty: int
     qty_uom: str
 
-    def __post__init__(self):
-        self.delivery_date = datetime.strptime(self.delivery_date, "%d.%m.%Y")
-        self.s_ship_date = datetime.strptime(self.s_ship_date, "%d.%m.%Y")
-        self.a_ship_date = datetime.strptime(self.a_ship_date, "%d.%m.%Y")
+    def __post_init__(self):
+        self.delivery_date = convert_date(self.delivery_date, "%d.%m.%Y")
+        self.s_ship_date = convert_date(self.s_ship_date, "%d.%m.%Y")
+        self.a_ship_date = convert_date(self.a_ship_date, "%d.%m.%Y")
 
 
 @dataclass
@@ -109,5 +109,5 @@ class Inventory:
     allocated_qty: int
     suspense_qty: int
 
-    def __post__init__(self):
-        self.date = datetime.strptime(self.date, "%d.%m.%Y")
+    def __post_init__(self):
+        self.date = convert_date(self.date, "%d.%m.%Y")

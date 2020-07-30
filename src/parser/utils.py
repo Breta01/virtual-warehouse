@@ -1,4 +1,5 @@
 """Utils for parsing the Excel data."""
+from datetime import datetime
 
 dim_factors = {
     "m": 1,
@@ -15,11 +16,21 @@ weight_factors = {
 
 
 def convert_dim(dim, uom):
-    return dim * dim_factor[uom.lower()]
+    if uom:
+        return dim * dim_factors[uom.lower()]
+    return dim
 
 
 def convert_weight(weight, uom):
-    return weight * weight_factors[uom.lower()]
+    if uom:
+        return weight * weight_factors[uom.lower()]
+    return weight
+
+
+def convert_date(date, fmt="%d.%m.%Y"):
+    if date:
+        return datetime.strptime(date, fmt)
+    return None
 
 
 def create_gridmap(locations, resolution):
