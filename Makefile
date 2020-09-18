@@ -36,6 +36,9 @@ $(VENV_NAME)/bin/activate: requirements.txt requirements-dev.txt
 	${PYTHON} -m pip install -r requirements-dev.txt
 	touch $(VENV_NAME)/bin/activate
 
+build:
+	${VENV_ACTIVATE}; pyside2-rcc src/main.qrc > src/main_rc.py
+
 lint: venv
 	${PYTHON} -m pylint src
 	${PYTHON} -m flake8 src
