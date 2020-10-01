@@ -2,7 +2,7 @@
 from dataclasses import InitVar, dataclass
 from typing import List
 
-from utils import convert_date, convert_dim, convert_weight
+from .utils import convert_date, convert_dim, convert_weight
 
 
 @dataclass

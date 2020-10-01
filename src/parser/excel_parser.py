@@ -1,8 +1,9 @@
 """Parser of Excel data files."""
 from pathlib import Path
 
-from data_model import *
 from xlrd import open_workbook
+
+from .data_model import *
 
 
 def parse_document(data_path):

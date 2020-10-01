@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>qtquickcontrols2.conf</file>
         <file>resources/qml/main.qml</file>
+        <file alias="oilrig.obj">resources/objects/oilrig.obj</file>
+        <file>resources/images/icon.png</file>
+        <file>resources/qml/customItem.qml</file>
     </qresource>
 </RCC>

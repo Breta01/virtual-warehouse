@@ -1,12 +1,11 @@
+import Qt.labs.platform 1.1
 import QtQuick 2.14
 import QtQuick.Controls 2.14
 import QtQuick.Window 2.14
-import QtDataVisualization 1.0
+import QtDataVisualization 1.3
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.3
-
-import VirtualWarehouse 1.0
-
+import QtQml.Models 2.2
 
 ApplicationWindow {
     id: window
@@ -75,14 +74,20 @@ ApplicationWindow {
 
             ColorGradient {
                 id: surfaceGradient
-                ColorGradientStop { position: 0.0; color: "darkslategray" }
-                ColorGradientStop { id: middleGradient; position: 0.25; color: "peru" }
-                ColorGradientStop { position: 1.0; color: "red" }
+                ColorGradientStop {
+                    position: 0.0
+                    color: "darkslategray"
+                }
+                ColorGradientStop {
+                    id: middleGradient
+                    position: 0.25
+                    color: "peru"
+                }
+                ColorGradientStop {
+                    position: 1.0
+                    color: "red"
+                }
             }
-
-//            ViewController {
-//                id: surfacePlot
-
 
             Surface3D {
                 id: surfacePlot
@@ -97,38 +102,69 @@ ApplicationWindow {
                     baseGradients: [surfaceGradient]
                 }
 
+                customItemList: []
 
-            /*
-            Surface3D {
-                id: surfacePlot
-                width: surfaceView.width
-                height: surfaceView.height
-                theme: Theme3D {
-                    type: Theme3D.ThemeStoneMoss
-                    font.family: "STCaiyun"
-                    font.pointSize: 35
-                    colorStyle: Theme3D.ColorStyleRangeGradient
-                    baseGradients: [surfaceGradient]
+                // TODO: add hover effect using inputHandler
+                onSelectedElementChanged: {
+                    for (var i = 0; i < surfacePlot.customItemList.length; i++) {
+                        surfacePlot.customItemList[i].textureFile
+                                = "resources/images/textures/default.png"
+                    }
+
+                    if (surfacePlot.selectedCustomItemIndex() !== -1) {
+                        let item = surfacePlot.selectedCustomItem()
+                        console.log(surfacePlot.selectedCustomItemIndex())
+                        console.log(item)
+                        item.textureFile = "resources/images/textures/red.png"
+                    }
                 }
-                shadowQuality: AbstractGraph3D.ShadowQualityMedium
-                selectionMode: AbstractGraph3D.SelectionSlice | AbstractGraph3D.SelectionItemAndRow
+            }
 
-                scene.activeCamera.cameraPreset: Camera3D.CameraPresetIsometricLeft
-                axisY.min: 0.0
-                axisY.max: 500.0
-                axisX.segmentCount: 10
-                axisX.subSegmentCount: 2
-                axisX.labelFormat: "%i"
-                axisZ.segmentCount: 10
-                axisZ.subSegmentCount: 2
-                axisZ.labelFormat: "%i"
-                axisY.segmentCount: 5
-                axisY.subSegmentCount: 2
-                axisY.labelFormat: "%i"
-                axisY.title: "Height"
-                axisX.title: "Latitude"
-                axisZ.title: "Longitude"
-*/
+            Button {
+                id: addButton
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.margins: 20
+                text: "Add Model"
+                implicitWidth: 150
+
+                background: Rectangle {
+                    implicitWidth: 150
+                    implicitHeight: 40
+                    opacity: enabled ? 1 : 0.3
+                    color: parent.down ? "#6b7080" : "#848895"
+                    border.color: "#222840"
+                    border.width: 1
+                    radius: 5
+                }
+
+                onClicked: {
+                    ViewController.add()
+                }
+            }
+
+            Button {
+                id: removeButton
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: 20
+                text: "Remove Model"
+                implicitWidth: 150
+
+                background: Rectangle {
+                    implicitWidth: 150
+                    implicitHeight: 40
+                    opacity: enabled ? 1 : 0.3
+                    color: parent.down ? "#6b7080" : "#848895"
+                    border.color: "#222840"
+                    border.width: 1
+                    radius: 5
+                }
+
+                onClicked: {
+                    if (shapeSpawner.instances.length > 0)
+                        shapeSpawner.addOrRemove(false)
+                }
             }
         }
     }
@@ -139,7 +175,6 @@ ApplicationWindow {
         y: 0
         width: 300
         height: window.height
-
 
         TabBar {
             id: tabBar
@@ -160,7 +195,6 @@ ApplicationWindow {
                 id: tabButton2
                 text: qsTr("Orders")
             }
-
         }
 
         StackLayout {
@@ -208,12 +242,30 @@ ApplicationWindow {
     }
 
     FileDialog {
-         id: openDialog
-         title: "Please select a warehouse file"
-         nameFilters: ["Excel file (*.xls)", "CSV file (*.csv)"]
-         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
-         onAccepted: document.load(file)
-     }
+        id: openDialog
+        title: "Please select a warehouse file"
+        nameFilters: ["Excel file (*.xls, *.xlsx)", "CSV file (*.csv)"]
+        folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        onAccepted: ViewController.load(openDialog.fileUrl)
+    }
+
+    Connections {
+        target: ViewController
+        function onModelChanged() {
+            surfacePlot.customItemList = []
+            for (var row = 0; row < ViewController.model.rowCount(); row++) {
+                var item = ViewController.get_item(row)
+                var component = Qt.createComponent("customItem.qml")
+                let instance = component.createObject(surfacePlot, {
+                                                          "meshFile": item,
+                                                          "position": Qt.vector3d(
+                                                                          row,
+                                                                          0, 0)
+                                                      })
+                surfacePlot.customItemList.push(instance)
+            }
+        }
+    }
 }
 
 /*##^##
@@ -221,3 +273,4 @@ Designer {
     D{i:0;formeditorZoom:0.5}
 }
 ##^##*/
+

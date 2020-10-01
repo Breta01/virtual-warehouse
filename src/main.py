@@ -1,110 +1,105 @@
 # This Python file uses the following encoding: utf-8
 import os
+import parser.excel_parser as parser
 import random
 import sys
 
-from PySide2.QtCore import QObject, Qt, QTimer, Signal, Slot
+from PySide2.QtCore import (
+    Property,
+    QAbstractListModel,
+    QModelIndex,
+    QObject,
+    Qt,
+    Signal,
+    Slot,
+)
 from PySide2.QtDataVisualization import QtDataVisualization as QDV
-from PySide2.QtGui import QGuiApplication, QIcon, QImage, QQuaternion, QVector3D
+from PySide2.QtGui import QGuiApplication, QIcon, QImage
 from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
-from PySide2.QtQuick import QQuickItem
 
 from main_rc import *
 
 dir_path = os.path.dirname(__file__)
 
 
-class ViewController(QDV.Q3DSurface):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class MyListModel(QAbstractListModel):
+    # Our custom roles
+    MeshRole = Qt.UserRole + 1
 
-    #        color = QImage(2, 2, QImage.Format_RGB32)
-    #        color.fill(Qt.darkMagenta)
+    def __init__(self, on_change, parent=None):
+        super(MyListModel, self).__init__(parent)
+        self._on_change = on_change
+        self._assets = []
 
-    #        item = QDV.QCustom3DItem(
-    #            os.path.join(dir_path, "resources/objects/oilrig.obj"),
-    #            QVector3D(0, 0, 0),
-    #            QVector3D(0.05, 0.05, 0.05),
-    #            QQuaternion(0, 1, 0, 0),
-    #            color)
-    #        graph.addCustomItem(item)
-    #        item = QDV.QCustom3DItem(
-    #            os.path.join(dir_path, "resources/objects/oilrig.obj"),
-    #            QVector3D(0, 1, 0),
-    #            QVector3D(0.05, 0.05, 0.05),
-    #            QQuaternion(0, 1, 0, 0),
-    #            color)
-    #        graph.addCustomItem(item)
-    #        handler = QDV.Q3DInputHandler()
+    def add(self):
+        self._assets.append({"meshFile": "resources/objects/oilrig.obj"})
+        self._on_change()
 
-    # graph.selectedElementChanged.connect(self.handleElementSelect)
-    # graph.addInputHandler(handler)
+    def rowCount(self, parent=QModelIndex()):
+        if parent.isValid():
+            return 0
+        return len(self._assets)
 
-    def handleElementSelect(type):
-        if type == QDV.QAbstract3DGraph.ElementType.ElementCustomItem:
-            item = graph.selectedCustomItem()
-            print(graph.selectedCustomItemIndex())
-            color = QImage(2, 2, QImage.Format_RGB32)
-            color.fill(Qt.blue)
-            item.setTextureImage(color)
+    def data(self, index, role=Qt.DisplayRole):
+        if 0 <= index.row() < self.rowCount() and index.isValid():
+            item = self._assets[index.row()]
+
+            if role == MyListModel.Mesh:
+                return item["meshFile"]
+
+    def get(self, index):
+        return self._assets[index]
+
+    def roleNames(self):
+        roles = dict()
+        roles[MyListModel.Mesh] = b"meshFile"
+        return roles
+
+
+class ViewController(QObject):
+    def __init__(self, parent=None):
+        super(ViewController, self).__init__(parent)
+        self._model = MyListModel(on_change=lambda: self.modelChanged.emit())
+
+    modelChanged = Signal()
+
+    @Property(QObject, constant=False, notify=modelChanged)
+    def model(self):
+        return self._model
+        return [QDV.QCustom3DItem(meshFile="resources/objects/oilrig.obj")]
+
+    @Slot(int, result=str)
+    def get_item(self, index):
+        return self._model.get(index)["meshFile"]
+
+    @Slot()
+    def add(self):
+        self._model.add()
+
+    @Slot(str)
+    def load(self, file_path):
+        # TODO: Threading
+        locations, items, balance, orders = parser.parse_document(
+            file_path[len("file://") :]
+        )
+        print(locations)
 
 
 if __name__ == "__main__":
     dir_path = os.path.dirname(__file__)
 
     app = QGuiApplication(sys.argv)
-    app.setOrganizationName("somename")
-    app.setOrganizationDomain("somename")
+    app.setOrganizationName("Bretislav Hajek")
+    app.setOrganizationDomain("bretahajek.com")
     engine = QQmlApplicationEngine()
 
-    qmlRegisterType(ViewController, "VirtualWarehouse", 1, 0, "ViewController")
+    controller = ViewController()
+    #    qmlRegisterType(ViewController, "VirtualWarehouse", 1, 0, "ViewController")
+    engine.rootContext().setContextProperty("ViewController", controller)
 
     app.setWindowIcon(QIcon(os.path.join(dir_path, "resources/images/icon.png")))
     engine.load(os.path.join(dir_path, "resources/qml/main.qml"))
 
-    print(engine.rootObjects())
-
-    graph = QDV.Q3DSurface()
-    print(graph)
-    print(QDV.Q3DSurface)
-
     if not engine.rootObjects():
         sys.exit(-1)
-
-    class Conn:
-        def __init__(self):
-            self.connected = False
-
-        def select(self):
-            #        print(engine.rootObjects()[0].findChildren(QQuickItem, 'surfaceView'))
-            # print(engine.rootObjects()[0].activeFocusItem())
-            print(engine.rootObjects()[0].findChild(QDV.Q3DSurface, "surfacePlot"))
-            print(engine.rootObjects()[0].findChild(QQuickItem, "surfacePlot"))
-            print("Con", self.connected)
-            if not self.connected:
-                graph = engine.rootObjects()[0].findChild(QQuickItem, "surfacePlot")
-                color = QImage(2, 2, QImage.Format_RGB32)
-                color.fill(Qt.darkMagenta)
-
-                item = QDV.QCustom3DItem(
-                    os.path.join(dir_path, "resources/objects/oilrig.obj"),
-                    QVector3D(0, 0, 0),
-                    QVector3D(0.05, 0.05, 0.05),
-                    QQuaternion(0, 1, 0, 0),
-                    color,
-                )
-                graph.addCustomItem(item)
-                self.connected = True
-
-    #    conn = Conn()
-    #    timer = QTimer(engine)
-    #    timer.setSingleShot(True)
-    #    timer.timeout.connect(conn.select)
-    #    timer.start(1000)
-    ctx = engine.rootContext()
-    print(ctx)
-    object = ctx.contextObject()
-    print(object)
-
-    #    engine.rootObjects()[0].activeFocusItemChanged.connect(conn.select)
     sys.exit(app.exec_())
