@@ -6,6 +6,7 @@ import QtDataVisualization 1.3
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.3
 import QtQml.Models 2.2
+import QtQuick.Controls.Material 2.14
 
 ApplicationWindow {
     id: window
@@ -101,45 +102,36 @@ ApplicationWindow {
                     colorStyle: Theme3D.ColorStyleRangeGradient
                     baseGradients: [surfaceGradient]
                 }
+                axisX: ValueAxis3D {
+                    max: 30
+                    min: 0
+                }
+                // Y is up
+                axisY: ValueAxis3D {
+                    max: 10
+                    min: 0
+                }
+                axisZ: ValueAxis3D {
+                    max: 30
+                    min: 0
+                }
+
 
                 customItemList: []
 
                 // TODO: add hover effect using inputHandler
                 onSelectedElementChanged: {
-                    for (var i = 0; i < surfacePlot.customItemList.length; i++) {
-                        surfacePlot.customItemList[i].textureFile
-                                = "resources/images/textures/default.png"
-                    }
+                    let idx = ViewController.get_selected_idx();
+                    surfacePlot.customItemList[idx].textureFile
+                            = "resources/images/textures/default.png";
+
 
                     if (surfacePlot.selectedCustomItemIndex() !== -1) {
-                        let item = surfacePlot.selectedCustomItem()
-                        console.log(surfacePlot.selectedCustomItemIndex())
-                        console.log(item)
-                        item.textureFile = "resources/images/textures/red.png"
+                        let item = surfacePlot.selectedCustomItem();
+                        let idx = surfacePlot.selectedCustomItemIndex();
+                        item.textureFile = "resources/images/textures/red.png";
+                        ViewController.select_item(item.objectName, idx);
                     }
-                }
-            }
-
-            Button {
-                id: addButton
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.margins: 20
-                text: "Add Model"
-                implicitWidth: 150
-
-                background: Rectangle {
-                    implicitWidth: 150
-                    implicitHeight: 40
-                    opacity: enabled ? 1 : 0.3
-                    color: parent.down ? "#6b7080" : "#848895"
-                    border.color: "#222840"
-                    border.width: 1
-                    radius: 5
-                }
-
-                onClicked: {
-                    ViewController.add()
                 }
             }
 
@@ -148,7 +140,7 @@ ApplicationWindow {
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.margins: 20
-                text: "Remove Model"
+                text: "2D View"
                 implicitWidth: 150
 
                 background: Rectangle {
@@ -200,19 +192,15 @@ ApplicationWindow {
         StackLayout {
             y: tabBar.height
             width: parent.width
+            height: parent.height - tabBar.height
             currentIndex: tabBar.currentIndex
+
             Item {
                 id: locationTab
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
-                Text {
-                    id: element
-                    width: 164
-                    height: 94
-                    text: qsTr("locationTab")
-                    horizontalAlignment: Text.AlignLeft
-                    font.pixelSize: 20
-                    padding: 10
-                }
+                LocationListView {}
             }
             Item {
                 id: itemTab
@@ -255,12 +243,14 @@ ApplicationWindow {
             surfacePlot.customItemList = []
             for (var row = 0; row < ViewController.model.rowCount(); row++) {
                 var item = ViewController.get_item(row)
-                var component = Qt.createComponent("customItem.qml")
+                var component = Qt.createComponent("CustomItem.qml")
                 let instance = component.createObject(surfacePlot, {
-                                                          "meshFile": item,
+                                                          "objectName": item.name,
+                                                          "meshFile": item.meshFile,
                                                           "position": Qt.vector3d(
-                                                                          row,
-                                                                          0, 0)
+                                                                          item.x,
+                                                                          item.z,
+                                                                          item.y)
                                                       })
                 surfacePlot.customItemList.push(instance)
             }
@@ -268,9 +258,5 @@ ApplicationWindow {
     }
 }
 
-/*##^##
-Designer {
-    D{i:0;formeditorZoom:0.5}
-}
-##^##*/
+
 

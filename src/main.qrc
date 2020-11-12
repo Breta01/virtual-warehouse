@@ -4,6 +4,7 @@
         <file>resources/qml/main.qml</file>
         <file alias="oilrig.obj">resources/objects/oilrig.obj</file>
         <file>resources/images/icon.png</file>
-        <file>resources/qml/customItem.qml</file>
+        <file>resources/qml/CustomItem.qml</file>
+        <file>resources/qml/LocationListView.qml</file>
     </qresource>
 </RCC>
