@@ -9,57 +9,95 @@ from PySide2.QtCore import (
 
 
 class Location(QObject):
+    """Location QObject for displaying list of selected locations."""
+
     def __init__(self, location):
         QObject.__init__(self)
-        self._l = location
+        self._i = location
 
-    changed = Signal()
-
-    @Property(str, constant=False, notify=changed)
+    @Property(str, constant=True)
     def name(self):
-        return str(self._l.id)
+        return self._i.id
 
-    @Property(str, constant=False, notify=changed)
+    @Property(str, constant=True)
     def class_str(self):
-        return str(f"{self._l.lclass} >  {self._l.lsubclass}")
+        if self._i.lsubclass:
+            return f"{self._i.lclass} > {self._i.lsubclass}"
+        return self._i.lclass
 
-    @Property(str, constant=False, notify=changed)
+    @Property(str, constant=True)
     def dimension_str(self):
-        return str(f"{self._l.length} x {self._l.width} x {self._l.height}")
+        return f"{self._i.length} x {self._i.width} x {self._i.height}"
 
-    @Property(int, constant=False, notify=changed)
+    @Property(int, constant=True)
     def max_weight(self):
-        return self._l.max_weight
+        return self._i.max_weight
 
-    @Property(str, constant=False, notify=changed)
+    @Property(str, constant=True)
     def zone(self):
-        return self._l.zone
+        return self._i.zone
 
 
-class LocationListModel(QAbstractListModel):
-    LocationRole = Qt.UserRole + 1
+class Item(QObject):
+    """Item QObject for displaying list of items in warehouse."""
 
-    def __init__(self, locations={}, selected_locations=[], parent=None):
-        super(LocationListModel, self).__init__(parent)
-        self._locations = {k: Location(v) for k, v in locations.items()}
-        self._selected_locations = selected_locations
+    def __init__(self, item):
+        QObject.__init__(self)
+        self._i = item
 
-    def set_locations(self, locations):
-        self._locations = {k: Location(v) for k, v in locations.items()}
+    @Property(str, constant=True)
+    def name(self):
+        return str(self._i.id)
+
+    @Property(str, constant=True)
+    def description(self):
+        return self._i.description
+
+    @Property(str, constant=True)
+    def description(self):
+        if self._i.gtype:
+            return f"{self._i.description} | {self._i.gtype}"
+        return self._i.description
+
+    @Property(str, constant=True)
+    def zone(self):
+        return self._i.zone
+
+    @Property(str, constant=True)
+    def base_dimension(self):
+        bu = self._i.base_unit
+        return f"{bu.length} x {bu.width} x {bu.height}"
+
+    @Property(float, constant=True)
+    def base_weight(self):
+        return self._i.base_unit.weight
+
+
+class UniversalListModel(QAbstractListModel):
+    ObjectRole = Qt.UserRole + 1
+
+    def __init__(self, object_class, objects={}, selected_objects=[], parent=None):
+        super(UniversalListModel, self).__init__(parent)
+        self._object_class = object_class
+        self._objects = {k: self._object_class(v) for k, v in objects.items()}
+        self._selected = selected_objects
+
+    def set_data(self, objects):
+        self._objects = {k: self._object_class(v) for k, v in objects.items()}
 
     def set_selected(self, selected):
-        self._selected_locations = selected
+        self._selected = selected
         self.layoutChanged.emit()
 
     def rowCount(self, parent=QModelIndex()):
-        return len(self._selected_locations)
+        return len(self._selected)
 
     def data(self, index, role):
-        if index.isValid() and role == LocationListModel.LocationRole:
-            return self._locations[self._selected_locations[index.row()]]
+        if index.isValid() and role == UniversalListModel.ObjectRole:
+            return self._objects[self._selected[index.row()]]
         return None
 
     def roleNames(self):
         roles = dict()
-        roles[LocationListModel.LocationRole] = b"location"
+        roles[UniversalListModel.ObjectRole] = b"object"
         return roles

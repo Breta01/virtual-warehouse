@@ -4,8 +4,8 @@ import QtQuick.Controls.Material 2.14
 
 
 ListView {
-   id: locationList
-   anchors.fill: locationTab
+   id: itemList
+   anchors.fill: itemTab
    topMargin: 8
    clip: true
    anchors.topMargin: 0
@@ -14,12 +14,12 @@ ListView {
    anchors.leftMargin: 8
 
 
-   model: ViewController.location_model
+   model: ViewController.item_model
 
    delegate: Item {
-       id: locationItem
-       height: 200
-       width: locationList.width
+       id: itemItem
+       height: 100
+       width: itemList.width
 
        Rectangle {
            id: rectangle
@@ -31,15 +31,15 @@ ListView {
            anchors.left: parent.left
            anchors.right: parent.right
            anchors.top: parent.top
-           anchors.bottom: locationZone.bottom
+           anchors.bottom: itemZone.bottom
        }
 
        RoundButton {
            icon.source: "../images/menu_icon.png"
-           id: roundButton
+           id: itemMenuButton
            width: 36
            height: 36
-           anchors.right: locationCloseButton.left
+           anchors.right: itemCloseButton.left
            anchors.top: parent.top
            anchors.topMargin: 5
            padding: 8
@@ -47,9 +47,21 @@ ListView {
            flat: true
        }
 
+       CheckBox {
+           id: itemCloseButton
+           anchors.right: parent.right
+           anchors.top: parent.top
+           anchors.topMargin: 5
+           anchors.rightMargin: 8
+           padding: 8
+           width: 36
+           height: 36
+       }
+
+       /*
        RoundButton {
            icon.source: "../images/close_icon.png"
-           id: locationCloseButton
+           id: itemCloseButton
            width: 36
            height: 36
            anchors.right: parent.right
@@ -58,10 +70,10 @@ ListView {
            padding: 8
            anchors.rightMargin: 8
            flat: true
-       }
+       } */
 
        Text {
-           id: locationID
+           id: itemID
            text: model.object.name
            anchors.left: parent.left
            anchors.top: parent.top
@@ -73,11 +85,11 @@ ListView {
        }
 
        Text {
-           id: locationClass
+           id: itemGtype
            color: "#333333"
-           text: model.object.class_str
+           text: model.object.description
            anchors.left: parent.left
-           anchors.top: locationID.bottom
+           anchors.top: itemID.bottom
            font.pixelSize: 11
            horizontalAlignment: Text.AlignLeft
            anchors.leftMargin: 8
@@ -85,9 +97,9 @@ ListView {
        }
 
        Rectangle {
-           id: locationUnderline
+           id: itemUnderline
            x: 0
-           anchors.top: locationClass.bottom
+           anchors.top: itemGtype.bottom
            anchors.topMargin: 4
            height: 1
            color: Material.accent
@@ -95,58 +107,58 @@ ListView {
        }
 
        Image {
-           id: locationDimensionIcon
+           id: itemDimensionIcon
            source: "../images/dimension_icon.png"
            smooth: true
            sourceSize.height: 19
            sourceSize.width: 19
-           height: locationDimension.height + 5
-           width: locationDimension.height + 5
+           height: itemDimension.height + 5
+           width: itemDimension.height + 5
            anchors.left: parent.left
-           anchors.top: locationUnderline.bottom
+           anchors.top: itemUnderline.bottom
            anchors.leftMargin: 8
            anchors.topMargin: 8
        }
 
        Text {
-           id: locationDimension
-           anchors.left: locationDimensionIcon.right
+           id: itemDimension
+           anchors.left: itemDimensionIcon.right
            anchors.leftMargin: 4
-           text: model.object.dimension_str
-           anchors.verticalCenter: locationDimensionIcon.verticalCenter
+           text: model.object.base_dimension
+           anchors.verticalCenter: itemDimensionIcon.verticalCenter
            font.pixelSize: 12
            horizontalAlignment: Text.AlignLeft
        }
 
        Image {
-           id: locationMaxweightIcon
+           id: itemWeightIcon
            source: "../images/max_weight_icon.png"
            anchors.horizontalCenterOffset: 8
            anchors.horizontalCenter: parent.horizontalCenter
            smooth: true
            sourceSize.height: 19
            sourceSize.width: 19
-           height: locationMaxweight.height + 5
-           width: locationMaxweight.height + 5
-           anchors.top: locationUnderline.bottom
+           height: itemWeight.height + 5
+           width: itemWeight.height + 5
+           anchors.top: itemUnderline.bottom
            anchors.topMargin: 8
        }
 
        Text {
-           id: locationMaxweight
-           anchors.left: locationMaxweightIcon.right
+           id: itemWeight
+           anchors.left: itemWeightIcon.right
            anchors.leftMargin: 4
-           text: model.object.max_weight
-           anchors.verticalCenter: locationMaxweightIcon.verticalCenter
+           text: model.object.base_weight
+           anchors.verticalCenter: itemWeightIcon.verticalCenter
            font.pixelSize: 12
            horizontalAlignment: Text.AlignLeft
        }
 
        Text {
-           id: locationZoneIcon
+           id: itemZoneIcon
            color: "#333333"
            anchors.left: parent.left
-           anchors.top: locationDimension.bottom
+           anchors.top: itemDimension.bottom
            anchors.leftMargin: 8
            anchors.topMargin: 8
            text: "Zone:"
@@ -155,9 +167,9 @@ ListView {
        }
 
        Text {
-           id: locationZone
-           anchors.left: locationZoneIcon.right
-           anchors.top: locationDimension.bottom
+           id: itemZone
+           anchors.left: itemZoneIcon.right
+           anchors.top: itemDimension.bottom
            anchors.leftMargin: 4
            anchors.topMargin: 8
            text: model.object.zone
@@ -170,6 +182,6 @@ ListView {
 
 /*##^##
 Designer {
-    D{i:0;autoSize:true;height:480;width:640}D{i:3}
+    D{i:0;autoSize:true;height:480;width:640}
 }
 ##^##*/

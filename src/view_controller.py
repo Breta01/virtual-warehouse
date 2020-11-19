@@ -10,7 +10,7 @@ from PySide2.QtCore import (
     Slot,
 )
 
-from tab_controller import LocationListModel
+from tab_controller import Item, Location, UniversalListModel
 
 location_type_map = {
     "FLOOR": "resources/objects/floor.obj",
@@ -90,7 +90,8 @@ class ViewController(QObject):
     def __init__(self, parent=None):
         super(ViewController, self).__init__(parent)
         self._model = ItemListModel(on_change=lambda: self.modelChanged.emit())
-        self._location_model = LocationListModel()
+        self._location_model = UniversalListModel(Location)
+        self._item_model = UniversalListModel(Item)
         self.reset_selection()
         self.locations = {}
 
@@ -104,6 +105,10 @@ class ViewController(QObject):
     @Property(QObject, constant=False, notify=modelChanged)
     def location_model(self):
         return self._location_model
+
+    @Property(QObject, constant=False, notify=modelChanged)
+    def item_model(self):
+        return self._item_model
 
     @Property("QVariant", constant=False, notify=itemSelected)
     def item(self):
@@ -143,9 +148,12 @@ class ViewController(QObject):
         )
         self.reset_selection()
         self.locations = locations
-        self._location_model.set_locations(locations)
+
+        self._location_model.set_data(locations)
+        self._item_model.set_data(items)
+        self._item_model.set_selected(list(items.keys()))
+
         self._model.clear()
         for loc in locations.values():
             self._model.add(loc, False)
         self.modelChanged.emit()
-        print(locations)

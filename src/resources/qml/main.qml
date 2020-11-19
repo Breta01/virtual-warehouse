@@ -137,14 +137,17 @@ ApplicationWindow {
 
             Button {
                 id: removeButton
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: 20
-                text: "2D View"
-                implicitWidth: 150
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                anchors.leftMargin: 20
+                anchors.bottomMargin: 60
+                text: "2D"
+                flat: true
+                Material.foreground: "white"
+                implicitWidth: 40
 
                 background: Rectangle {
-                    implicitWidth: 150
+                    implicitWidth: 40
                     implicitHeight: 40
                     opacity: enabled ? 1 : 0.3
                     color: parent.down ? "#6b7080" : "#848895"
@@ -205,14 +208,10 @@ ApplicationWindow {
             Item {
                 id: itemTab
 
-                Text {
-                    id: elementx
-                    width: 164
-                    height: 94
-                    text: qsTr("Item Tab")
-                    font.pixelSize: 20
-                    padding: 10
-                }
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                ItemListView {}
             }
             Item {
                 id: orderTab
