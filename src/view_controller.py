@@ -11,7 +11,7 @@ from PySide2.QtCore import (
 )
 
 from environment import LOCATION_TYPE_MAP
-from tab_controller import Item, Location, UniversalListModel
+from tab_controller import Item, Location, Order, UniversalListModel
 
 
 class Map(QObject):
@@ -158,10 +158,13 @@ class ItemListModel(QAbstractListModel):
 class ViewController(QObject):
     def __init__(self, parent=None):
         super(ViewController, self).__init__(parent)
-        self._map = Map()
         self._model = ItemListModel(on_change=lambda: self.modelChanged.emit())
+        self._map = Map()
+
         self._location_model = UniversalListModel(Location)
         self._item_model = UniversalListModel(Item)
+        self._order_model = UniversalListModel(Order)
+
         self.reset_selection()
         self.locations = {}
 
@@ -184,15 +187,9 @@ class ViewController(QObject):
     def item_model(self):
         return self._item_model
 
-    @Property("QVariant", constant=False, notify=itemSelected)
-    def item(self):
-        if self.selected_name and self.selected_name in self.locations:
-            l = self.locations[self.selected_name]
-            return {
-                "text": f"Name: {l.id}\nType: {l.ltype}\nClass: {l.lclass}\nMax weight: {l.max_weight}"
-            }
-        else:
-            return {"text": "No location selected"}
+    @Property(QObject, constant=False, notify=modelChanged)
+    def order_model(self):
+        return self._order_model
 
     @Slot(int, result="QVariant")
     def get_item(self, idx):
@@ -224,9 +221,18 @@ class ViewController(QObject):
         self.locations = locations
 
         self._map.set_data(locations)
-        self._location_model.set_data(locations)
+        self._location_model.set_data(
+            {k: v for k, v in locations.items() if v.ltype == "rack"}
+        )
+        self._location_model.set_selected(
+            [k for k, v in locations.items() if v.ltype == "rack"]
+        )
+
         self._item_model.set_data(items)
         self._item_model.set_selected(list(items.keys()))
+
+        self._order_model.set_data(orders)
+        self._order_model.set_selected(list(orders.keys()))
 
         self._model.clear()
         for loc in locations.values():

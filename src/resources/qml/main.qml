@@ -229,15 +229,12 @@ ApplicationWindow {
             Item {
                 id: orderTab
 
-                Text {
-                    id: elementy
-                    width: 164
-                    height: 94
-                    text: qsTr("Order Tab")
-                    font.pixelSize: 20
-                    padding: 10
-                }
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                OrderListView {}
             }
+
         }
     }
 

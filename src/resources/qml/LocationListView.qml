@@ -18,7 +18,7 @@ ListView {
 
    delegate: Item {
        id: locationItem
-       height: 200
+       height: 100
        width: locationList.width
 
        Rectangle {
@@ -47,6 +47,18 @@ ListView {
            flat: true
        }
 
+       CheckBox {
+           id: locationCloseButton
+           anchors.right: parent.right
+           anchors.top: parent.top
+           anchors.topMargin: 5
+           anchors.rightMargin: 8
+           padding: 8
+           width: 36
+           height: 36
+       }
+
+       /*
        RoundButton {
            icon.source: "../images/close_icon.png"
            id: locationCloseButton
@@ -58,7 +70,7 @@ ListView {
            padding: 8
            anchors.rightMargin: 8
            flat: true
-       }
+       }*/
 
        Text {
            id: locationID
@@ -170,6 +182,6 @@ ListView {
 
 /*##^##
 Designer {
-    D{i:0;autoSize:true;height:480;width:640}D{i:3}
+    D{i:0;autoSize:true;height:480;width:640}
 }
 ##^##*/

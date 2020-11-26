@@ -73,6 +73,34 @@ class Item(QObject):
         return self._i.base_unit.weight
 
 
+class Order(QObject):
+    """Order QObject for displaying list of orders in warehouse."""
+
+    def __init__(self, order):
+        QObject.__init__(self)
+        self._i = order
+
+    @Property(str, constant=True)
+    def name(self):
+        return str(self._i.id)
+
+    @Property(str, constant=True)
+    def direction(self):
+        return self._i.direction
+
+    @Property(str, constant=True)
+    def date(self):
+        return self._i.delivery_date.strftime("%-d. %-m. %Y")
+
+    @Property(str, constant=True)
+    def item_id(self):
+        return str(self._i.item_id)
+
+    @Property(str, constant=True)
+    def total_qty(self):
+        return f"{int(self._i.total_qty)} {self._i.qty_uom}"
+
+
 class UniversalListModel(QAbstractListModel):
     ObjectRole = Qt.UserRole + 1
 

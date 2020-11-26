@@ -64,13 +64,13 @@ def parse_document(data_path):
 
     # Parse Order sheet
     sheet = document.sheet_by_name("Order")
-    orders = []
+    orders = {}
     for row in range(1, sheet.nrows):
         order_id = sheet.cell(row, 0).value
         if not order_id:
             continue
 
-        orders.append(Order(*(sheet.cell(row, i).value for i in range(11))))
+        orders[order_id] = Order(*(sheet.cell(row, i).value for i in range(11)))
 
     return locations, items, balance, orders
 
