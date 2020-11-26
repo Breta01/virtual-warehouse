@@ -8,5 +8,6 @@
         <file>resources/qml/LocationListView.qml</file>
         <file>resources/images/dimension_icon.png</file>
         <file>resources/images/max_weight_icon.png</file>
+        <file>resources/qml/MapView2D.qml</file>
     </qresource>
 </RCC>

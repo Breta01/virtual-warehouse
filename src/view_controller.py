@@ -10,22 +10,71 @@ from PySide2.QtCore import (
     Slot,
 )
 
+from environment import LOCATION_TYPE_MAP
 from tab_controller import Item, Location, UniversalListModel
 
-location_type_map = {
-    "FLOOR": "resources/objects/floor.obj",
-    "RACK": "resources/objects/rack.obj",
-    "Storage Rack": "resources/objects/rack.obj",
-}
+
+class Map(QObject):
+    """Object holding basic informations about the map."""
+
+    def __init__(self, locations=None):
+        QObject.__init__(self)
+        if locations:
+            self.set_data(locations)
+        else:
+            self._min_x = 0
+            self._max_x = 0
+            self._min_y = 0
+            self._max_y = 0
+            self._min_z = 0
+            self._max_z = 0
+
+    def set_data(self, locations):
+        self._min_x = min(l.coord.x for l in locations.values())
+        self._max_x = max(l.coord.x + l.width for l in locations.values())
+
+        self._min_y = min(l.coord.y for l in locations.values())
+        self._max_y = max(l.coord.y + l.length for l in locations.values())
+
+        self._min_z = min(l.coord.z for l in locations.values())
+        self._max_z = max(l.coord.z + l.height for l in locations.values())
+
+    @Property(float, constant=True)
+    def min_x(self):
+        return self._min_x
+
+    @Property(float, constant=True)
+    def max_x(self):
+        return self._max_x
+
+    @Property(float, constant=True)
+    def min_y(self):
+        return self._min_y
+
+    @Property(float, constant=True)
+    def max_y(self):
+        return self._max_y
+
+    @Property(float, constant=True)
+    def min_z(self):
+        return self._min_z
+
+    @Property(float, constant=True)
+    def max_z(self):
+        return self._max_z
 
 
 class ItemListModel(QAbstractListModel):
-    # Our custom roles
     MeshRole = Qt.UserRole + 1
     XPosRole = Qt.UserRole + 2
     YPosRole = Qt.UserRole + 3
     ZPosRole = Qt.UserRole + 4
     NameRole = Qt.UserRole + 5
+    TypeRole = Qt.UserRole + 6
+    ColorRole = Qt.UserRole + 7
+    LenghtRole = Qt.UserRole + 8
+    WidthRole = Qt.UserRole + 9
+    HeightRole = Qt.UserRole + 10
 
     def __init__(self, on_change, parent=None):
         super(ItemListModel, self).__init__(parent)
@@ -34,15 +83,20 @@ class ItemListModel(QAbstractListModel):
 
     def add(self, loc, emit=True):
         try:
-            meshFile = location_type_map[loc.ltype]
+            loc_setting = LOCATION_TYPE_MAP[loc.ltype]
         except:
             return
         self._assets.append(
             {
-                "meshFile": meshFile,
+                "meshFile": loc_setting["mesh"],
+                "color": loc_setting["color"],
+                "type": loc.ltype,
                 "x": loc.coord.x,
                 "y": loc.coord.y,
                 "z": loc.coord.z,
+                "length": loc.length,
+                "width": loc.width,
+                "height": loc.height,
                 "name": loc.id,
             }
         )
@@ -75,6 +129,16 @@ class ItemListModel(QAbstractListModel):
                 return item["z"]
             elif role == ItemListModel.NameRole:
                 return item["name"]
+            elif role == ItemListModel.TypeRole:
+                return item["type"]
+            elif role == ItemListModel.ColorRole:
+                return item["color"]
+            elif role == ItemListModel.LengthRole:
+                return item["length"]
+            elif role == ItemListModel.WidthRole:
+                return item["width"]
+            elif role == ItemListModel.HeightRole:
+                return item["height"]
 
     def roleNames(self):
         roles = dict()
@@ -83,12 +147,18 @@ class ItemListModel(QAbstractListModel):
         roles[ItemListModel.YPosRole] = b"y"
         roles[ItemListModel.ZPosRole] = b"z"
         roles[ItemListModel.NameRole] = b"name"
+        roles[ItemListModel.TypeRole] = b"type"
+        roles[ItemListModel.ColorRole] = b"color"
+        roles[ItemListModel.LengthRole] = b"length"
+        roles[ItemListModel.WidthRole] = b"width"
+        roles[ItemListModel.HeightRole] = b"height"
         return roles
 
 
 class ViewController(QObject):
     def __init__(self, parent=None):
         super(ViewController, self).__init__(parent)
+        self._map = Map()
         self._model = ItemListModel(on_change=lambda: self.modelChanged.emit())
         self._location_model = UniversalListModel(Location)
         self._item_model = UniversalListModel(Item)
@@ -97,6 +167,10 @@ class ViewController(QObject):
 
     modelChanged = Signal()
     itemSelected = Signal()
+
+    @Property(QObject, constant=False, notify=modelChanged)
+    def map(self):
+        return self._map
 
     @Property(QObject, constant=False, notify=modelChanged)
     def model(self):
@@ -138,7 +212,7 @@ class ViewController(QObject):
     @Slot()
     def reset_selection(self):
         self.selected_name = None
-        self.selected_idx = 0
+        self.selected_idx = -1
 
     @Slot(str)
     def load(self, file_path):
@@ -149,6 +223,7 @@ class ViewController(QObject):
         self.reset_selection()
         self.locations = locations
 
+        self._map.set_data(locations)
         self._location_model.set_data(locations)
         self._item_model.set_data(items)
         self._item_model.set_selected(list(items.keys()))

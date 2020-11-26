@@ -14,6 +14,25 @@ weight_factors = {
     "g": 0.001,
 }
 
+# Mapping possible names to standard types
+types = {
+    "floor": "floor",
+    "rack": "rack",
+    "storage rack": "rack",
+    "wall": "wall",
+    "inbound door": "inbound_door",
+    "outbound door": "outbound_door",
+    "staging area": "staging_area",
+    "custome": "custome",
+}
+
+
+def convert_type(type_str):
+    try:
+        return types[type_str.lower()]
+    except:
+        return "custome"
+
 
 def convert_dim(dim, uom):
     if uom:

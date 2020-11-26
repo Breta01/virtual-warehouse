@@ -2,7 +2,7 @@
 from dataclasses import InitVar, dataclass
 from typing import List
 
-from .utils import convert_date, convert_dim, convert_weight
+from .utils import convert_date, convert_dim, convert_type, convert_weight
 
 
 @dataclass
@@ -64,6 +64,7 @@ class Location:
     coord: str = None
 
     def __post_init__(self, dim_uom, weight_uom):
+        self.ltype = convert_type(self.ltype)
         self.length = convert_dim(self.length, dim_uom)
         self.width = convert_dim(self.width, dim_uom)
         self.height = convert_dim(self.height, dim_uom)
