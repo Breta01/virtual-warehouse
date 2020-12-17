@@ -19,12 +19,29 @@ Canvas {
         var min_x = ViewController.map.min_x;
         var min_y = ViewController.map.min_y;
         var params = getDrawParams();
-        var item;
+        var item, heat;
+
+        // Draw selected item
+        var idx = ViewController.get_selected_idx();
+        if (idx >= 0) {
+            item = ViewController.model.get(idx);
+            ctx.fillStyle = "red";
+            ctx.fillRect(
+                        (item.x - min_x) * params.coef + params.padding_x,
+                        (item.y - min_y) * params.coef + params.padding_y,
+                        item.width * params.coef,
+                        item.length * params.coef);
+        }
 
         // TODO: speed up drawing - sort by z coordinate?
         // Draw Floor first
         for (var row = 0; row < ViewController.model.rowCount(); row++) {
-            item = ViewController.get_item(row);
+            if (row == idx) {
+                continue;
+            }
+
+            item = ViewController.model.get(row);
+
             if (item.type === "floor") {
                 ctx.fillStyle = item.color;
                 ctx.fillRect(
@@ -36,28 +53,34 @@ Canvas {
         }
 
         // Draw rest of the items
-        for (var row = 0; row < ViewController.model.rowCount(); row++) {
-            item = ViewController.get_item(row);
+        for (row = 0; row < ViewController.model.rowCount(); row++) {
+            if (row == idx) {
+                continue;
+            }
+
+            item = ViewController.model.get(row);
+
             if (item.type !== "floor") {
                 ctx.fillStyle = item.color;
+                if (true) { // is_heatmap() in future
+                    if (item.type === "rack") {
+                        heat = ViewController.model.get_heat(row);
+                        var h = Math.floor((1.0 - heat) * 240);
+                        ctx.fillStyle = "hsl(" + h + ", 100%, 50%)";
+
+//                        var h = Math.floor(heat * 255);
+//                        ctx.fillStyle = "rgb( 0," + h + "," + h + ")";
+                    } else {
+                        ctx.fillStyle = item.gray_color;
+                    }
+                }
+
                 ctx.fillRect(
                             (item.x - min_x) * params.coef + params.padding_x,
                             (item.y - min_y) * params.coef + params.padding_y,
                             item.width * params.coef,
                             item.length * params.coef);
             }
-        }
-
-        // Draw selected item
-        let idx = ViewController.get_selected_idx();
-        if (idx >= 0) {
-            item = ViewController.get_item(idx);
-            ctx.fillStyle = "red";
-            ctx.fillRect(
-                        (item.x - min_x) * params.coef + params.padding_x,
-                        (item.y - min_y) * params.coef + params.padding_y,
-                        item.width * params.coef,
-                        item.length * params.coef);
         }
     }
 
@@ -71,7 +94,7 @@ Canvas {
             var x1, y1, x2, y2;
 
             for (var row = 0; row < ViewController.model.rowCount(); row++) {
-                var item = ViewController.get_item(row);
+                var item = ViewController.model.get(row);
                 if (item.type === "rack") {
                     x1 = (item.x - min_x) * params.coef + params.padding_x;
                     y1 = (item.y - min_y) * params.coef + params.padding_y;
@@ -82,18 +105,19 @@ Canvas {
                         ViewController.select_item(item.name, row);
                         // TODO: Speed up drawing - extra canvas, less items...
                         mapView2D.requestPaint()
-                        break;
+                        return;
                     }
                 }
             }
 
+            ViewController.select_item(null, -1);
         }
     }
 
     Connections {
         target: ViewController
         function onModelChanged() {
-            mapView2D.requestPaint()
+            mapView2D.requestPaint();
         }
     }
 

@@ -93,6 +93,7 @@ ApplicationWindow {
                 mapView2D.visible = mapView3D.visible;
                 mapView3D.visible = !mapView3D.visible;
                 viewSwitchButton.text = (mapView3D.visible) ? "2D" : "3D";
+                ViewController.switch_view();
             }
         }
 
@@ -249,19 +250,19 @@ ApplicationWindow {
     Connections {
         target: ViewController
         function onModelChanged() {
-            surfacePlot.customItemList = []
+            surfacePlot.customItemList = [];
             for (var row = 0; row < ViewController.model.rowCount(); row++) {
-                var item = ViewController.get_item(row)
-                var component = Qt.createComponent("CustomItem.qml")
+                var item = ViewController.model.get(row);
+                var component = Qt.createComponent("CustomItem.qml");
                 let instance = component.createObject(surfacePlot, {
                                                           "objectName": item.name,
-                                                          "meshFile": item.meshFile,
+                                                          "meshFile": item.mesh_file,
                                                           "position": Qt.vector3d(
                                                                           item.x,
                                                                           item.z,
                                                                           item.y)
-                                                      })
-                surfacePlot.customItemList.push(instance)
+                                                      });
+                surfacePlot.customItemList.push(instance);
             }
         }
     }

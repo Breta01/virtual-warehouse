@@ -5,13 +5,16 @@ from typing import List
 from .utils import convert_date, convert_dim, convert_type, convert_weight
 
 
-@dataclass
+@dataclass(eq=True)
 class Coord:
     """Location coordinates."""
 
     x: float = None
     y: float = None
     z: float = None
+
+    def get_2d(self):
+        return (self.x, self.y)
 
 
 @dataclass
@@ -61,7 +64,8 @@ class Location:
     max_weight: float = None
     weight_uom: InitVar[str] = None
     zone: str = None
-    coord: str = None
+    coord: Coord = None
+    freq: int = 0
 
     def __post_init__(self, dim_uom, weight_uom):
         self.ltype = convert_type(self.ltype)

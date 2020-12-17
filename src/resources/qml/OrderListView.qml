@@ -96,9 +96,9 @@ ListView {
        }
 
        Text {
-           id: orderContentQty
+           id: orderContentItemText
            color: "#333333"
-           text: model.object.total_qty
+           text: "Item:"
            anchors.left: parent.left
            anchors.top: orderID.bottom
            font.pixelSize: 14
@@ -111,13 +111,39 @@ ListView {
            id: orderContentItem
            color: Material.accent
            text: model.object.item_id
-           anchors.left: orderContentQty.right
+           anchors.left: orderContentItemText.right
            anchors.top: orderID.bottom
            font.pixelSize: 14
            horizontalAlignment: Text.AlignLeft
            anchors.leftMargin: 4
            anchors.topMargin: 4
        }
+
+       Text {
+           id: orderContentQtyText
+           color: "#333333"
+           text: "QTY:"
+           anchors.left: orderContentItem.right
+           anchors.top: orderID.bottom
+           font.pixelSize: 14
+           horizontalAlignment: Text.AlignLeft
+           anchors.leftMargin: 8
+           anchors.topMargin: 4
+       }
+
+       Text {
+           id: orderContentQty
+           color: "#333333"
+           text: model.object.total_qty
+           anchors.left: orderContentQtyText.right
+           anchors.top: orderID.bottom
+           font.pixelSize: 14
+           horizontalAlignment: Text.AlignLeft
+           anchors.leftMargin: 4
+           anchors.topMargin: 4
+       }
+
+
    }
 }
 

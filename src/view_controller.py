@@ -5,13 +5,32 @@ from PySide2.QtCore import (
     QAbstractListModel,
     QModelIndex,
     QObject,
+    QRunnable,
     Qt,
+    QThreadPool,
     Signal,
     Slot,
 )
 
-from environment import LOCATION_TYPE_MAP
+from heatmap import calculate_frquencies
+from location_models import MultiLocation, SingleLocation, UniversalLocationListModel
 from tab_controller import Item, Location, Order, UniversalListModel
+
+
+class Worker(QRunnable):
+    """Worker thread - runs provided function with given parameters."""
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+
+    @Slot()
+    def run(self):
+        """Initialise the runner function with passed args, kwargs."""
+        self.fn(*self.args, **self.kwargs)
 
 
 class Map(QObject):
@@ -64,101 +83,19 @@ class Map(QObject):
         return self._max_z
 
 
-class ItemListModel(QAbstractListModel):
-    MeshRole = Qt.UserRole + 1
-    XPosRole = Qt.UserRole + 2
-    YPosRole = Qt.UserRole + 3
-    ZPosRole = Qt.UserRole + 4
-    NameRole = Qt.UserRole + 5
-    TypeRole = Qt.UserRole + 6
-    ColorRole = Qt.UserRole + 7
-    LenghtRole = Qt.UserRole + 8
-    WidthRole = Qt.UserRole + 9
-    HeightRole = Qt.UserRole + 10
-
-    def __init__(self, on_change, parent=None):
-        super(ItemListModel, self).__init__(parent)
-        self._on_change = on_change
-        self._assets = []
-
-    def add(self, loc, emit=True):
-        try:
-            loc_setting = LOCATION_TYPE_MAP[loc.ltype]
-        except:
-            return
-        self._assets.append(
-            {
-                "meshFile": loc_setting["mesh"],
-                "color": loc_setting["color"],
-                "type": loc.ltype,
-                "x": loc.coord.x,
-                "y": loc.coord.y,
-                "z": loc.coord.z,
-                "length": loc.length,
-                "width": loc.width,
-                "height": loc.height,
-                "name": loc.id,
-            }
-        )
-        if emit:
-            self._on_change()
-
-    def clear(self):
-        self._assets = []
-        self._on_change()
-
-    def rowCount(self, parent=QModelIndex()):
-        if parent.isValid():
-            return 0
-        return len(self._assets)
-
-    def get(self, index):
-        return self._assets[index]
-
-    def data(self, index, role=Qt.DisplayRole):
-        if index.isValid():
-            item = self._assets[index.row()]
-
-            if role == ItemListModel.MeshRole:
-                return item["meshFile"]
-            elif role == ItemListModel.XPosRole:
-                return item["x"]
-            elif role == ItemListModel.YPosRole:
-                return item["y"]
-            elif role == ItemListModel.ZPosRole:
-                return item["z"]
-            elif role == ItemListModel.NameRole:
-                return item["name"]
-            elif role == ItemListModel.TypeRole:
-                return item["type"]
-            elif role == ItemListModel.ColorRole:
-                return item["color"]
-            elif role == ItemListModel.LengthRole:
-                return item["length"]
-            elif role == ItemListModel.WidthRole:
-                return item["width"]
-            elif role == ItemListModel.HeightRole:
-                return item["height"]
-
-    def roleNames(self):
-        roles = dict()
-        roles[ItemListModel.MeshRole] = b"meshFile"
-        roles[ItemListModel.XPosRole] = b"x"
-        roles[ItemListModel.YPosRole] = b"y"
-        roles[ItemListModel.ZPosRole] = b"z"
-        roles[ItemListModel.NameRole] = b"name"
-        roles[ItemListModel.TypeRole] = b"type"
-        roles[ItemListModel.ColorRole] = b"color"
-        roles[ItemListModel.LengthRole] = b"length"
-        roles[ItemListModel.WidthRole] = b"width"
-        roles[ItemListModel.HeightRole] = b"height"
-        return roles
-
-
 class ViewController(QObject):
     def __init__(self, parent=None):
         super(ViewController, self).__init__(parent)
-        self._model = ItemListModel(on_change=lambda: self.modelChanged.emit())
+        self.threadpool = QThreadPool()
+
+        self._is2D = True
+
+        self._model3D = UniversalLocationListModel(
+            on_change=lambda: self.modelChanged.emit()
+        )
+        self._model2D = UniversalLocationListModel(
+            on_change=lambda: self.modelChanged.emit()
+        )
         self._map = Map()
 
         self._location_model = UniversalListModel(Location)
@@ -177,7 +114,8 @@ class ViewController(QObject):
 
     @Property(QObject, constant=False, notify=modelChanged)
     def model(self):
-        return self._model
+        # print("Model", self.is2D)
+        return self._model2D if self._is2D else self._model3D
 
     @Property(QObject, constant=False, notify=modelChanged)
     def location_model(self):
@@ -191,15 +129,19 @@ class ViewController(QObject):
     def order_model(self):
         return self._order_model
 
-    @Slot(int, result="QVariant")
-    def get_item(self, idx):
-        return self._model.get(idx)
+    @Slot(result=bool)
+    def is2D(self):
+        return self._is2D
+
+    @Slot()
+    def switch_view(self):
+        self._is2D = not self._is2D
 
     @Slot(str, int)
     def select_item(self, name, idx):
         self.selected_name = name
         self.selected_idx = idx
-        self._location_model.set_selected([name])
+        # self._location_model.set_selected([name])
         self.itemSelected.emit()
 
     @Slot(result=int)
@@ -214,18 +156,27 @@ class ViewController(QObject):
     @Slot(str)
     def load(self, file_path):
         # TODO: Threading
+        worker = Worker(self._load, file_path)
+        self.threadpool.start(worker)
+
+    def _load(self, file_path):
         locations, items, balance, orders = parser.parse_document(
             file_path[len("file://") :]
         )
+        # TODO: Calculate after initial draw
+        calculate_frquencies(locations, items, balance, orders)
+
         self.reset_selection()
         self.locations = locations
 
         self._map.set_data(locations)
         self._location_model.set_data(
-            {k: v for k, v in locations.items() if v.ltype == "rack"}
+            locations
+            # {k: v for k, v in locations.items() if v.ltype == "rack"}
         )
         self._location_model.set_selected(
-            [k for k, v in locations.items() if v.ltype == "rack"]
+            list(locations.keys())
+            # [k for k, v in locations.items() if v.ltype == "rack"]
         )
 
         self._item_model.set_data(items)
@@ -234,7 +185,24 @@ class ViewController(QObject):
         self._order_model.set_data(orders)
         self._order_model.set_selected(list(orders.keys()))
 
-        self._model.clear()
-        for loc in locations.values():
-            self._model.add(loc, False)
+        self._model3D.set_data(
+            {k: SingleLocation(v) for k, v in self.locations.items()}
+        )
+
+        clusters = self._cluster_locations(self.locations)
+        multi_loc = {}
+        for k, v in clusters.items():
+            multi_loc[k] = MultiLocation([self.locations[l] for l in v])
+        self._model2D.set_data(multi_loc)
+
         self.modelChanged.emit()
+
+    def _cluster_locations(self, locations):
+        coord_to_locations = {}
+
+        for key, loc in locations.items():
+            if not loc.coord.get_2d() in coord_to_locations:
+                coord_to_locations[loc.coord.get_2d()] = []
+            coord_to_locations[loc.coord.get_2d()].append(key)
+
+        return coord_to_locations
