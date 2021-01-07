@@ -39,7 +39,7 @@ class Location(QObject):
 
     @Property(str, constant=True)
     def z(self):
-        return str(self._i.coord.z)
+        return str(int(self._i.coord.z))
 
     @Property(float, constant=True)
     def heat(self):

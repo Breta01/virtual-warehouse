@@ -106,7 +106,7 @@ Canvas {
 
                Rectangle {
                    id: sideViewRect
-                   color: getHeatColor(model.object.heat / ViewController.model.max_heat, false)
+                   color: getHeatColor(model.object.heat / ViewController.model3D.max_heat, false)
                    anchors.top:  parent.top
                    anchors.topMargin: 0
                    anchors.leftMargin: 0
@@ -119,7 +119,7 @@ Canvas {
                    id: sideViewLine
                    height: 1
                    width: 20
-                   color: getHeatColor(model.object.heat / ViewController.model.max_heat, false)
+                   color: getHeatColor(model.object.heat / ViewController.model3D.max_heat, false)
 
                    anchors.bottom:  sideViewRect.bottom
                    anchors.left: sideViewRect.right
@@ -134,7 +134,7 @@ Canvas {
                    anchors.bottomMargin: -4
                    anchors.leftMargin: 4
                    font.pixelSize: 12
-                   color: getHeatColor(model.object.heat / ViewController.model.max_heat, false)
+                   color: getHeatColor(model.object.heat / ViewController.model3D.max_heat, false)
                }
            }
         }

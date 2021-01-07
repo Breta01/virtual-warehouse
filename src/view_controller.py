@@ -121,6 +121,10 @@ class ViewController(QObject):
         # print("Model", self.is2D)
         return self._model2D if self._is2D else self._model3D
 
+    @Property(QObject, constant=True)
+    def model3D(self):
+        return self._model3D
+
     @Property(QObject, constant=False, notify=modelChanged)
     def location_model(self):
         return self._location_model
