@@ -14,7 +14,7 @@ from PySide2.QtCore import (
 
 from heatmap import calculate_frquencies
 from location_models import MultiLocation, SingleLocation, UniversalLocationListModel
-from tab_controller import Item, Location, Order, UniversalListModel
+from tab_controller import HoverListModel, Item, Location, Order, UniversalListModel
 
 
 class Worker(QRunnable):
@@ -89,6 +89,7 @@ class ViewController(QObject):
         self.threadpool = QThreadPool()
 
         self._is2D = True
+        self._is_heatmap = False
 
         self._model3D = UniversalLocationListModel(
             on_change=lambda: self.modelChanged.emit()
@@ -98,6 +99,7 @@ class ViewController(QObject):
         )
         self._map = Map()
 
+        self._sidebar_model = HoverListModel(Location)
         self._location_model = UniversalListModel(Location)
         self._item_model = UniversalListModel(Item)
         self._order_model = UniversalListModel(Order)
@@ -106,6 +108,8 @@ class ViewController(QObject):
         self.locations = {}
 
     modelChanged = Signal()
+    sidebarChanged = Signal()
+    drawModeChanged = Signal()
     itemSelected = Signal()
 
     @Property(QObject, constant=False, notify=modelChanged)
@@ -121,6 +125,10 @@ class ViewController(QObject):
     def location_model(self):
         return self._location_model
 
+    @Property(QObject, constant=False, notify=sidebarChanged)
+    def sidebar_model(self):
+        return self._sidebar_model
+
     @Property(QObject, constant=False, notify=modelChanged)
     def item_model(self):
         return self._item_model
@@ -129,20 +137,43 @@ class ViewController(QObject):
     def order_model(self):
         return self._order_model
 
+    @Property(bool, constant=False, notify=drawModeChanged)
+    def is_heatmap(self):
+        return self._is_heatmap
+
     @Slot(result=bool)
     def is2D(self):
         return self._is2D
 
     @Slot()
+    def switch_heatmap(self):
+        self._is_heatmap = not self._is_heatmap
+        self.drawModeChanged.emit()
+
+    @Slot()
     def switch_view(self):
         self._is2D = not self._is2D
 
-    @Slot(str, int)
-    def select_item(self, name, idx):
-        self.selected_name = name
+    @Slot(int)
+    def select_item(self, idx):
         self.selected_idx = idx
-        # self._location_model.set_selected([name])
+        if idx >= 0:
+            names = self.model._get_idx(idx).names
+            self._location_model.set_selected(names)
+            self._sidebar_model.set_selected(names)
+        else:
+            self._location_model.set_selected([])
+            self._sidebar_model.set_selected([])
         self.itemSelected.emit()
+
+    @Slot(int)
+    def hover_item(self, idx):
+        if idx >= 0:
+            names = self.model._get_idx(idx).names
+            self._sidebar_model.set_hovered(names, True)
+        else:
+            self._sidebar_model.set_hovered([], False)
+        self.sidebarChanged.emit()
 
     @Slot(result=int)
     def get_selected_idx(self):
@@ -150,7 +181,6 @@ class ViewController(QObject):
 
     @Slot()
     def reset_selection(self):
-        self.selected_name = None
         self.selected_idx = -1
 
     @Slot(str)
@@ -170,14 +200,13 @@ class ViewController(QObject):
         self.locations = locations
 
         self._map.set_data(locations)
-        self._location_model.set_data(
-            locations
-            # {k: v for k, v in locations.items() if v.ltype == "rack"}
-        )
+        self._location_model.set_data(locations)
         self._location_model.set_selected(
-            list(locations.keys())
-            # [k for k, v in locations.items() if v.ltype == "rack"]
+            # list(locations.keys())
+            [k for k, v in locations.items() if v.ltype == "rack"]
         )
+
+        self._sidebar_model.set_data(locations)
 
         self._item_model.set_data(items)
         self._item_model.set_selected(list(items.keys()))

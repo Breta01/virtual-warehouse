@@ -37,6 +37,14 @@ class Location(QObject):
     def zone(self):
         return self._i.zone
 
+    @Property(str, constant=True)
+    def z(self):
+        return str(self._i.coord.z)
+
+    @Property(float, constant=True)
+    def heat(self):
+        return self._i.freq
+
 
 class Item(QObject):
     """Item QObject for displaying list of items in warehouse."""
@@ -129,3 +137,43 @@ class UniversalListModel(QAbstractListModel):
         roles = dict()
         roles[UniversalListModel.ObjectRole] = b"object"
         return roles
+
+
+class HoverListModel(UniversalListModel):
+    ObjectRole = Qt.UserRole + 1
+
+    def __init__(
+        self,
+        object_class,
+        objects={},
+        selected_objects=[],
+        hovered_objects=[],
+        parent=None,
+    ):
+        super(UniversalListModel, self).__init__(parent)
+        self._object_class = object_class
+        self._objects = {k: self._object_class(v) for k, v in objects.items()}
+        self._selected = selected_objects
+        self._hovered = hovered_objects
+        self._is_hovered = False
+
+    def set_selected(self, selected):
+        self._selected = list(reversed(selected))
+        self.layoutChanged.emit()
+
+    def set_hovered(self, hovered, is_hovered=True):
+        self._is_hovered = is_hovered
+        self._hovered = list(reversed(hovered))
+        self.layoutChanged.emit()
+
+    def rowCount(self, parent=QModelIndex()):
+        if self._is_hovered:
+            return len(self._hovered)
+        return len(self._selected)
+
+    def data(self, index, role):
+        if index.isValid() and role == UniversalListModel.ObjectRole:
+            if self._is_hovered:
+                return self._objects[self._hovered[index.row()]]
+            return self._objects[self._selected[index.row()]]
+        return None

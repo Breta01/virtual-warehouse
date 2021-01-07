@@ -68,6 +68,38 @@ ApplicationWindow {
 
 
         Button {
+            id: histogramSwitchButton
+            text: qsTr("Heatmap")
+            icon.source: "../images/histogram_icon.png"
+            anchors.left: parent.left
+            anchors.bottom: viewSwitchButton.top
+            checked: ViewController.is_heatmap
+            checkable: true
+            display: AbstractButton.IconOnly
+            anchors.leftMargin: 20
+            anchors.bottomMargin: 0
+            flat: true
+            Material.foreground: "white"
+            implicitWidth: 40
+            z: 1
+
+            background: Rectangle {
+                implicitWidth: 40
+                implicitHeight: 40
+                opacity: parent.enabled ? 1 : 0.3
+                color: parent.checked ? Material.accent : (parent.down ? "#6b7080" : "#848895")
+                border.color: "#222840"
+                border.width: 1
+                radius: 5
+            }
+
+            onClicked: {
+                ViewController.switch_heatmap();
+            }
+        }
+
+
+        Button {
             id: viewSwitchButton
             anchors.left: parent.left
             anchors.bottom: parent.bottom
@@ -130,7 +162,6 @@ ApplicationWindow {
 
             Surface3D {
                 id: surfacePlot
-                objectName: "surfacePlot"
                 width: mapView3D.width
                 height: mapView3D.height
                 theme: Theme3D {
@@ -171,7 +202,7 @@ ApplicationWindow {
                         let item = surfacePlot.selectedCustomItem();
                         let idx = surfacePlot.selectedCustomItemIndex();
                         item.textureFile = "resources/images/textures/red.png";
-                        ViewController.select_item(item.objectName, idx);
+                        ViewController.select_item(idx);
                     }
                 }
             }
@@ -241,6 +272,7 @@ ApplicationWindow {
 
     FileDialog {
         id: openDialog
+        modality: Qt.WindowModal
         title: "Please select a warehouse file"
         nameFilters: ["Excel file (*.xls, *.xlsx)", "CSV file (*.csv)"]
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
@@ -270,3 +302,9 @@ ApplicationWindow {
 
 
 
+
+/*##^##
+Designer {
+    D{i:0;formeditorZoom:0.66}
+}
+##^##*/

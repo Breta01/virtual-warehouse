@@ -22,6 +22,8 @@ class SingleLocation:
         self._color = LOCATION_TYPE_MAP[self._i.ltype]["color"]
         self._gcolor = LOCATION_TYPE_MAP[self._i.ltype]["gray_color"]
         self._mesh_file = LOCATION_TYPE_MAP[self._i.ltype]["mesh"]
+        # Required for displaying selected locations
+        self.names = [str(self._i.id)]
 
     def get_dict(self):
         return {
@@ -52,6 +54,8 @@ class MultiLocation:
         self._color = LOCATION_TYPE_MAP[self._i.ltype]["color"]
         self._gcolor = LOCATION_TYPE_MAP[self._i.ltype]["gray_color"]
         self._mesh_file = LOCATION_TYPE_MAP[self._i.ltype]["mesh"]
+        # Required for displaying selected locations
+        self.names = [i.id for i in locations]
 
     def get_dict(self):
         return {
@@ -75,21 +79,31 @@ class MultiLocation:
 class UniversalLocationListModel(QObject):
     ObjectRole = Qt.UserRole + 1
 
+    maxHeatChanged = Signal()
+
     def __init__(self, on_change, objects={}, parent=None):
         super(UniversalLocationListModel, self).__init__(parent)
         self._on_change = on_change
         self.set_data(objects)
-        self.max_heat = 0
+        self._max_heat = 0
 
     def set_data(self, objects):
         self._objects = objects
         self._keys = list(objects.keys())
-        self.max_heat = self._get_max_heat()
+        self._max_heat = self._get_max_heat()
+        self.maxHeatChanged.emit()
 
     def _get_max_heat(self):
         if len(self._objects) == 0:
             return 0
         return max(o.get_heat() for _, o in self._objects.items())
+
+    def _get_idx(self, idx):
+        return self._objects[self._keys[idx]]
+
+    @Property(float, constant=False, notify=maxHeatChanged)
+    def max_heat(self):
+        return self._max_heat
 
     @Slot(result=int)
     def rowCount(self, parent=QModelIndex()):
@@ -100,18 +114,18 @@ class UniversalLocationListModel(QObject):
         # print(index)
         # if (index == 0):
         # print(self._objects[self._keys[index]], self._objects[self._keys[index]]._i)
-        return self._objects[self._keys[index]].get_dict()
+        return self._get_idx(index).get_dict()
 
     @Slot(int, result=float)
     def get_heat(self, index):
         # print(index)
         # if (index == 0):
         # print(self._objects[self._keys[index]], self._objects[self._keys[index]]._i)
-        return self._objects[self._keys[index]].get_heat() / self.max_heat
+        return self._get_idx(index).get_heat() / self._max_heat
 
     def data(self, index, role):
-        if index.isValid() and role == UniversalListModel.ObjectRole:
-            return self._objects[self._keys[index.row()]]
+        if index.isValid() and role == UniversalLocationListModel.ObjectRole:
+            return self._get_idx(index.row())
         return None
 
     def roleNames(self):
