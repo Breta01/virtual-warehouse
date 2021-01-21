@@ -11,6 +11,7 @@ from PySide2.QtCore import (
 )
 
 from environment import LOCATION_TYPE_MAP
+from heatmap import get_heatmap_color
 
 
 class SingleLocation:
@@ -40,7 +41,7 @@ class SingleLocation:
             "height": self._i.height,
         }
 
-    def get_heat(self):
+    def get_heat(self, level=-1):
         return self._i.freq
 
 
@@ -72,26 +73,31 @@ class MultiLocation:
             "height": self._i.height,
         }
 
-    def get_heat(self):
-        return sum(i.freq for i in self._l)
+    def get_heat(self, level=-1):
+        return self._l[level].freq if level != -1 else sum(i.freq for i in self._l)
 
 
 class UniversalLocationListModel(QObject):
     ObjectRole = Qt.UserRole + 1
 
-    maxHeatChanged = Signal()
+    maxChanged = Signal()
 
     def __init__(self, on_change, objects={}, parent=None):
         super(UniversalLocationListModel, self).__init__(parent)
         self._on_change = on_change
         self.set_data(objects)
         self._max_heat = 0
+        self._level = -1
+        self._max_level = 1
 
     def set_data(self, objects):
         self._objects = objects
         self._keys = list(objects.keys())
-        self._max_heat = self._get_max_heat()
-        self.maxHeatChanged.emit()
+        if objects:
+            self._max_heat = self._get_max_heat()
+            self._max_level = max(l._i.coord.z for l in self._objects.values())
+            print(self._max_level)
+            self.maxChanged.emit()
 
     def _get_max_heat(self):
         if len(self._objects) == 0:
@@ -101,9 +107,13 @@ class UniversalLocationListModel(QObject):
     def _get_idx(self, idx):
         return self._objects[self._keys[idx]]
 
-    @Property(float, constant=False, notify=maxHeatChanged)
+    @Property(float, constant=False, notify=maxChanged)
     def max_heat(self):
         return self._max_heat
+
+    @Property(int, constant=False, notify=maxChanged)
+    def max_level(self):
+        return self._max_level
 
     @Slot(result=int)
     def rowCount(self, parent=QModelIndex()):
@@ -111,17 +121,18 @@ class UniversalLocationListModel(QObject):
 
     @Slot(int, result="QVariant")
     def get(self, index):
-        # print(index)
-        # if (index == 0):
-        # print(self._objects[self._keys[index]], self._objects[self._keys[index]]._i)
         return self._get_idx(index).get_dict()
 
-    @Slot(int, result=float)
-    def get_heat(self, index):
-        # print(index)
-        # if (index == 0):
-        # print(self._objects[self._keys[index]], self._objects[self._keys[index]]._i)
-        return self._get_idx(index).get_heat() / self._max_heat
+    @Slot(int)
+    def set_level(self, level):
+        self._level = level
+
+    @Slot(int, float, result=str)
+    def get_heat(self, index, max_heat=None):
+        freq = self._get_idx(index).get_heat(self._level)
+        if max_heat:
+            return get_heatmap_color(freq / max_heat)
+        return get_heatmap_color(freq / self._max_heat)
 
     def data(self, index, role):
         if index.isValid() and role == UniversalLocationListModel.ObjectRole:

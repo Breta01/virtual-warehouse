@@ -5,7 +5,10 @@ from PySide2.QtCore import (
     QObject,
     Qt,
     Signal,
+    Slot,
 )
+
+from heatmap import get_heatmap_color
 
 
 class Location(QObject):
@@ -41,8 +44,10 @@ class Location(QObject):
     def z(self):
         return str(int(self._i.coord.z))
 
-    @Property(float, constant=True)
-    def heat(self):
+    @Slot(float, result=str)
+    def heat(self, max_freq=None):
+        if max_freq:
+            return get_heatmap_color(self._i.freq / max_freq)
         return self._i.freq
 
 

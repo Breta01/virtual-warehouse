@@ -1,3 +1,4 @@
+matplotlib
 numpy==1.19.1
 PySide2==5.15.0
 xlrd==1.2.0

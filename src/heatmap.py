@@ -1,3 +1,6 @@
+from matplotlib import cm
+
+
 def item_locations(locations, items, balance):
     item_to_loc = {}
     for date, bl in balance.items():
@@ -18,3 +21,9 @@ def calculate_frquencies(locations, items, balance, orders):
     for k, o in orders.items():
         for loc in item_locs[date][o.item_id]:
             locations[loc].freq += o.total_qty
+
+
+def get_heatmap_color(val):
+    """Convert 0-1 value into #RRGGBB color."""
+    v = cm.viridis(val, bytes=True)
+    return f"#{v[0]:02X}{v[1]:02X}{v[2]:02X}"

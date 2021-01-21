@@ -197,7 +197,6 @@ ApplicationWindow {
                                 = "resources/images/textures/default.png";
                     }
 
-
                     if (surfacePlot.selectedCustomItemIndex() !== -1) {
                         let item = surfacePlot.selectedCustomItem();
                         let idx = surfacePlot.selectedCustomItemIndex();
@@ -283,8 +282,8 @@ ApplicationWindow {
         target: ViewController
         function onModelChanged() {
             surfacePlot.customItemList = [];
-            for (var row = 0; row < ViewController.model.rowCount(); row++) {
-                var item = ViewController.model.get(row);
+            for (var row = 0; row < ViewController.model3D.rowCount(); row++) {
+                var item = ViewController.model3D.get(row);
                 var component = Qt.createComponent("CustomItem.qml");
                 let instance = component.createObject(surfacePlot, {
                                                           "objectName": item.name,

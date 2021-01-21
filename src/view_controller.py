@@ -1,5 +1,6 @@
 import parser.excel_parser as parser
 
+from matplotlib import cm
 from PySide2.QtCore import (
     Property,
     QAbstractListModel,
@@ -118,10 +119,13 @@ class ViewController(QObject):
 
     @Property(QObject, constant=False, notify=modelChanged)
     def model(self):
-        # print("Model", self.is2D)
         return self._model2D if self._is2D else self._model3D
 
-    @Property(QObject, constant=True)
+    @Property(QObject, constant=False, notify=modelChanged)
+    def model2D(self):
+        return self._model2D
+
+    @Property(QObject, constant=False, notify=modelChanged)
     def model3D(self):
         return self._model3D
 

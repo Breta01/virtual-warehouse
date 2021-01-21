@@ -1,4 +1,6 @@
 import QtQuick 2.0
+import QtQuick.Controls 2.14
+import QtQuick.Controls.Material 2.14
 
 Canvas {
     id: mapView2D
@@ -24,7 +26,7 @@ Canvas {
         // Draw selected item
         var idx = ViewController.get_selected_idx();
         if (idx >= 0) {
-            item = ViewController.model.get(idx);
+            item = ViewController.model2D.get(idx);
             ctx.fillStyle = "red";
             ctx.fillRect(
                         (item.x - min_x) * params.coef + params.padding_x,
@@ -35,12 +37,12 @@ Canvas {
 
         // TODO: speed up drawing - sort by z coordinate?
         // Draw Floor first
-        for (var row = 0; row < ViewController.model.rowCount(); row++) {
+        for (var row = 0; row < ViewController.model2D.rowCount(); row++) {
             if (row == idx) {
                 continue;
             }
 
-            item = ViewController.model.get(row);
+            item = ViewController.model2D.get(row);
 
             if (item.type === "floor") {
                 ctx.fillStyle = item.color;
@@ -53,19 +55,24 @@ Canvas {
         }
 
         // Draw rest of the items
-        for (row = 0; row < ViewController.model.rowCount(); row++) {
+        var max = ViewController.model2D.max_heat;
+        if (levelSlider.value != -1) {
+            max = ViewController.model3D.max_heat;
+        }
+
+        for (row = 0; row < ViewController.model2D.rowCount(); row++) {
             if (row == idx) {
                 continue;
             }
 
-            item = ViewController.model.get(row);
+            item = ViewController.model2D.get(row);
 
             if (item.type !== "floor") {
                 ctx.fillStyle = item.color;
                 if (ViewController.is_heatmap) { // is_heatmap() in future
                     if (item.type === "rack") {
-                        heat = ViewController.model.get_heat(row);
-                        ctx.fillStyle = getHeatColor(heat);
+                        heat = ViewController.model2D.get_heat(row, max);
+                        ctx.fillStyle = heat;
                     } else {
                         ctx.fillStyle = item.gray_color;
                     }
@@ -106,7 +113,7 @@ Canvas {
 
                Rectangle {
                    id: sideViewRect
-                   color: getHeatColor(model.object.heat / ViewController.model3D.max_heat, false)
+                   color: model.object.heat(ViewController.model3D.max_heat)
                    anchors.top:  parent.top
                    anchors.topMargin: 0
                    anchors.leftMargin: 0
@@ -119,7 +126,7 @@ Canvas {
                    id: sideViewLine
                    height: 1
                    width: 20
-                   color: getHeatColor(model.object.heat / ViewController.model3D.max_heat, false)
+                   color: model.object.heat(ViewController.model3D.max_heat)
 
                    anchors.bottom:  sideViewRect.bottom
                    anchors.left: sideViewRect.right
@@ -134,48 +141,86 @@ Canvas {
                    anchors.bottomMargin: -4
                    anchors.leftMargin: 4
                    font.pixelSize: 12
-                   color: getHeatColor(model.object.heat / ViewController.model3D.max_heat, false)
+                   color: model.object.heat(ViewController.model3D.max_heat)
                }
            }
         }
     }
 
-    Item {
-        id: heatScale
+//    Item {
+//        id: heatScale
+//        anchors.verticalCenter: parent.verticalCenter
+//        anchors.right: parent.right
+//        anchors.verticalCenterOffset: -heatScaleImage.height / 2
+//        anchors.rightMargin: 30
+//        visible: ViewController.is_heatmap
+
+//        Image {
+//            id: heatScaleImage
+//            width: 5
+//            height: 200
+//            source: "../images/heatscale.png"
+//            fillMode: Image.fillMode
+//        }
+
+//        Text {
+//            text: qsTr("100")
+//            color: "red"
+//            font.pixelSize: 11
+//            anchors.top: heatScaleImage.top
+//            anchors.right: heatScaleImage.left
+//            horizontalAlignment: Text.AlignRight
+//            anchors.rightMargin: 4
+//        }
+
+//        Text {
+//            text: qsTr("0")
+//            color: "blue"
+//            font.pixelSize: 11
+//            anchors.bottom:  heatScaleImage.bottom
+//            anchors.right: heatScaleImage.left
+//            horizontalAlignment: Text.AlignRight
+//            anchors.rightMargin: 4
+//        }
+//    }
+
+
+    Slider {
+        id: levelSlider
+
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
-        anchors.verticalCenterOffset: -heatScaleImage.height / 2
         anchors.rightMargin: 30
-        visible: ViewController.is_heatmap
+        z: 100
+        visible: ViewController.is_heatmap && ViewController.is2D
 
-        Image {
-            id: heatScaleImage
-            width: 5
-            height: 200
-            source: "../images/heatscale.png"
-            fillMode: Image.fillMode
-        }
+        stepSize: 1
+        live: true
+        Material.theme: Material.Dark
+        // Material.accent: "white"
+        orientation: Qt.Vertical
+        snapMode: Slider.SnapAlways
+        // Only model3D correctly set max Z coordinate right now
+        to: ViewController.model3D.max_level
+        from: -1
+        value: -1
 
-        Text {
-            text: qsTr("100")
-            color: "red"
-            font.pixelSize: 11
-            anchors.top: heatScaleImage.top
-            anchors.right: heatScaleImage.left
-            horizontalAlignment: Text.AlignRight
-            anchors.rightMargin: 4
-        }
-
-        Text {
-            text: qsTr("0")
-            color: "blue"
-            font.pixelSize: 11
-            anchors.bottom:  heatScaleImage.bottom
-            anchors.right: heatScaleImage.left
-            horizontalAlignment: Text.AlignRight
-            anchors.rightMargin: 4
+        onMoved: {
+            ViewController.model2D.set_level(value);
+            mapView2D.requestPaint();
         }
     }
+
+    Text {
+        color: "#80CBC4"
+        visible: levelSlider.visible
+        Material.theme: Material.Dark
+        anchors.top: levelSlider.bottom
+        anchors.horizontalCenter: levelSlider.horizontalCenter
+        z: 100
+        text: "Level: " + ((levelSlider.value == -1) ? "all" : Number(levelSlider.value).toString())
+    }
+
 
     MouseArea {
         id: area
@@ -187,8 +232,8 @@ Canvas {
             var params = getDrawParams();
             var x1, y1, x2, y2;
 
-            for (var row = 0; row < ViewController.model.rowCount(); row++) {
-                var item = ViewController.model.get(row);
+            for (var row = 0; row < ViewController.model2D.rowCount(); row++) {
+                var item = ViewController.model2D.get(row);
                 if (item.type === "rack") {
                     x1 = (item.x - min_x) * params.coef + params.padding_x;
                     y1 = (item.y - min_y) * params.coef + params.padding_y;
@@ -213,8 +258,8 @@ Canvas {
             var params = getDrawParams();
             var x1, y1, x2, y2;
 
-            for (var row = 0; row < ViewController.model.rowCount(); row++) {
-                var item = ViewController.model.get(row);
+            for (var row = 0; row < ViewController.model2D.rowCount(); row++) {
+                var item = ViewController.model2D.get(row);
                 if (item.type === "rack") {
                     x1 = (item.x - min_x) * params.coef + params.padding_x;
                     y1 = (item.y - min_y) * params.coef + params.padding_y;
