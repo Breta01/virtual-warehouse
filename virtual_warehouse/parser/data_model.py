@@ -2,7 +2,12 @@
 from dataclasses import InitVar, dataclass
 from typing import List
 
-from .utils import convert_date, convert_dim, convert_type, convert_weight
+from virtual_warehouse.parser.utils import (
+    convert_date,
+    convert_dim,
+    convert_type,
+    convert_weight,
+)
 
 
 @dataclass(eq=True)

@@ -194,13 +194,13 @@ ApplicationWindow {
                     let idx = ViewController.get_selected_idx();
                     if (idx >= 0) {
                         surfacePlot.customItemList[idx].textureFile
-                                = "resources/images/textures/default.png";
+                                = "../images/textures/default.png";
                     }
 
                     if (surfacePlot.selectedCustomItemIndex() !== -1) {
                         let item = surfacePlot.selectedCustomItem();
                         let idx = surfacePlot.selectedCustomItemIndex();
-                        item.textureFile = "resources/images/textures/red.png";
+                        item.textureFile = "../images/textures/red.png";
                         ViewController.select_item(idx);
                     }
                 }

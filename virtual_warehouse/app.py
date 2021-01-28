@@ -5,17 +5,18 @@ import sys
 from PySide2.QtGui import QGuiApplication, QIcon, QImage
 from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
 
-from main_rc import *
-from view_controller import ViewController
+from virtual_warehouse.main_rc import *
+from virtual_warehouse.view_controller import ViewController
 
-dir_path = os.path.dirname(__file__)
 
-if __name__ == "__main__":
+def run():
     dir_path = os.path.dirname(__file__)
 
     app = QGuiApplication(sys.argv)
     app.setOrganizationName("Bretislav Hajek")
     app.setOrganizationDomain("bretahajek.com")
+    app.setApplicationName("Virtual Warehouse")
+    app.setApplicationVersion("0.1")
     engine = QQmlApplicationEngine()
 
     controller = ViewController()

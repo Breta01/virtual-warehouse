@@ -10,8 +10,8 @@ from PySide2.QtCore import (
     Slot,
 )
 
-from environment import LOCATION_TYPE_MAP
-from heatmap import get_heatmap_color
+from virtual_warehouse.environment import LOCATION_TYPE_MAP
+from virtual_warehouse.heatmap import get_heatmap_color
 
 
 class SingleLocation:

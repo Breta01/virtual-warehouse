@@ -17,6 +17,10 @@ help:
 	@echo "        Prepare complete development environment"
 	@echo "    make lint"
 	@echo "        Run pylint and mypy"
+	@echo "    make build"
+	@echo "        Make qrc resources"
+	@echo "    make package"
+	@echo "        Create packaged application"
 	@echo "    make clean"
 	@echo "        Clean repository"
 
@@ -37,11 +41,14 @@ $(VENV_NAME)/bin/activate: requirements.txt requirements-dev.txt
 	touch $(VENV_NAME)/bin/activate
 
 build:
-	${VENV_ACTIVATE}; pyside2-rcc src/main.qrc > src/main_rc.py
+	${VENV_ACTIVATE}; pyside2-rcc virtual_warehouse/main.qrc > virtual_warehouse/main_rc.py
 
 lint: venv
-	${PYTHON} -m pylint src
-	${PYTHON} -m flake8 src
+	${PYTHON} -m pylint virtual_warehouse
+	${PYTHON} -m flake8 virtual_warehouse
+	
+package:
+	${VENV_ACTIVATE}; pyinstaller --name="Virtual Warehouse" --windowed --clean --onefile main.py
 
 clean:
 	find . -name '*.pyc' -exec rm --force {} +

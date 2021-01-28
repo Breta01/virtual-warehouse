@@ -3,10 +3,11 @@ from pathlib import Path
 
 from xlrd import open_workbook
 
-from .data_model import *
+from virtual_warehouse.parser.data_model import *
 
 
 def parse_document(data_path):
+    print("Data path:", data_path)
     document = open_workbook(data_path)
 
     # Parse LOCATIONmaster sheet

@@ -1,5 +1,3 @@
-import parser.excel_parser as parser
-
 from matplotlib import cm
 from PySide2.QtCore import (
     Property,
@@ -13,9 +11,20 @@ from PySide2.QtCore import (
     Slot,
 )
 
-from heatmap import calculate_frquencies
-from location_models import MultiLocation, SingleLocation, UniversalLocationListModel
-from tab_controller import HoverListModel, Item, Location, Order, UniversalListModel
+import virtual_warehouse.parser.excel_parser as parser
+from virtual_warehouse.heatmap import calculate_frquencies
+from virtual_warehouse.location_models import (
+    MultiLocation,
+    SingleLocation,
+    UniversalLocationListModel,
+)
+from virtual_warehouse.tab_controller import (
+    HoverListModel,
+    Item,
+    Location,
+    Order,
+    UniversalListModel,
+)
 
 
 class Worker(QRunnable):
@@ -198,6 +207,7 @@ class ViewController(QObject):
         self.threadpool.start(worker)
 
     def _load(self, file_path):
+        print(file_path)
         locations, items, balance, orders = parser.parse_document(
             file_path[len("file://") :]
         )

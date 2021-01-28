@@ -8,7 +8,7 @@ from PySide2.QtCore import (
     Slot,
 )
 
-from heatmap import get_heatmap_color
+from virtual_warehouse.heatmap import get_heatmap_color
 
 
 class Location(QObject):
