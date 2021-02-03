@@ -70,7 +70,7 @@ ApplicationWindow {
         Button {
             id: histogramSwitchButton
             text: qsTr("Heatmap")
-            icon.source: "../images/histogram_icon.png"
+            icon.source: "qrc:/images/histogram_icon.png"
             anchors.left: parent.left
             anchors.bottom: viewSwitchButton.top
             checked: ViewController.is_heatmap
@@ -194,13 +194,13 @@ ApplicationWindow {
                     let idx = ViewController.get_selected_idx();
                     if (idx >= 0) {
                         surfacePlot.customItemList[idx].textureFile
-                                = "../images/textures/default.png";
+                                = ":/textures/default.png";
                     }
 
                     if (surfacePlot.selectedCustomItemIndex() !== -1) {
                         let item = surfacePlot.selectedCustomItem();
                         let idx = surfacePlot.selectedCustomItemIndex();
-                        item.textureFile = "../images/textures/red.png";
+                        item.textureFile = ":/textures/red.png";
                         ViewController.select_item(idx);
                     }
                 }
@@ -280,11 +280,12 @@ ApplicationWindow {
 
     Connections {
         target: ViewController
+        // TODO: Fix textures
         function onModelChanged() {
             surfacePlot.customItemList = [];
             for (var row = 0; row < ViewController.model3D.rowCount(); row++) {
                 var item = ViewController.model3D.get(row);
-                var component = Qt.createComponent("CustomItem.qml");
+                var component = Qt.createComponent("qrc:/qml/CustomItem.qml");
                 let instance = component.createObject(surfacePlot, {
                                                           "objectName": item.name,
                                                           "meshFile": item.mesh_file,
@@ -293,6 +294,7 @@ ApplicationWindow {
                                                                           item.z,
                                                                           item.y)
                                                       });
+
                 surfacePlot.customItemList.push(instance);
             }
         }

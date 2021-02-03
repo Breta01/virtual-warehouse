@@ -2,11 +2,21 @@
 import os
 import sys
 
+from PySide2 import QtCore
 from PySide2.QtGui import QGuiApplication, QIcon, QImage
 from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
 
-from virtual_warehouse.main_rc import *
+import virtual_warehouse.main_rc
 from virtual_warehouse.view_controller import ViewController
+
+try:
+    # Win incon support, include in try/except block if you're also targeting Mac/Linux
+    from PySide2.QtWinExtras import QtWin
+
+    myappid = "com.bretahajek.virtual-varehouse"
+    QtWin.setCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
 
 
 def run():
@@ -23,8 +33,8 @@ def run():
     #    qmlRegisterType(ViewController, "VirtualWarehouse", 1, 0, "ViewController")
     engine.rootContext().setContextProperty("ViewController", controller)
 
-    app.setWindowIcon(QIcon(os.path.join(dir_path, "resources/images/icon.png")))
-    engine.load(os.path.join(dir_path, "resources/qml/main.qml"))
+    app.setWindowIcon(QIcon(":/images/icon.png"))
+    engine.load(QtCore.QUrl("qrc:/qml/main.qml"))
 
     if not engine.rootObjects():
         sys.exit(-1)

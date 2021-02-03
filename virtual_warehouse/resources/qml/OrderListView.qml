@@ -35,7 +35,7 @@ ListView {
        }
 
        RoundButton {
-           icon.source: "../images/menu_icon.png"
+           icon.source: "qrc:/images/menu_icon.png"
            id: orderMenuButton
            width: 36
            height: 36
@@ -60,7 +60,7 @@ ListView {
 
        /*
        RoundButton {
-           icon.source: "../images/close_icon.png"
+           icon.source: "qrc:/images/close_icon.png"
            id: orderCloseButton
            width: 36
            height: 36

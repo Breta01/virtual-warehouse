@@ -35,7 +35,7 @@ ListView {
        }
 
        RoundButton {
-           icon.source: "../images/menu_icon.png"
+           icon.source: "qrc:/images/menu_icon.png"
            id: itemMenuButton
            width: 36
            height: 36
@@ -60,7 +60,7 @@ ListView {
 
        /*
        RoundButton {
-           icon.source: "../images/close_icon.png"
+           icon.source: "qrc:/images/close_icon.png"
            id: itemCloseButton
            width: 36
            height: 36
@@ -108,7 +108,7 @@ ListView {
 
        Image {
            id: itemDimensionIcon
-           source: "../images/dimension_icon.png"
+           source: "qrc:/images/dimension_icon.png"
            smooth: true
            sourceSize.height: 19
            sourceSize.width: 19
@@ -132,7 +132,7 @@ ListView {
 
        Image {
            id: itemWeightIcon
-           source: "../images/max_weight_icon.png"
+           source: "qrc:/images/max_weight_icon.png"
            anchors.horizontalCenterOffset: 8
            anchors.horizontalCenter: parent.horizontalCenter
            smooth: true
