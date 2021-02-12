@@ -117,6 +117,11 @@ class ViewController(QObject):
         self.reset_selection()
         self.locations = {}
 
+        # DEBUG:
+        self.load(
+            "file:///home/breta/Documents/github/virtual-warehouse/data/warehouse_no_1_v2.xlsx"
+        )
+
     modelChanged = Signal()
     sidebarChanged = Signal()
     drawModeChanged = Signal()
@@ -176,10 +181,10 @@ class ViewController(QObject):
         self.selected_idx = idx
         if idx >= 0:
             names = self.model._get_idx(idx).names
-            self._location_model.set_selected(names)
+            self._location_model.set_checked(names)
             self._sidebar_model.set_selected(names)
         else:
-            self._location_model.set_selected([])
+            self._location_model.set_checked([])
             self._sidebar_model.set_selected([])
         self.itemSelected.emit()
 
@@ -202,9 +207,10 @@ class ViewController(QObject):
 
     @Slot(str)
     def load(self, file_path):
+        self._load(file_path)
         # TODO: Threading
-        worker = Worker(self._load, file_path)
-        self.threadpool.start(worker)
+        # worker = Worker(self._load, file_path)
+        # self.threadpool.start(worker)
 
     def _load(self, file_path):
         print(file_path)

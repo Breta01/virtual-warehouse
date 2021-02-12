@@ -17,6 +17,9 @@ class Location(QObject):
     def __init__(self, location):
         QObject.__init__(self)
         self._i = location
+        self._checked = False
+
+    checkedChanged = Signal()
 
     @Property(str, constant=True)
     def name(self):
@@ -50,6 +53,14 @@ class Location(QObject):
             return get_heatmap_color(self._i.freq / max_freq)
         return self._i.freq
 
+    @Property(bool, constant=False, notify=checkedChanged)
+    def checked(self):
+        return self._checked
+
+    @checked.setter
+    def set_checked(self, val):
+        self._checked = val
+
 
 class Item(QObject):
     """Item QObject for displaying list of items in warehouse."""
@@ -57,6 +68,8 @@ class Item(QObject):
     def __init__(self, item):
         QObject.__init__(self)
         self._i = item
+
+    checkedChanged = Signal()
 
     @Property(str, constant=True)
     def name(self):
@@ -85,6 +98,14 @@ class Item(QObject):
     def base_weight(self):
         return self._i.base_unit.weight
 
+    @Property(bool, constant=False, notify=checkedChanged)
+    def checked(self):
+        return self._checked
+
+    @checked.setter
+    def set_checked(self, val):
+        self._checked = val
+
 
 class Order(QObject):
     """Order QObject for displaying list of orders in warehouse."""
@@ -92,6 +113,8 @@ class Order(QObject):
     def __init__(self, order):
         QObject.__init__(self)
         self._i = order
+
+    checkedChanged = Signal()
 
     @Property(str, constant=True)
     def name(self):
@@ -113,6 +136,15 @@ class Order(QObject):
     def total_qty(self):
         return f"{int(self._i.total_qty)} {self._i.qty_uom}"
 
+    @Property(bool, constant=False, notify=checkedChanged)
+    def checked(self):
+        return self._checked
+
+    @checked.setter
+    def set_checked(self, val):
+        self._checked = val
+        checkedChanged.emit()
+
 
 class UniversalListModel(QAbstractListModel):
     ObjectRole = Qt.UserRole + 1
@@ -122,12 +154,39 @@ class UniversalListModel(QAbstractListModel):
         self._object_class = object_class
         self._objects = {k: self._object_class(v) for k, v in objects.items()}
         self._selected = selected_objects
+        self._all_selected = selected_objects
+        self._checked = []
+        self._filter = 0
+
+    filterChanged = Signal()
 
     def set_data(self, objects):
         self._objects = {k: self._object_class(v) for k, v in objects.items()}
 
-    def set_selected(self, selected):
+    def clear_checked(self):
+        for n in self._checked:
+            self._objects[n].set_checked(False)
+        self._checked = []
+        # TODO: Specify correct range
+        self.dataChanged.emit(
+            self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
+        )
+
+    def set_checked(self, checked):
+        self.clear_checked()
+        self._checked = checked
+        self._update_filter()
+        for n in self._checked:
+            self._objects[n].set_checked(True)
+        self.dataChanged.emit(
+            self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
+        )
+
+    def set_selected(self, selected, check=False):
         self._selected = selected
+        self._all_selected = selected
+        if check:
+            self.set_checked(selected)
         self.layoutChanged.emit()
 
     def rowCount(self, parent=QModelIndex()):
@@ -142,6 +201,24 @@ class UniversalListModel(QAbstractListModel):
         roles = dict()
         roles[UniversalListModel.ObjectRole] = b"object"
         return roles
+
+    @Property(int, constant=False, notify=filterChanged)
+    def filter(self):
+        return self._filter
+
+    @filter.setter
+    def set_filter(self, val):
+        self._filter = val
+        self._update_filter()
+
+    def _update_filter(self):
+        if self._filter == 0:
+            self._selected = self._all_selected
+        elif self._filter == 1:
+            self._selected = self._checked
+        elif self._filter == 2:
+            self._selected = [k for k in self._all_selected if not k in self._checked]
+        self.layoutChanged.emit()
 
 
 class HoverListModel(UniversalListModel):

@@ -47,7 +47,7 @@ ListView {
            flat: true
        }
 
-       CheckBox {
+       CheckDelegate {
            id: itemCloseButton
            anchors.right: parent.right
            anchors.top: parent.top

@@ -239,7 +239,7 @@ ApplicationWindow {
         StackLayout {
             y: tabBar.height
             width: parent.width
-            height: parent.height - tabBar.height
+            height: parent.height - 2 * tabBar.height
             currentIndex: tabBar.currentIndex
 
             Item {
@@ -248,6 +248,7 @@ ApplicationWindow {
                 Layout.fillHeight: true
 
                 LocationListView {}
+
             }
             Item {
                 id: itemTab

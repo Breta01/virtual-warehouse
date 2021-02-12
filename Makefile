@@ -6,9 +6,10 @@ VENV_NAME?=venv
 VENV_BIN=$(shell pwd)/${VENV_NAME}/bin
 VENV_ACTIVATE=source $(VENV_NAME)/bin/activate
 
-PROJECT_DIR=src
+PROJECT_DIR=virtual_warehouse
 
 PYTHON=${VENV_NAME}/bin/python3
+
 
 .DEFAULT: help
 help:
@@ -21,6 +22,8 @@ help:
 	@echo "        Make qrc resources"
 	@echo "    make package"
 	@echo "        Create packaged application"
+	@echo "    make run"
+	@echo "        Run application"
 	@echo "    make clean"
 	@echo "        Clean repository"
 
@@ -50,6 +53,9 @@ lint: venv
 package: resources
 	${VENV_ACTIVATE}; pyinstaller --name="Virtual Warehouse" --windowed --clean \
 		--onefile main.py --icon="virtual_warehouse/resources/images/icon.png"
+
+run: resources
+	${PYTHON} main.py
 
 clean:
 	find . -name '*.pyc' -exec rm --force {} +

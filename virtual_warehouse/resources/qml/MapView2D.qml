@@ -191,7 +191,7 @@ Canvas {
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
         anchors.rightMargin: 30
-        z: 100
+
         visible: ViewController.is_heatmap && ViewController.is2D
 
         stepSize: 1
@@ -212,6 +212,7 @@ Canvas {
     }
 
     Text {
+        id: levelSwitcher
         color: "#80CBC4"
         visible: levelSlider.visible
         Material.theme: Material.Dark
@@ -220,6 +221,8 @@ Canvas {
         z: 100
         text: "Level: " + ((levelSlider.value == -1) ? "all" : Number(levelSlider.value).toString())
     }
+
+
 
 
     MouseArea {
