@@ -6,6 +6,7 @@ from xlrd import open_workbook
 from virtual_warehouse.parser.data_model import *
 
 
+# TODO: Check duplicit IDs
 def parse_document(data_path):
     print("Data path:", data_path)
     document = open_workbook(data_path)
@@ -14,7 +15,7 @@ def parse_document(data_path):
     sheet = document.sheet_by_name("LOCATIONmaster")
     locations = {}
     for row in range(1, sheet.nrows):
-        location_id = sheet.cell(row, 0).value
+        location_id = str(sheet.cell(row, 0).value)
         if not location_id:
             continue
 
@@ -25,7 +26,7 @@ def parse_document(data_path):
     # Parse XYZ_coordinates sheet
     sheet = document.sheet_by_name("XYZ_coordinates")
     for row in range(1, sheet.nrows):
-        location_id = sheet.cell(row, 0).value
+        location_id = str(sheet.cell(row, 0).value)
         if not location_id:
             continue
 
@@ -37,6 +38,7 @@ def parse_document(data_path):
     items = {}
     for row in range(1, sheet.nrows):
         item_id, description, gtype, zone = (sheet.cell(row, i).value for i in range(4))
+        item_id = str(item_id)
         if not item_id:
             continue
 
@@ -54,6 +56,7 @@ def parse_document(data_path):
     balance = {}
     for row in range(1, sheet.nrows):
         date, location_id = sheet.cell(row, 0).value, sheet.cell(row, 1).value
+        location_id = str(location_id)
         if not date:
             continue
 
@@ -67,7 +70,7 @@ def parse_document(data_path):
     sheet = document.sheet_by_name("Order")
     orders = {}
     for row in range(1, sheet.nrows):
-        order_id = sheet.cell(row, 0).value
+        order_id = str(sheet.cell(row, 0).value)
         if not order_id:
             continue
 

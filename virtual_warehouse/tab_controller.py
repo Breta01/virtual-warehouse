@@ -73,7 +73,7 @@ class Item(QObject):
 
     @Property(str, constant=True)
     def name(self):
-        return str(self._i.id)
+        return self._i.id
 
     @Property(str, constant=True)
     def description(self):
@@ -118,7 +118,7 @@ class Order(QObject):
 
     @Property(str, constant=True)
     def name(self):
-        return str(self._i.id)
+        return self._i.id
 
     @Property(str, constant=True)
     def direction(self):
@@ -155,32 +155,14 @@ class UniversalListModel(QAbstractListModel):
         self._objects = {k: self._object_class(v) for k, v in objects.items()}
         self._selected = selected_objects
         self._all_selected = selected_objects
-        self._checked = []
+        self._checked = set()
+        self._search = ""
         self._filter = 0
 
     filterChanged = Signal()
 
     def set_data(self, objects):
         self._objects = {k: self._object_class(v) for k, v in objects.items()}
-
-    def clear_checked(self):
-        for n in self._checked:
-            self._objects[n].set_checked(False)
-        self._checked = []
-        # TODO: Specify correct range
-        self.dataChanged.emit(
-            self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
-        )
-
-    def set_checked(self, checked):
-        self.clear_checked()
-        self._checked = checked
-        self._update_filter()
-        for n in self._checked:
-            self._objects[n].set_checked(True)
-        self.dataChanged.emit(
-            self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
-        )
 
     def set_selected(self, selected, check=False):
         self._selected = selected
@@ -202,6 +184,25 @@ class UniversalListModel(QAbstractListModel):
         roles[UniversalListModel.ObjectRole] = b"object"
         return roles
 
+    def clear_checked(self):
+        for n in self._checked:
+            self._objects[n].set_checked(False)
+        self._checked = []
+        # TODO: Specify correct range
+        self.dataChanged.emit(
+            self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
+        )
+
+    def set_checked(self, checked):
+        self.clear_checked()
+        self._checked = set(checked)
+        self._update_filter()
+        for n in self._checked:
+            self._objects[n].set_checked(True)
+        self.dataChanged.emit(
+            self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
+        )
+
     @Property(int, constant=False, notify=filterChanged)
     def filter(self):
         return self._filter
@@ -211,11 +212,28 @@ class UniversalListModel(QAbstractListModel):
         self._filter = val
         self._update_filter()
 
+    @Slot(str, bool)
+    def check(self, _id, val):
+        self._objects[_id].set_checked(val)
+        if val:
+            self._checked.add(_id)
+        else:
+            self._checked.remove(_id)
+
+    @Slot(str)
+    def search(self, val):
+        self._search = val
+        self._update_filter()
+
     def _update_filter(self):
-        if self._filter == 0:
+        if self._search:
+            self._selected = [
+                k for k in self._all_selected if self._search.lower() in k.lower()
+            ]
+        elif self._filter == 0:
             self._selected = self._all_selected
         elif self._filter == 1:
-            self._selected = self._checked
+            self._selected = sorted(list(self._checked))
         elif self._filter == 2:
             self._selected = [k for k in self._all_selected if not k in self._checked]
         self.layoutChanged.emit()

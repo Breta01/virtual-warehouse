@@ -1,5 +1,5 @@
-import QtQuick 2.14
-import QtQuick.Controls 2.14
+import QtQuick 2.4
+import QtQuick.Controls 2.4
 import QtQuick.Controls.Material 2.14
 
 Item {
@@ -24,13 +24,7 @@ Item {
                 verticalAlignment: Qt.AlignVCenter
                 text: parent.text
                 font: parent.font
-                padding: parent.padding
             }
-
-//                        background: Rectangle {
-//                            color: Qt.darker(Material.primary, parent.enabled && (parent.checked || parent.highlighted) ? 1.5 : 1.0)
-//                            opacity: enabled ? 1 : 0.3
-//                        }
         }
 
         ToolButton {
@@ -47,7 +41,6 @@ Item {
                 verticalAlignment: Qt.AlignVCenter
                 text: parent.text
                 font: parent.font
-                padding: parent.padding
             }
         }
 
@@ -65,29 +58,45 @@ Item {
                 verticalAlignment: Qt.AlignVCenter
                 text: parent.text
                 font: parent.font
-                padding: parent.padding
+            }
+        }
+
+        TextField {
+            id: searchText
+            opacity: searchButton.checked ? 1 : 0;
+            Behavior on opacity { NumberAnimation{} }
+            visible: opacity ? true : false
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: searchButton.left
+            topPadding: 15
+            padding: 9
+            anchors.left: parent.left
+            height: parent.height
+            placeholderText: qsTr("Search text...")
+
+            property bool ignoreTextChange: false
+            onTextChanged: ViewController.location_model.search(text)
+
+            Material.foreground: "black"
+            background: Rectangle {
+               implicitWidth: 200
+               implicitHeight: parent.height
+               color: searchText.focus ? "white" : "lightgray"
             }
         }
 
         ToolButton {
-            id: toolButton3
-            icon.source: "qrc:/images/search_icon.png"
+            id: searchButton
+            icon.source: checked ? "qrc:/images/close_icon.png" : "qrc:/images/search_icon.png"
             icon.height: 20
+            icon.color: "white"
             anchors.right: parent.right
             antialiasing: true
             display: AbstractButton.IconOnly
             checkable: true
-            autoExclusive: true
+            autoExclusive: false
 
-
-//            contentItem: Text {
-//                color: Qt.darker("#ffffff", parent.enabled && parent.checked ? 1.5 : 1.0)
-//                horizontalAlignment: Qt.AlignHCenter
-//                verticalAlignment: Qt.AlignVCenter
-//                text: parent.text
-//                font: parent.font
-//                padding: parent.padding
-//            }
+            onClicked: searchText.text = ""
         }
     }
 
@@ -149,7 +158,7 @@ Item {
                height: 36
 
                onClicked: {
-                   model.object.checked = checked
+                   ViewController.location_model.check(model.object.name, checked)
                }
            }
 

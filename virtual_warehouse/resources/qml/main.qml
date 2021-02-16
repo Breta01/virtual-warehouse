@@ -299,6 +299,8 @@ ApplicationWindow {
                 surfacePlot.customItemList.push(instance);
             }
         }
+
+        Component.onCompleted: onModelChanged()
     }
 }
 

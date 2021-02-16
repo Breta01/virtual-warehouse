@@ -2,7 +2,7 @@ import QtQuick 2.14
 import QtDataVisualization 1.3
 
 Custom3DItem {
-    textureFile: "qrc:/textures/default.png"
+    textureFile: ":/textures/default.png"
     meshFile: ""
     positionAbsolute: false
     scalingAbsolute: false
