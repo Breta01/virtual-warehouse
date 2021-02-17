@@ -69,7 +69,6 @@ ApplicationWindow {
         width: window.width - sidebar.width
         height: window.height - menuBar.height
 
-
         Button {
             id: histogramSwitchButton
             text: qsTr("Heatmap")
@@ -97,10 +96,9 @@ ApplicationWindow {
             }
 
             onClicked: {
-                ViewController.switch_heatmap();
+                ViewController.switch_heatmap()
             }
         }
-
 
         Button {
             id: viewSwitchButton
@@ -125,18 +123,16 @@ ApplicationWindow {
             }
 
             onClicked: {
-                mapView2D.visible = mapView3D.visible;
-                mapView3D.visible = !mapView3D.visible;
-                viewSwitchButton.text = (mapView3D.visible) ? "2D" : "3D";
-                ViewController.switch_view();
+                mapView2D.visible = mapView3D.visible
+                mapView3D.visible = !mapView3D.visible
+                viewSwitchButton.text = (mapView3D.visible) ? "2D" : "3D"
+                ViewController.switch_view()
             }
         }
-
 
         MapView2D {
             id: mapView2D
         }
-
 
         Item {
             id: mapView3D
@@ -189,28 +185,25 @@ ApplicationWindow {
                     min: 0
                 }
 
-
                 customItemList: []
 
                 // TODO: add hover effect using inputHandler
                 onSelectedElementChanged: {
-                    let idx = ViewController.get_selected_idx();
+                    let idx = ViewController.get_selected_idx()
                     if (idx >= 0) {
-                        surfacePlot.customItemList[idx].textureFile
-                                = ":/textures/default.png";
+                        surfacePlot.customItemList[idx].textureFile = ":/textures/default.png"
                     }
 
                     if (surfacePlot.selectedCustomItemIndex() !== -1) {
-                        let item = surfacePlot.selectedCustomItem();
-                        let idx = surfacePlot.selectedCustomItemIndex();
-                        item.textureFile = ":/textures/red.png";
-                        ViewController.select_item(idx);
+                        let item = surfacePlot.selectedCustomItem()
+                        let idx = surfacePlot.selectedCustomItemIndex()
+                        item.textureFile = ":/textures/red.png"
+                        ViewController.select_item(idx)
                     }
                 }
             }
         }
     }
-
 
     Rectangle {
         id: sidebarBg
@@ -259,7 +252,6 @@ ApplicationWindow {
                     Layout.fillHeight: true
 
                     LocationListView {}
-
                 }
                 Item {
                     id: itemTab
@@ -277,7 +269,6 @@ ApplicationWindow {
 
                     OrderListView {}
                 }
-
             }
         }
     }
@@ -295,10 +286,10 @@ ApplicationWindow {
         target: ViewController
         // TODO: Fix textures
         function onModelChanged() {
-            surfacePlot.customItemList = [];
+            surfacePlot.customItemList = []
             for (var row = 0; row < ViewController.model3D.rowCount(); row++) {
-                var item = ViewController.model3D.get(row);
-                var component = Qt.createComponent("qrc:/qml/CustomItem.qml");
+                var item = ViewController.model3D.get(row)
+                var component = Qt.createComponent("qrc:/qml/CustomItem.qml")
                 let instance = component.createObject(surfacePlot, {
                                                           "objectName": item.name,
                                                           "meshFile": item.mesh_file,
@@ -306,9 +297,9 @@ ApplicationWindow {
                                                                           item.x,
                                                                           item.z,
                                                                           item.y)
-                                                      });
+                                                      })
 
-                surfacePlot.customItemList.push(instance);
+                surfacePlot.customItemList.push(instance)
             }
         }
 
@@ -316,11 +307,9 @@ ApplicationWindow {
     }
 }
 
-
-
-
 /*##^##
 Designer {
     D{i:0;formeditorZoom:0.66}
 }
 ##^##*/
+
