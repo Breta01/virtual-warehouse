@@ -81,6 +81,7 @@ class UniversalLocationListModel(QObject):
     ObjectRole = Qt.UserRole + 1
 
     maxChanged = Signal()
+    levelChanged = Signal()
 
     def __init__(self, on_change, objects={}, parent=None):
         super(UniversalLocationListModel, self).__init__(parent)
@@ -123,7 +124,11 @@ class UniversalLocationListModel(QObject):
     def get(self, index):
         return self._get_idx(index).get_dict()
 
-    @Slot(int)
+    @Property(int, constant=False, notify=levelChanged)
+    def level(self):
+        return self._level
+
+    @level.setter
     def set_level(self, level):
         self._level = level
 

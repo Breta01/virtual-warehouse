@@ -53,6 +53,9 @@ class Item:
     base_unit: ItemUnit
     unit_levels: List[ItemUnit]
 
+    def __post_init__(self):
+        self.id = str(self.id)
+
 
 @dataclass
 class Location:
@@ -73,6 +76,7 @@ class Location:
     freq: int = 0
 
     def __post_init__(self, dim_uom, weight_uom):
+        self.id = str(self.id)
         self.ltype = convert_type(self.ltype)
         self.length = convert_dim(self.length, dim_uom)
         self.width = convert_dim(self.width, dim_uom)
@@ -88,7 +92,7 @@ class Location:
 class Order:
     """Description of single order from warehouse."""
 
-    id: int
+    id: str
     direction: str
     country: str
     delivery_date: str
@@ -101,6 +105,7 @@ class Order:
     qty_uom: str
 
     def __post_init__(self):
+        self.id = str(self.id)
         self.delivery_date = convert_date(self.delivery_date, "%d.%m.%Y")
         self.s_ship_date = convert_date(self.s_ship_date, "%d.%m.%Y")
         self.a_ship_date = convert_date(self.a_ship_date, "%d.%m.%Y")

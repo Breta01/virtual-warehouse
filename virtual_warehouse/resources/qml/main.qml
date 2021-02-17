@@ -7,16 +7,19 @@ import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.3
 import QtQml.Models 2.2
 import QtQuick.Controls.Material 2.14
+import QtGraphicalEffects 1.12
 
 ApplicationWindow {
     id: window
     title: qsTr("Virtual Warehouse")
-    width: 1000
+    width: 1200
     height: 600
     visible: true
 
     menuBar: MenuBar {
         id: menuBar
+        z: 100
+
         Menu {
             title: qsTr("&File")
 
@@ -208,65 +211,74 @@ ApplicationWindow {
         }
     }
 
-    Column {
-        id: sidebar
+
+    Rectangle {
+        id: sidebarBg
         x: contentView.width
         y: 0
+        z: 20
         width: 300
         height: window.height
 
-        TabBar {
-            id: tabBar
-            y: 0
-            width: sidebar.width
+        color: Material.background
 
-            TabButton {
-                id: tabButton
-                text: qsTr("Locations")
+        Column {
+            id: sidebar
+            anchors.fill: parent
+
+            TabBar {
+                id: tabBar
+                y: 0
+                width: sidebar.width
+
+                TabButton {
+                    id: tabButton
+                    text: qsTr("Locations")
+                }
+
+                TabButton {
+                    id: tabButton1
+                    text: qsTr("Items")
+                }
+
+                TabButton {
+                    id: tabButton2
+                    text: qsTr("Orders")
+                }
             }
 
-            TabButton {
-                id: tabButton1
-                text: qsTr("Items")
+            StackLayout {
+                y: tabBar.height
+                width: parent.width
+                height: parent.height - 2 * tabBar.height
+                currentIndex: tabBar.currentIndex
+
+                Item {
+                    id: locationTab
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    LocationListView {}
+
+                }
+                Item {
+                    id: itemTab
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    ItemListView {}
+                }
+                Item {
+                    id: orderTab
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    OrderListView {}
+                }
+
             }
-
-            TabButton {
-                id: tabButton2
-                text: qsTr("Orders")
-            }
-        }
-
-        StackLayout {
-            y: tabBar.height
-            width: parent.width
-            height: parent.height - 2 * tabBar.height
-            currentIndex: tabBar.currentIndex
-
-            Item {
-                id: locationTab
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                LocationListView {}
-
-            }
-            Item {
-                id: itemTab
-
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                ItemListView {}
-            }
-            Item {
-                id: orderTab
-
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                OrderListView {}
-            }
-
         }
     }
 

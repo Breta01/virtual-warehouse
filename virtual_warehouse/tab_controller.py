@@ -68,6 +68,7 @@ class Item(QObject):
     def __init__(self, item):
         QObject.__init__(self)
         self._i = item
+        self._checked = False
 
     checkedChanged = Signal()
 
@@ -113,12 +114,13 @@ class Order(QObject):
     def __init__(self, order):
         QObject.__init__(self)
         self._i = order
+        self._checked = False
 
     checkedChanged = Signal()
 
     @Property(str, constant=True)
     def name(self):
-        return self._i.id
+        return str(self._i.id)
 
     @Property(str, constant=True)
     def direction(self):
@@ -143,7 +145,6 @@ class Order(QObject):
     @checked.setter
     def set_checked(self, val):
         self._checked = val
-        checkedChanged.emit()
 
 
 class UniversalListModel(QAbstractListModel):

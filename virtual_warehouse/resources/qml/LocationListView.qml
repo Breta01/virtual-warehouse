@@ -1,117 +1,27 @@
-import QtQuick 2.4
-import QtQuick.Controls 2.4
+import QtQuick 2.14
+import QtQuick.Controls 2.14
 import QtQuick.Controls.Material 2.14
 
 Item {
     anchors.fill: locationTab
 
-    ToolBar {
+    FilterMenu {
         id: toolBar
-        width: parent.width
-
-        ToolButton {
-            id: toolButton
-            text: qsTr("All")
-            anchors.left: parent.left
-            checkable: true
-            checked: true
-            autoExclusive: true
-            onClicked: ViewController.location_model.filter = 0
-
-            contentItem: Text {
-                color: Qt.darker("#ffffff", parent.enabled && parent.checked ? 1.5 : 1.0)
-                horizontalAlignment: Qt.AlignHCenter
-                verticalAlignment: Qt.AlignVCenter
-                text: parent.text
-                font: parent.font
-            }
-        }
-
-        ToolButton {
-            id: toolButton1
-            text: qsTr("Checked")
-            anchors.left: toolButton.right
-            checkable: true
-            autoExclusive: true
-            onClicked: ViewController.location_model.filter = 1
-
-            contentItem: Text {
-                color: Qt.darker("#ffffff", parent.enabled && parent.checked ? 1.5 : 1.0)
-                horizontalAlignment: Qt.AlignHCenter
-                verticalAlignment: Qt.AlignVCenter
-                text: parent.text
-                font: parent.font
-            }
-        }
-
-        ToolButton {
-            id: toolButton2
-            text: qsTr("Unchecked")
-            anchors.left: toolButton1.right
-            checkable: true
-            autoExclusive: true
-            onClicked: ViewController.location_model.filter = 2
-
-            contentItem: Text {
-                color: Qt.darker("#ffffff", parent.enabled && parent.checked ? 1.5 : 1.0)
-                horizontalAlignment: Qt.AlignHCenter
-                verticalAlignment: Qt.AlignVCenter
-                text: parent.text
-                font: parent.font
-            }
-        }
-
-        TextField {
-            id: searchText
-            opacity: searchButton.checked ? 1 : 0;
-            Behavior on opacity { NumberAnimation{} }
-            visible: opacity ? true : false
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: searchButton.left
-            topPadding: 15
-            padding: 9
-            anchors.left: parent.left
-            height: parent.height
-            placeholderText: qsTr("Search text...")
-
-            property bool ignoreTextChange: false
-            onTextChanged: ViewController.location_model.search(text)
-
-            Material.foreground: "black"
-            background: Rectangle {
-               implicitWidth: 200
-               implicitHeight: parent.height
-               color: searchText.focus ? "white" : "lightgray"
-            }
-        }
-
-        ToolButton {
-            id: searchButton
-            icon.source: checked ? "qrc:/images/close_icon.png" : "qrc:/images/search_icon.png"
-            icon.height: 20
-            icon.color: "white"
-            anchors.right: parent.right
-            antialiasing: true
-            display: AbstractButton.IconOnly
-            checkable: true
-            autoExclusive: false
-
-            onClicked: searchText.text = ""
-        }
+        model: ViewController.location_model
     }
 
     ListView {
        id: locationList
        anchors.top: toolBar.bottom
        anchors.bottom: parent.bottom
-       width: parent.width
-       topMargin: 8
-       clip: true
+       anchors.right: parent.right
+       anchors.left: parent.left
        anchors.topMargin: 0
-       spacing: 8
        anchors.rightMargin: 8
        anchors.leftMargin: 8
-
+       topMargin: 8
+       clip: true
+       spacing: 8
 
        model: ViewController.location_model
 
@@ -157,9 +67,7 @@ Item {
                width: 36
                height: 36
 
-               onClicked: {
-                   ViewController.location_model.check(model.object.name, checked)
-               }
+               onClicked: ViewController.location_model.check(model.object.name, checked)
            }
 
            /*

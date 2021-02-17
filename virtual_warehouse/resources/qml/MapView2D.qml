@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.14
 import QtQuick.Controls 2.14
 import QtQuick.Controls.Material 2.14
 
@@ -38,7 +38,7 @@ Canvas {
         // TODO: speed up drawing - sort by z coordinate?
         // Draw Floor first
         for (var row = 0; row < ViewController.model2D.rowCount(); row++) {
-            if (row == idx) {
+            if (row === idx) {
                 continue;
             }
 
@@ -56,12 +56,12 @@ Canvas {
 
         // Draw rest of the items
         var max = ViewController.model2D.max_heat;
-        if (levelSlider.value != -1) {
+        if (ViewController.model2D.level !== -1) {
             max = ViewController.model3D.max_heat;
         }
 
         for (row = 0; row < ViewController.model2D.rowCount(); row++) {
-            if (row == idx) {
+            if (row === idx) {
                 continue;
             }
 
@@ -147,82 +147,115 @@ Canvas {
         }
     }
 
-//    Item {
-//        id: heatScale
-//        anchors.verticalCenter: parent.verticalCenter
-//        anchors.right: parent.right
-//        anchors.verticalCenterOffset: -heatScaleImage.height / 2
-//        anchors.rightMargin: 30
-//        visible: ViewController.is_heatmap
-
-//        Image {
-//            id: heatScaleImage
-//            width: 5
-//            height: 200
-//            source: "../images/heatscale.png"
-//            fillMode: Image.fillMode
-//        }
-
-//        Text {
-//            text: qsTr("100")
-//            color: "red"
-//            font.pixelSize: 11
-//            anchors.top: heatScaleImage.top
-//            anchors.right: heatScaleImage.left
-//            horizontalAlignment: Text.AlignRight
-//            anchors.rightMargin: 4
-//        }
-
-//        Text {
-//            text: qsTr("0")
-//            color: "blue"
-//            font.pixelSize: 11
-//            anchors.bottom:  heatScaleImage.bottom
-//            anchors.right: heatScaleImage.left
-//            horizontalAlignment: Text.AlignRight
-//            anchors.rightMargin: 4
-//        }
-//    }
-
-
-    Slider {
-        id: levelSlider
+    Rectangle {
+        radius: 5
+        border.width: 0
 
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
-        anchors.rightMargin: 30
-
+        anchors.rightMargin: -5
+        Behavior on height { NumberAnimation{} }
+        height: (levelSwitch.checked ? 200 : 20) + 80
+        width: levelSlider.width + 40
         visible: ViewController.is_heatmap && ViewController.is2D
+        z: 10
 
-        stepSize: 1
-        live: true
-        Material.theme: Material.Dark
-        // Material.accent: "white"
-        orientation: Qt.Vertical
-        snapMode: Slider.SnapAlways
-        // Only model3D correctly set max Z coordinate right now
-        to: ViewController.model3D.max_level
-        from: -1
-        value: -1
 
-        onMoved: {
-            ViewController.model2D.set_level(value);
-            mapView2D.requestPaint();
+        Rectangle {
+            id: titleBackground
+            color: Material.primary
+            anchors.top: parent.top
+            anchors.topMargin: -3
+            width: parent.width + 1
+            height: levelTitle.height + levelSwitch.height
+            radius: parent.radius
+            z: 1
+
+
+            Text {
+                id: levelTitle
+                text: "Levels"
+                color: "white"
+                font.bold: true
+                visible: levelSlider.visible
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.topMargin: 4
+
+            }
+
+            Switch {
+                id: levelSwitch
+                padding: 0
+                scale: 0.65
+                display: AbstractButton.IconOnly
+                checked: false
+                anchors.top: levelTitle.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                onClicked: {
+                    if (checked) {
+                        ViewController.model2D.level = levelSlider.value;
+                    } else {
+                        ViewController.model2D.level = -1;
+                    }
+                    mapView2D.requestPaint();
+                }
+            }
         }
+
+        Rectangle {
+            color: titleBackground.color
+            height: titleBackground.radius
+            anchors.left: titleBackground.left
+            anchors.right: titleBackground.right
+            anchors.bottom: titleBackground.bottom
+        }
+
+        Text {
+            id: levelIndication
+            color: Material.accent
+
+            visible: levelSlider.visible
+            anchors.top: titleBackground.bottom
+            anchors.topMargin: 4
+            anchors.horizontalCenter: levelSlider.horizontalCenter
+            text: (levelSwitch.checked) ? Number(levelSlider.value).toString() : "All"
+        }
+
+
+        Slider {
+            id: levelSlider
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 8
+            Behavior on height { NumberAnimation{} }
+            height: levelSwitch.checked ? 200 : 20
+
+            visible: ViewController.is_heatmap && ViewController.is2D
+            enabled: levelSwitch.checked
+
+            live: true
+            Material.theme: Material.Light
+            // Material.accent: "white"
+            orientation: Qt.Vertical
+            snapMode: Slider.SnapAlways
+            // Only model3D correctly set max Z coordinate right now
+            to: ViewController.model3D.max_level
+            from: 0
+            value: -1
+            stepSize: 1
+
+            onMoved: {
+                if (levelSwitch.checked) {
+                    ViewController.model2D.level = value;
+                    mapView2D.requestPaint();
+                }
+            }
+        }
+
+
     }
-
-    Text {
-        id: levelSwitcher
-        color: "#80CBC4"
-        visible: levelSlider.visible
-        Material.theme: Material.Dark
-        anchors.top: levelSlider.bottom
-        anchors.horizontalCenter: levelSlider.horizontalCenter
-        z: 100
-        text: "Level: " + ((levelSlider.value == -1) ? "all" : Number(levelSlider.value).toString())
-    }
-
-
 
 
     MouseArea {

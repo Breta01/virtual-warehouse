@@ -19,7 +19,7 @@ help:
 	@echo "    make lint"
 	@echo "        Run pylint and mypy"
 	@echo "    make resources"
-	@echo "        Make qrc resources"
+	@echo "        Make qrc resources file - main_rc.py"
 	@echo "    make package"
 	@echo "        Create packaged application"
 	@echo "    make run"

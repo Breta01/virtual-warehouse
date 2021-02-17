@@ -1,22 +1,22 @@
-<!DOCTYPE RCC>
 <RCC>
     <qresource prefix="/">
         <file>qtquickcontrols2.conf</file>
     </qresource>
-    <qresource prefix="qml">
+    <qresource prefix="/qml">
         <file alias="main.qml">resources/qml/main.qml</file>
         <file alias="CustomItem.qml">resources/qml/CustomItem.qml</file>
         <file alias="ItemListView.qml">resources/qml/ItemListView.qml</file>
         <file alias="LocationListView.qml">resources/qml/LocationListView.qml</file>
         <file alias="MapView2D.qml">resources/qml/MapView2D.qml</file>
         <file alias="OrderListView.qml">resources/qml/OrderListView.qml</file>
+        <file alias="FilterMenu.qml">resources/qml/FilterMenu.qml</file>
     </qresource>
-    <qresource prefix="textures">
+    <qresource prefix="/textures">
         <file alias="blue.png">resources/images/textures/blue.png</file>
         <file alias="default.png">resources/images/textures/default.png</file>
         <file alias="red.png">resources/images/textures/red.png</file>
     </qresource>
-    <qresource prefix="images">
+    <qresource prefix="/images">
         <file alias="icon.png">resources/images/icon.png</file>
         <file alias="dimension_icon.png">resources/images/dimension_icon.png</file>
         <file alias="close_icon.png">resources/images/close_icon.png</file>
@@ -25,7 +25,7 @@
         <file alias="menu_icon.png">resources/images/menu_icon.png</file>
         <file alias="search_icon.png">resources/images/search_icon.png</file>
     </qresource>
-    <qresource prefix="objects">
+    <qresource prefix="/objects">
         <file alias="rack.obj">resources/objects/rack.obj</file>
         <file alias="floor.obj">resources/objects/floor.obj</file>
     </qresource>
