@@ -241,7 +241,7 @@ class ViewController(QObject):
     def _load(self, file_path):
         print(file_path)
         locations, items, balance, orders = parser.parse_document(
-            file_path[len("file://") :]
+            file_path[len("file:///") :]
         )
         # TODO: Calculate after initial draw
         calculate_frquencies(locations, items, balance, orders)

@@ -52,7 +52,7 @@ lint: venv
 
 package: resources
 	${VENV_ACTIVATE}; pyinstaller --name="Virtual Warehouse" --windowed --clean \
-		--onefile main.py --icon="virtual_warehouse/resources/images/icon.png"
+		--onedir main.py --icon="virtual_warehouse/resources/images/icon.png"
 
 run: resources
 	${PYTHON} main.py

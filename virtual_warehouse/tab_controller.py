@@ -1,3 +1,5 @@
+import locale
+
 from PySide2.QtCore import (
     Property,
     QAbstractListModel,
@@ -9,6 +11,8 @@ from PySide2.QtCore import (
 )
 
 from virtual_warehouse.heatmap import get_heatmap_color
+
+locale.setlocale(locale.LC_ALL, "")
 
 
 class Location(QObject):
@@ -128,7 +132,7 @@ class Order(QObject):
 
     @Property(str, constant=True)
     def date(self):
-        return self._i.delivery_date.strftime("%-d. %-m. %Y")
+        return self._i.delivery_date.strftime("%x")
 
     @Property(str, constant=True)
     def item_id(self):
