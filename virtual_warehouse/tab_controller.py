@@ -188,15 +188,16 @@ class UniversalListModel(QAbstractListModel):
     def clear_checked(self):
         for n in self._checked:
             self._objects[n].set_checked(False)
-        self._checked = []
+        self._checked.clear()
         # TODO: Specify correct range
         self.dataChanged.emit(
             self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
         )
 
-    def set_checked(self, checked):
-        self.clear_checked()
-        self._checked = set(checked)
+    def set_checked(self, checked, control=False):
+        if not control:
+            self.clear_checked()
+        self._checked.update(checked)
         self._update_filter()
         for n in self._checked:
             self._objects[n].set_checked(True)

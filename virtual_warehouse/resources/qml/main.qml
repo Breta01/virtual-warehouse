@@ -189,16 +189,22 @@ ApplicationWindow {
 
                 // TODO: add hover effect using inputHandler
                 onSelectedElementChanged: {
-                    let idx = ViewController.get_selected_idx()
-                    if (idx >= 0) {
-                        surfacePlot.customItemList[idx].textureFile = ":/textures/default.png"
+                    // TODO: Control - selection of multiple locations
+                    var control = false
+                    console.log(Qt.ControlModifier)
+                    for (var i = 0; !control
+                         && i < ViewController.count_selected(); i++) {
+                        var idx = ViewController.get_selected_idx(i)
+                        if (idx >= 0) {
+                            surfacePlot.customItemList[idx].textureFile = ":/textures/default.png"
+                        }
                     }
 
                     if (surfacePlot.selectedCustomItemIndex() !== -1) {
                         let item = surfacePlot.selectedCustomItem()
                         let idx = surfacePlot.selectedCustomItemIndex()
                         item.textureFile = ":/textures/red.png"
-                        ViewController.select_item(idx)
+                        ViewController.select_item(idx, control)
                     }
                 }
             }
@@ -284,7 +290,7 @@ ApplicationWindow {
 
     Connections {
         target: ViewController
-        // TODO: Fix textures
+
         function onModelChanged() {
             surfacePlot.customItemList = []
             for (var row = 0; row < ViewController.model3D.rowCount(); row++) {
@@ -301,6 +307,10 @@ ApplicationWindow {
 
                 surfacePlot.customItemList.push(instance)
             }
+        }
+
+        function onItemSelected() {
+            // TODO: select items based on 2D map
         }
 
         Component.onCompleted: onModelChanged()

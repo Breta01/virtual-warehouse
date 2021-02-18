@@ -94,6 +94,10 @@ class UniversalLocationListModel(QObject):
     def set_data(self, objects):
         self._objects = objects
         self._keys = list(objects.keys())
+        self._name_to_idx = {}
+        for i, k in enumerate(self._keys):
+            for n in self._objects[k].names:
+                self._name_to_idx[n] = i
         if objects:
             self._max_heat = self._get_max_heat()
             self._max_level = max(l._i.coord.z for l in self._objects.values())

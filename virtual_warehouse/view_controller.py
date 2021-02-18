@@ -114,6 +114,7 @@ class ViewController(QObject):
         self._item_model = UniversalListModel(Item)
         self._order_model = UniversalListModel(Order)
 
+        self.selected_idxs = set()
         self.reset_selection()
         self.locations = {}
 
@@ -174,12 +175,32 @@ class ViewController(QObject):
 
     @Slot()
     def switch_view(self):
+        """Switch 2D - 3D model and update selection."""
         self._is2D = not self._is2D
+        self.reset_selection()
+        names = self._location_model._checked
+        for name in self._location_model._checked:
+            idx = self.model._name_to_idx[name]
+            self.selected_idxs.add(idx)
+        self.itemSelected.emit()
 
-    @Slot(int)
-    def select_item(self, idx):
-        self.selected_idx = idx
+    @Slot(str, bool)
+    def checked_location(self, selected, val):
+        """Location checked in tab list."""
+        idx = self.model._name_to_idx[selected]
+        if val:
+            self.selected_idxs.add(idx)
+        else:
+            self.selected_idxs.discard(idx)
+        self.itemSelected.emit()
+
+    @Slot(int, bool)
+    def select_item(self, idx, control=False):
+        """Location selected from map (CTRL adds location)."""
+        if not control:
+            self.reset_selection()
         if idx >= 0:
+            self.selected_idxs.add(idx)
             names = self.model._get_idx(idx).names
             self._location_model.set_checked(names)
             self._sidebar_model.set_selected(names)
@@ -197,13 +218,18 @@ class ViewController(QObject):
             self._sidebar_model.set_hovered([], False)
         self.sidebarChanged.emit()
 
+    @Slot(int, result=int)
+    def get_selected_idx(self, idx):
+        return list(self.selected_idxs)[idx]
+
+    # TODO: Property might be better
     @Slot(result=int)
-    def get_selected_idx(self):
-        return self.selected_idx
+    def count_selected(self):
+        return len(self.selected_idxs)
 
     @Slot()
     def reset_selection(self):
-        self.selected_idx = -1
+        self.selected_idxs.clear()
 
     @Slot(str)
     def load(self, file_path):

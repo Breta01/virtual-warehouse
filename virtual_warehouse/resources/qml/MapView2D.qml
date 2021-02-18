@@ -12,6 +12,10 @@ Canvas {
 
     // handler to override for drawing
     onPaint: {
+        if (!ViewController.is2D()) {
+            return
+        }
+
         var ctx = getContext("2d")
         // background
         ctx.fillStyle = "#4d4d4f"
@@ -23,23 +27,9 @@ Canvas {
         var params = getDrawParams()
         var item, heat
 
-        // Draw selected item
-        var idx = ViewController.get_selected_idx()
-        if (idx >= 0) {
-            item = ViewController.model2D.get(idx)
-            ctx.fillStyle = "red"
-            ctx.fillRect((item.x - min_x) * params.coef + params.padding_x,
-                         (item.y - min_y) * params.coef + params.padding_y,
-                         item.width * params.coef, item.length * params.coef)
-        }
-
         // TODO: speed up drawing - sort by z coordinate?
         // Draw Floor first
         for (var row = 0; row < ViewController.model2D.rowCount(); row++) {
-            if (row === idx) {
-                continue
-            }
-
             item = ViewController.model2D.get(row)
 
             if (item.type === "floor") {
@@ -58,10 +48,6 @@ Canvas {
         }
 
         for (row = 0; row < ViewController.model2D.rowCount(); row++) {
-            if (row === idx) {
-                continue
-            }
-
             item = ViewController.model2D.get(row)
 
             if (item.type !== "floor") {
@@ -80,6 +66,18 @@ Canvas {
                              (item.y - min_y) * params.coef + params.padding_y,
                              item.width * params.coef,
                              item.length * params.coef)
+            }
+        }
+
+        // Draw selected item
+        for (var i = 0; i < ViewController.count_selected(); i++) {
+            var idx = ViewController.get_selected_idx(i)
+            if (idx >= 0) {
+                item = ViewController.model2D.get(idx)
+                ctx.fillStyle = "red"
+                ctx.fillRect((item.x - min_x) * params.coef + params.padding_x,
+                             (item.y - min_y) * params.coef + params.padding_y,
+                             item.width * params.coef, item.length * params.coef)
             }
         }
     }
@@ -303,15 +301,17 @@ Canvas {
                     y2 = y1 + item.length * params.coef
                     if (x1 <= mouseX && mouseX <= x2 && y1 <= mouseY
                             && mouseY <= y2) {
-                        ViewController.select_item(row)
+
+                        // Holding CTRL - adding location
+                        ViewController.select_item(row, mouse.modifiers & Qt.ControlModifier)
                         // TODO: Speed up drawing - extra canvas, less items...
-                        mapView2D.requestPaint()
+                        // mapView2D.requestPaint()
                         return
                     }
                 }
             }
 
-            ViewController.select_item(-1)
+            ViewController.select_item(-1, false)
         }
 
         onPositionChanged: {
@@ -344,6 +344,9 @@ Canvas {
             mapView2D.requestPaint()
         }
         function onDrawModeChanged() {
+            mapView2D.requestPaint()
+        }
+        function onItemSelected() {
             mapView2D.requestPaint()
         }
     }

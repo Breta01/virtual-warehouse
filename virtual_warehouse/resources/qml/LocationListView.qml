@@ -67,8 +67,11 @@ Item {
                 width: 36
                 height: 36
 
-                onClicked: ViewController.location_model.check(
-                               model.object.name, checked)
+                onClicked: {
+                    ViewController.location_model.check(model.object.name,
+                                                        checked)
+                    ViewController.checked_location(model.object.name, checked)
+                }
             }
 
 
