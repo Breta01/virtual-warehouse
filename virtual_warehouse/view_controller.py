@@ -119,9 +119,9 @@ class ViewController(QObject):
         self.locations = {}
 
         # DEBUG:
-        self.load(
-            "file:///home/breta/Documents/github/virtual-warehouse/data/warehouse_no_1_v2.xlsx"
-        )
+        # self.load(
+        #     "file:///home/breta/Documents/github/virtual-warehouse/data/warehouse_no_1_v2.xlsx"
+        # )
 
     modelChanged = Signal()
     sidebarChanged = Signal()

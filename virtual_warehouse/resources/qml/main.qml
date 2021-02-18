@@ -27,38 +27,39 @@ ApplicationWindow {
                 text: qsTr("&Open")
                 onTriggered: openDialog.open()
             }
-            MenuItem {
-                text: qsTr("&Save As...")
-            }
+//            MenuItem {
+//                text: qsTr("&Save As...")
+//            }
             MenuItem {
                 text: qsTr("&Quit")
                 onTriggered: Qt.quit()
             }
         }
 
-        Menu {
-            title: qsTr("&Edit")
+//        Menu {
+//            title: qsTr("&Edit")
 
-            MenuItem {
-                text: qsTr("&Copy")
-            }
-            MenuItem {
-                text: qsTr("Cu&t")
-            }
-            MenuItem {
-                text: qsTr("&Paste")
-            }
-        }
+//            MenuItem {
+//                text: qsTr("&Copy")
+//            }
+//            MenuItem {
+//                text: qsTr("Cu&t")
+//            }
+//            MenuItem {
+//                text: qsTr("&Paste")
+//            }
+//        }
 
         Menu {
             title: qsTr("&Options")
 
             MenuItem {
                 text: qsTr("&Help")
+                onTriggered: helpDialog.open()
             }
-            MenuItem {
-                text: qsTr("&Settings")
-            }
+//            MenuItem {
+//                text: qsTr("&Settings")
+//            }
         }
     }
 
@@ -83,6 +84,7 @@ ApplicationWindow {
             flat: true
             Material.foreground: "white"
             implicitWidth: 40
+            visible: mapView2D.visible
             z: 1
 
             background: Rectangle {
@@ -191,7 +193,6 @@ ApplicationWindow {
                 onSelectedElementChanged: {
                     // TODO: Control - selection of multiple locations
                     var control = false
-                    console.log(Qt.ControlModifier)
                     for (var i = 0; !control
                          && i < ViewController.count_selected(); i++) {
                         var idx = ViewController.get_selected_idx(i)
@@ -286,6 +287,22 @@ ApplicationWindow {
         nameFilters: ["Excel file (*.xls, *.xlsx)", "CSV file (*.csv)"]
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         onAccepted: ViewController.load(openDialog.fileUrl)
+    }
+
+    Dialog {
+        id: helpDialog
+        title: "Help"
+        standardButtons: StandardButton.Close
+
+        Rectangle {
+            implicitWidth: 400
+            implicitHeight: 100
+            color: "transparent"
+
+            Text {
+                text: "TODO: Add link to documentation"
+            }
+        }
     }
 
     Connections {

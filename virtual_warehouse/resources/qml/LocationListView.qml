@@ -43,18 +43,18 @@ Item {
                 anchors.bottom: locationZone.bottom
             }
 
-            RoundButton {
-                icon.source: "qrc:/images/menu_icon.png"
-                id: roundButton
-                width: 36
-                height: 36
-                anchors.right: locationCheckButton.left
-                anchors.top: parent.top
-                anchors.topMargin: 5
-                padding: 8
-                anchors.rightMargin: 0
-                flat: true
-            }
+//            RoundButton {
+//                icon.source: "qrc:/images/menu_icon.png"
+//                id: roundButton
+//                width: 36
+//                height: 36
+//                anchors.right: locationCheckButton.left
+//                anchors.top: parent.top
+//                anchors.topMargin: 5
+//                padding: 8
+//                anchors.rightMargin: 0
+//                flat: true
+//            }
 
             CheckDelegate {
                 id: locationCheckButton
@@ -74,20 +74,6 @@ Item {
                 }
             }
 
-
-            /*
-           RoundButton {
-               icon.source: "qrc:/images/close_icon.png"
-               id: locationCloseButton
-               width: 36
-               height: 36
-               anchors.right: parent.right
-               anchors.top: parent.top
-               anchors.topMargin: 5
-               padding: 8
-               anchors.rightMargin: 8
-               flat: true
-           }*/
             Text {
                 id: locationID
                 text: model.object.name

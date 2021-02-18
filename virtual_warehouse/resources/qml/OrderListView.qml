@@ -43,18 +43,18 @@ Item {
                 anchors.bottom: orderContentQty.bottom
             }
 
-            RoundButton {
-                icon.source: "qrc:/images/menu_icon.png"
-                id: orderMenuButton
-                width: 36
-                height: 36
-                anchors.right: orderCheckButton.left
-                anchors.top: parent.top
-                anchors.topMargin: 5
-                padding: 8
-                anchors.rightMargin: 0
-                flat: true
-            }
+//            RoundButton {
+//                icon.source: "qrc:/images/menu_icon.png"
+//                id: orderMenuButton
+//                width: 36
+//                height: 36
+//                anchors.right: orderCheckButton.left
+//                anchors.top: parent.top
+//                anchors.topMargin: 5
+//                padding: 8
+//                anchors.rightMargin: 0
+//                flat: true
+//            }
 
             CheckDelegate {
                 id: orderCheckButton

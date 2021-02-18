@@ -43,18 +43,18 @@ Item {
                 anchors.bottom: itemZone.bottom
             }
 
-            RoundButton {
-                icon.source: "qrc:/images/menu_icon.png"
-                id: itemMenuButton
-                width: 36
-                height: 36
-                anchors.right: itemCheckButton.left
-                anchors.top: parent.top
-                anchors.topMargin: 5
-                padding: 8
-                anchors.rightMargin: 0
-                flat: true
-            }
+//            RoundButton {
+//                icon.source: "qrc:/images/menu_icon.png"
+//                id: itemMenuButton
+//                width: 36
+//                height: 36
+//                anchors.right: itemCheckButton.left
+//                anchors.top: parent.top
+//                anchors.topMargin: 5
+//                padding: 8
+//                anchors.rightMargin: 0
+//                flat: true
+//            }
 
             CheckDelegate {
                 id: itemCheckButton
