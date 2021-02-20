@@ -7,6 +7,7 @@ from PySide2.QtCore import (
     QRunnable,
     Qt,
     QThreadPool,
+    QUrl,
     Signal,
     Slot,
 )
@@ -241,7 +242,7 @@ class ViewController(QObject):
     def _load(self, file_path):
         print(file_path)
         locations, items, balance, orders = parser.parse_document(
-            file_path[len("file:///") :]
+            QUrl(file_path).toLocalFile()
         )
         # TODO: Calculate after initial draw
         calculate_frquencies(locations, items, balance, orders)

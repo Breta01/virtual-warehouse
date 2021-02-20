@@ -27,29 +27,28 @@ ApplicationWindow {
                 text: qsTr("&Open")
                 onTriggered: openDialog.open()
             }
-//            MenuItem {
-//                text: qsTr("&Save As...")
-//            }
+            //            MenuItem {
+            //                text: qsTr("&Save As...")
+            //            }
             MenuItem {
                 text: qsTr("&Quit")
                 onTriggered: Qt.quit()
             }
         }
 
-//        Menu {
-//            title: qsTr("&Edit")
+        //        Menu {
+        //            title: qsTr("&Edit")
 
-//            MenuItem {
-//                text: qsTr("&Copy")
-//            }
-//            MenuItem {
-//                text: qsTr("Cu&t")
-//            }
-//            MenuItem {
-//                text: qsTr("&Paste")
-//            }
-//        }
-
+        //            MenuItem {
+        //                text: qsTr("&Copy")
+        //            }
+        //            MenuItem {
+        //                text: qsTr("Cu&t")
+        //            }
+        //            MenuItem {
+        //                text: qsTr("&Paste")
+        //            }
+        //        }
         Menu {
             title: qsTr("&Options")
 
@@ -57,9 +56,9 @@ ApplicationWindow {
                 text: qsTr("&Help")
                 onTriggered: helpDialog.open()
             }
-//            MenuItem {
-//                text: qsTr("&Settings")
-//            }
+            //            MenuItem {
+            //                text: qsTr("&Settings")
+            //            }
         }
     }
 
@@ -326,8 +325,7 @@ ApplicationWindow {
             }
         }
 
-        function onItemSelected() {
-            // TODO: select items based on 2D map
+        function onItemSelected() {// TODO: select items based on 2D map
         }
 
         Component.onCompleted: onModelChanged()
