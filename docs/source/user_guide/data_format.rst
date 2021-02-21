@@ -1,21 +1,38 @@
-# Input Description
+.. _guide/data_format:
+
+=================
+Input Description
+=================
+
 Input should be in form of tabular data (ideally CSV or excel).
 
-## Data Structure
+
+Data Structure
+==============
+
 Data consists of 5 tables
 
-### XYZ Coordinates
+XYZ Coordinates
+---------------
+
 Describes the positions of locations in the warehouse.  
-Columns:
+
+Columns
+*******
 
 - Location name
 - X coord.
 - Y coord.
 - Z coord.
 
-### Location Master
-Describes properties of individual location. Optional columns are for areas storing items.  
-Columns:
+Location Master
+---------------
+
+Describes properties of individual location. Optional columns are for areas storing items.
+
+Columns
+*******
+
 - Location name (same as in XYZ table)
 - Location type
 - Location class
@@ -28,9 +45,14 @@ Columns:
 - *Weight units (optional)*
 - *Zone (optional)*
 
-### Item Master
-Describes individual items which may occure in warehouse. For each item there can be multiple levels of packaging.  
-Columns:
+Item Master
+-----------
+
+Describes individual items which may occure in warehouse. For each item there can be multiple levels of packaging.
+
+Columns
+*******
+
 - Item ID
 - Description
 - Goods type
@@ -53,9 +75,13 @@ Columns:
 - Weight unit of measure (2. lvl unit)
 - ... (more levels)
 
-### Inventory Balance
-Description of current warehouse inventory (matching location master with item master).  
-Columns:
+Inventory Balance
+-----------------
+
+Description of current warehouse inventory (matching location master with item master).
+
+Columns
+*******
 - Inventory as at (date of snapshot)
 - Location
 - Location type
@@ -67,9 +93,14 @@ Columns:
 - Allocated quantity
 - Suspense quantity
 
-### Order list
+Order list
+----------
+
 List of all orderds up until now.  
-Columns:
+
+Columns
+*******
+
 - Order ID
 - Direction (outbound, inbound)
 - *Ship to country (optional)*
