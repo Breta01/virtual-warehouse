@@ -6,5 +6,10 @@ User Guide
 
 Detailed user guide into different aspects of the program.
 
+.. toctree::
+   :maxdepth: 1
+
+   data_format
+
 
 
