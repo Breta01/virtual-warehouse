@@ -169,7 +169,7 @@ class UniversalListModel(QAbstractListModel):
     def set_data(self, objects):
         self._objects = {k: self._object_class(v) for k, v in objects.items()}
 
-    def set_selected(self, selected, check=False):
+    def set_selected(self, selected, checkFalse):
         self._selected = selected
         self._all_selected = selected
         if check:

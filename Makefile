@@ -1,4 +1,4 @@
-.PHONY: help bootstrap lint clean
+.PHONY: help bootstrap lint clean docs
 
 SHELL=/bin/bash
 
@@ -24,6 +24,8 @@ help:
 	@echo "        Create packaged application"
 	@echo "    make run"
 	@echo "        Run application"
+	@echo "    make docs"
+	@echo "        Generate HTML documentation"
 	@echo "    make clean"
 	@echo "        Clean repository"
 
@@ -56,6 +58,9 @@ package: resources
 
 run: resources
 	${PYTHON} main.py
+
+docs:
+	${VENV_ACTIVATE}; cd docs; make html
 
 clean:
 	find . -name '*.pyc' -exec rm --force {} +

@@ -10,4 +10,5 @@ pylint==2.5.3
 
 # Documentation
 sphinx
-furo
+pydata-sphinx-theme
+# furo
