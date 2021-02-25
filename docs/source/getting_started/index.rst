@@ -4,7 +4,7 @@
 Getting Started
 ===============
 
-This is short introduction into running Virtual Warehouse program. After this tutorial you should be able to start the application and load sample data.
+This is a short introduction to running the Virtual Warehouse program. After this tutorial, you should be able to start the application and load sample data.
 
 You can run the application from :ref:`pre-build package <Installation (pre-build)>` (recommended) or :ref:`build it from source <Installation (from source)>` (good for further development).
 
@@ -14,7 +14,7 @@ Installation (pre-build)
 
 1. First download the latest executable for your OS:
 
-.. tab:: Unix (Linux / MacOS)
+.. tab:: Unix (Linux / macOS)
 
    :download:`virtual-warehouse_linux.zip <https://drive.google.com/file/d/1dOpJeUEHHL79EZ7MNEoo-NDB2y56YMjw/view?usp=sharing>`
 
@@ -25,7 +25,7 @@ Installation (pre-build)
 
 2. Extract the archive (and enter directory):
 
-.. tab:: Unix (Linux / MacOS)
+.. tab:: Unix (Linux / macOS)
 
    .. code-block:: bash
 
@@ -42,7 +42,7 @@ Installation (pre-build)
 3. Run the executable:
 
 
-.. tab:: Unix (Linux / MacOS)
+.. tab:: Unix (Linux / macOS)
 
    .. code-block:: bash
 
@@ -65,18 +65,17 @@ Application requires **Python 3** and following requirements:
 
 
 
-It is recommended to use `Makefile <https://github.com/Breta01/virtual-warehouse/blob/master/Makefile>`_ if possible. It installs all requirements (creating separate virtual environment). Build project using following command:
+It is recommended to use `Makefile <https://github.com/Breta01/virtual-warehouse/blob/master/Makefile>`_ if possible. It installs all requirements (creating a separate virtual environment). Build the project using the following command:
 
 .. warning::
 
    make.bat is not available right now
 
-.. tab:: Unix (Linux / MacOS)
+.. tab:: Unix (Linux / macOS)
 
    .. code-block:: bash
 
       make install
-
 
 .. tab:: Windows
 
@@ -87,14 +86,13 @@ It is recommended to use `Makefile <https://github.com/Breta01/virtual-warehouse
       start "Virtual Warehouse.exe"
 
 
-Run the application by running the `main.py <https://github.com/Breta01/virtual-warehouse/blob/master/main.py>`_ file in root directory. Also possible using Makefile:
+Run the application by running the `main.py <https://github.com/Breta01/virtual-warehouse/blob/master/main.py>`_ file in the root directory. You can also use Makefile:
 
-.. tab:: Unix (Linux / MacOS)
+.. tab:: Unix (Linux / macOS)
 
    .. code-block:: bash
 
       make run
-
 
 .. tab:: Windows
 
@@ -103,19 +101,13 @@ Run the application by running the `main.py <https://github.com/Breta01/virtual-
       make.bat run
 
 
-
-
-
-
-
-
 Example Usage
 =============
 
 For start download sample data :download:`warehouse_no_1_v2.xlsx <https://github.com/Breta01/virtual-warehouse/raw/master/data/warehouse_no_1_v2.xlsx>` (more about data format: :ref:`guide/data_format`)
 
 1. Run the application.
-2. In main menu click on: ``File > Open`` and select downloaded file.
-3. After short loading you should see 2D map of warehouse.
+2. In the main menu click on: ``File > Open`` and select the downloaded file.
+3. After short loading you should see a 2D map of a warehouse.
 
-Then you can explore sidepanel with description of locations, items or orders. You can also display heatmap statistics. More about user interface and different functions at :ref:`guide/ui`.
+Then you can explore the sidebar with a description of locations, items or orders. You can also display heat map statistics. More about user interface and different functions at :ref:`guide/ui`.
