@@ -12,17 +12,21 @@
 
    getting_started/index
    user_guide/index
+   development/index
    reference/index
 
 
-Welcome to Virtual Warehouse's documentation!
-=============================================
+Virtual Warehouse's Documentation
+=================================
 
+Application of visualisation of warehouse.
 
-Indices and tables
-==================
+- :ref:`intro` - how to run the application.
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+- :ref:`guide` - for more information about the user interface and usage of the program.
+
+- :ref:`dev` - for more information about architecture and development process.
+
+- :ref:`api` - API description of main functions and classes.
+
 

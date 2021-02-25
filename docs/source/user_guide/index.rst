@@ -9,8 +9,8 @@ Detailed user guide into different aspects of the program.
 .. toctree::
    :maxdepth: 1
 
-   data_format
    user_interface
+   data_format
 
 
 
