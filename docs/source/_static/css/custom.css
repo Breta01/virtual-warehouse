@@ -1,0 +1,13 @@
+.tab-set label {
+    margin-bottom: 0;
+}
+
+.tab-set .tab-content {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.tab-content pre {
+    border: none;
+    box-shadow: none;
+}

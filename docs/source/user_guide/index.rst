@@ -10,6 +10,7 @@ Detailed user guide into different aspects of the program.
    :maxdepth: 1
 
    data_format
+   user_interface
 
 
 

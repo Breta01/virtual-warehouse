@@ -1,4 +1,4 @@
-.PHONY: help bootstrap lint clean docs
+.PHONY: help install lint clean docs
 
 SHELL=/bin/bash
 
@@ -14,7 +14,7 @@ PYTHON=${VENV_NAME}/bin/python3
 .DEFAULT: help
 help:
 	@echo "Make file commands:"
-	@echo "    make bootstrap"
+	@echo "    make install"
 	@echo "        Prepare complete development environment"
 	@echo "    make lint"
 	@echo "        Run pylint and mypy"
@@ -29,7 +29,7 @@ help:
 	@echo "    make clean"
 	@echo "        Clean repository"
 
-bootstrap:
+install:
 	sudo apt-get -y install build-essential python3.7
 	python3.7 -m pip install pip
 	python3.7 -m pip install virtualenv
@@ -54,7 +54,7 @@ lint: venv
 
 package: resources
 	${VENV_ACTIVATE}; pyinstaller --name="Virtual Warehouse" --windowed --clean \
-		--onedir main.py --icon="virtual_warehouse/resources/images/icon.png"
+		--onefile main.py --icon="virtual_warehouse/resources/images/icon.png"
 
 run: resources
 	${PYTHON} main.py

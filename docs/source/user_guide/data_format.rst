@@ -4,7 +4,7 @@
 Input Description
 =================
 
-Input should be in form of tabular data (ideally CSV or excel).
+Input should be in form of tabular data excel (in future also CSV).
 
 
 Data Structure

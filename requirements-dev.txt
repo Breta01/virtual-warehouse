@@ -11,4 +11,5 @@ pylint==2.5.3
 # Documentation
 sphinx
 pydata-sphinx-theme
+sphinx-inline-tabs
 # furo

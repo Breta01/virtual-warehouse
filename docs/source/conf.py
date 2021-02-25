@@ -40,13 +40,18 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.mathjax",
     "sphinx.ext.linkcode",
+    "sphinx_inline_tabs",
+    "sphinx.ext.autosectionlabel",
 ]
+
+
+autosectionlabel_maxdepth = 2
 
 autosummary_generate = True
 
+add_module_names = False
 autoclass_content = "both"  # Add __init__ docstring to class def
 autodoc_typehints = "description"
-add_module_names = False
 autodoc_default_options = {
     "members": True,
     # 'special-members': '__init__',
@@ -94,6 +99,10 @@ html_context = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+html_css_files = [
+    "css/custom.css",
+]
+
 # Footer
 html_show_sphinx = False
 
@@ -104,7 +113,6 @@ napoleon_use_admonition_for_examples = True
 napoleon_use_admonition_for_notes = True
 napoleon_use_admonition_for_references = True
 napoleon_use_rtype = False  # Don't make separate field for return type
-
 
 # based on numpy doc/source/conf.py
 def linkcode_resolve(domain, info):
