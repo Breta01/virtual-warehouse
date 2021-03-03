@@ -4,9 +4,8 @@ from PySide2.QtCore import (
     QAbstractListModel,
     QModelIndex,
     QObject,
-    QRunnable,
     Qt,
-    QThreadPool,
+    QThread,
     QUrl,
     Signal,
     Slot,
@@ -28,20 +27,24 @@ from virtual_warehouse.tab_controller import (
 )
 
 
-class Worker(QRunnable):
-    """Worker thread - runs provided function with given parameters."""
+class DataLoaderThread(QThread):
+    """Thread which loads data from file."""
 
-    def __init__(self, fn, *args, **kwargs):
-        super(Worker, self).__init__()
-        # Store constructor arguments (re-used for processing)
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
+    dataReady = Signal(object)
 
-    @Slot()
+    def __init__(self, file_path):
+        super(DataLoaderThread, self).__init__()
+        self.file_path = file_path
+
     def run(self):
         """Initialise the runner function with passed args, kwargs."""
-        self.fn(*self.args, **self.kwargs)
+        locations, items, balance, orders = parser.parse_document(
+            QUrl(self.file_path).toLocalFile()
+        )
+        # TODO: Calculate after initial draw
+        calculate_frquencies(locations, items, balance, orders)
+        self.data = (locations, items, balance, orders)
+        self.dataReady.emit(self.data)
 
 
 class Map(QObject):
@@ -97,7 +100,6 @@ class Map(QObject):
 class ViewController(QObject):
     def __init__(self, parent=None):
         super(ViewController, self).__init__(parent)
-        self.threadpool = QThreadPool()
 
         self._is2D = True
         self._is_heatmap = False
@@ -119,6 +121,8 @@ class ViewController(QObject):
         self.reset_selection()
         self.locations = {}
 
+        self._progress_value = 1
+
         # DEBUG:
         # self.load(
         #     "file:///home/breta/Documents/github/virtual-warehouse/data/warehouse_no_1_v2.xlsx"
@@ -128,6 +132,7 @@ class ViewController(QObject):
     sidebarChanged = Signal()
     drawModeChanged = Signal()
     itemSelected = Signal()
+    progressChanged = Signal()
 
     @Property(QObject, constant=False, notify=modelChanged)
     def map(self):
@@ -164,6 +169,15 @@ class ViewController(QObject):
     @Property(bool, constant=False, notify=drawModeChanged)
     def is_heatmap(self):
         return self._is_heatmap
+
+    @Property(float, constant=False, notify=progressChanged)
+    def progress_value(self):
+        return self._progress_value
+
+    @progress_value.setter
+    def set_progress_value(self, val):
+        self._progress_value = val
+        self.progressChanged.emit()
 
     @Slot(result=bool)
     def is2D(self):
@@ -234,18 +248,15 @@ class ViewController(QObject):
 
     @Slot(str)
     def load(self, file_path):
-        self._load(file_path)
-        # TODO: Threading
-        # worker = Worker(self._load, file_path)
-        # self.threadpool.start(worker)
+        self.progress_value = 0
+        self.loader = DataLoaderThread(file_path)
+        self.loader.dataReady.connect(self._load, Qt.QueuedConnection)
+        self.loader.start()
 
-    def _load(self, file_path):
-        print(file_path)
-        locations, items, balance, orders = parser.parse_document(
-            QUrl(file_path).toLocalFile()
-        )
-        # TODO: Calculate after initial draw
-        calculate_frquencies(locations, items, balance, orders)
+    def _load(self, data):
+        # TODO: Split loading into multiple steps, update progress bar
+        #       updating progress bar requires extra thread
+        locations, items, balance, orders = data
 
         self.reset_selection()
         self.locations = locations
@@ -276,6 +287,7 @@ class ViewController(QObject):
         self._model2D.set_data(multi_loc)
 
         self.modelChanged.emit()
+        self.progress_value = 1
 
     def _cluster_locations(self, locations):
         coord_to_locations = {}

@@ -63,6 +63,47 @@ ApplicationWindow {
     }
 
     Item {
+        id: loadingOverlay
+        width: parent.width
+        anchors.top: menuBar.bottom
+        anchors.bottom: parent.bottom
+        z: 300
+        visible: progressBar.value != 1
+
+        Rectangle {
+            opacity: 0.4
+            anchors.fill: parent
+            color: "#29323c"
+            border.width: 0
+
+            MouseArea {
+                anchors.fill: parent
+                propagateComposedEvents: false
+                hoverEnabled: true
+                preventStealing: true
+            }
+        }
+
+        Rectangle {
+            height: 20
+            width: 220
+            color: "white"
+            border.width: 0
+            radius: 2
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+
+            ProgressBar {
+                id: progressBar
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                value: ViewController.progress_value
+                indeterminate: (value == 0)
+            }
+        }
+    }
+
+    Item {
         id: contentView
         x: 0
         y: 0
