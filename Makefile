@@ -46,7 +46,7 @@ $(VENV_NAME)/bin/activate: requirements.txt requirements-dev.txt
 	touch $(VENV_NAME)/bin/activate
 
 resources:
-	${VENV_ACTIVATE}; pyside2-rcc virtual_warehouse/main.qrc > virtual_warehouse/main_rc.py
+	${VENV_ACTIVATE}; pyside2-rcc virtual_warehouse/main.qrc -o virtual_warehouse/main_rc.py
 
 lint: venv
 	${PYTHON} -m pylint virtual_warehouse
