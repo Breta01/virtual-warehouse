@@ -53,6 +53,7 @@ Installation (pre-build)
 
    .. code-block:: bash
 
+      # Double-click "Virtual Warehouse.exe" or run in command line:
       start "Virtual Warehouse.exe"
 
 
