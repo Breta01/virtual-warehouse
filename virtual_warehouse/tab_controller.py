@@ -154,15 +154,19 @@ class Order(QObject):
 class UniversalListModel(QAbstractListModel):
     ObjectRole = Qt.UserRole + 1
 
-    def __init__(self, object_class, objects={}, selected_objects=[], parent=None):
+    def __init__(self, object_class, objects=None, selected_objects=[], parent=None):
         super(UniversalListModel, self).__init__(parent)
         self._object_class = object_class
-        self._objects = {k: self._object_class(v) for k, v in objects.items()}
-        self._selected = selected_objects
-        self._all_selected = selected_objects
+        self._selected = [] if selected_objects is None else selected_objects
+        self._all_selected = self._selected
         self._checked = set()
         self._search = ""
         self._filter = 0
+
+        if objects is None:
+            self._objects = {}
+        else:
+            self._objects = {k: self._object_class(v) for k, v in objects.items()}
 
     filterChanged = Signal()
 
@@ -251,17 +255,21 @@ class HoverListModel(UniversalListModel):
     def __init__(
         self,
         object_class,
-        objects={},
-        selected_objects=[],
-        hovered_objects=[],
+        objects=None,
+        selected_objects=None,
+        hovered_objects=None,
         parent=None,
     ):
         super(UniversalListModel, self).__init__(parent)
         self._object_class = object_class
-        self._objects = {k: self._object_class(v) for k, v in objects.items()}
-        self._selected = selected_objects
-        self._hovered = hovered_objects
+        self._selected = [] if selected_objects is None else selected_objects
+        self._hovered = [] if hovered_objects is None else hovered_objects
         self._is_hovered = False
+
+        if objects is None:
+            self._objects = {}
+        else:
+            self._objects = {k: self._object_class(v) for k, v in objects.items()}
 
     def set_selected(self, selected):
         self._selected = list(reversed(selected))

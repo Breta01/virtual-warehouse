@@ -83,10 +83,10 @@ class UniversalLocationListModel(QObject):
     maxChanged = Signal()
     levelChanged = Signal()
 
-    def __init__(self, on_change, objects={}, parent=None):
+    def __init__(self, on_change, objects=None, parent=None):
         super(UniversalLocationListModel, self).__init__(parent)
         self._on_change = on_change
-        self.set_data(objects)
+        self.set_data({} if objects is None else objects)
         self._max_heat = 0
         self._level = -1
         self._max_level = 1

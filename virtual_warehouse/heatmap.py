@@ -1,4 +1,4 @@
-from matplotlib import cm
+from matplotlib.cm import viridis
 
 
 def item_locations(locations, items, balance):
@@ -25,5 +25,5 @@ def calculate_frquencies(locations, items, balance, orders):
 
 def get_heatmap_color(val):
     """Convert 0-1 value into #RRGGBB color."""
-    v = cm.viridis(val, bytes=True)
+    v = viridis(val, bytes=True)
     return f"#{v[0]:02X}{v[1]:02X}{v[2]:02X}"

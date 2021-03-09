@@ -37,7 +37,8 @@ class DataLoaderThread(QThread):
         self.file_path = file_path
 
     def run(self):
-        """Initialise the runner function with passed args, kwargs."""
+        """Load data from file path and emit data through signal."""
+        # TODO: Split on loading of individual elements, measure speed?
         locations, items, balance, orders = parser.parse_document(
             QUrl(self.file_path).toLocalFile()
         )
@@ -104,12 +105,8 @@ class ViewController(QObject):
         self._is2D = True
         self._is_heatmap = False
 
-        self._model3D = UniversalLocationListModel(
-            on_change=lambda: self.modelChanged.emit()
-        )
-        self._model2D = UniversalLocationListModel(
-            on_change=lambda: self.modelChanged.emit()
-        )
+        self._model3D = UniversalLocationListModel(on_change=self.modelChanged.emit)
+        self._model2D = UniversalLocationListModel(on_change=self.modelChanged.emit)
         self._map = Map()
 
         self._sidebar_model = HoverListModel(Location)
