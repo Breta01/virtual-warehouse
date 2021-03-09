@@ -145,6 +145,6 @@ class UniversalLocationListModel(QObject):
         return None
 
     def roleNames(self):
-        roles = dict()
+        roles = {}
         roles[UniversalListModel.ObjectRole] = b"object"
         return roles
