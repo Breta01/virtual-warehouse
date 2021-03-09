@@ -1,14 +1,10 @@
 from PySide2.QtCore import (
     Property,
-    QAbstractListModel,
     QModelIndex,
     QObject,
-    QRunnable,
     Qt,
-    QThreadPool,
     Signal,
-    Slot,
-)
+    Slot)
 
 from virtual_warehouse.environment import LOCATION_TYPE_MAP
 from virtual_warehouse.heatmap import get_heatmap_color
