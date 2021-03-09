@@ -50,7 +50,3 @@ def convert_date(date, fmt="%d.%m.%Y"):
     if date:
         return datetime.strptime(date, fmt)
     return None
-
-
-def create_gridmap(locations, resolution):
-    pass

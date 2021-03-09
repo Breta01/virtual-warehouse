@@ -113,6 +113,8 @@ class Order:
 
 @dataclass
 class Inventory:
+    """Description of inventory balance for given date and location."""
+
     date: str
     location_id: str
     ltype: str

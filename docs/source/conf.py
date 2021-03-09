@@ -116,9 +116,7 @@ napoleon_use_rtype = False  # Don't make separate field for return type
 
 # based on numpy doc/source/conf.py
 def linkcode_resolve(domain, info):
-    """
-    Determine the URL corresponding to Python object
-    """
+    """Determine the URL corresponding to Python object."""
     if domain != "py":
         return None
 

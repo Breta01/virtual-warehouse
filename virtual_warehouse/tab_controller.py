@@ -152,9 +152,11 @@ class Order(QObject):
 
 
 class UniversalListModel(QAbstractListModel):
+    """Universal class for holding lists in sidebar tabs (locations, items, orders)."""
+
     ObjectRole = Qt.UserRole + 1
 
-    def __init__(self, object_class, objects=None, selected_objects=[], parent=None):
+    def __init__(self, object_class, objects=None, selected_objects=None, parent=None):
         super(UniversalListModel, self).__init__(parent)
         self._object_class = object_class
         self._selected = [] if selected_objects is None else selected_objects
@@ -250,6 +252,8 @@ class UniversalListModel(QAbstractListModel):
 
 
 class HoverListModel(UniversalListModel):
+    """List model for displaying location side view for hovered/selected location."""
+
     ObjectRole = Qt.UserRole + 1
 
     def __init__(

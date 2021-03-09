@@ -7,6 +7,7 @@ from virtual_warehouse.location_models import (
     SingleLocation,
     UniversalLocationListModel,
 )
+from virtual_warehouse.location_utils import cluster_locations
 from virtual_warehouse.tab_controller import (
     HoverListModel,
     Item,
@@ -88,6 +89,8 @@ class Map(QObject):
 
 
 class ViewController(QObject):
+    """Main controller which communicates with QML GUI."""
+
     def __init__(self, parent=None):
         super(ViewController, self).__init__(parent)
 
@@ -266,7 +269,7 @@ class ViewController(QObject):
             {k: SingleLocation(v) for k, v in self.locations.items()}
         )
 
-        clusters = self._cluster_locations(self.locations)
+        clusters = cluster_locations(self.locations)
         multi_loc = {}
         for k, v in clusters.items():
             multi_loc[k] = MultiLocation([self.locations[l] for l in v])
@@ -274,13 +277,3 @@ class ViewController(QObject):
 
         self.modelChanged.emit()
         self.progress_value = 1
-
-    def _cluster_locations(self, locations):
-        coord_to_locations = {}
-
-        for key, loc in locations.items():
-            if not loc.coord.get_2d() in coord_to_locations:
-                coord_to_locations[loc.coord.get_2d()] = []
-            coord_to_locations[loc.coord.get_2d()].append(key)
-
-        return coord_to_locations

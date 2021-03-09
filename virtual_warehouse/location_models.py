@@ -68,6 +68,8 @@ class MultiLocation:
 
 
 class UniversalLocationListModel(QObject):
+    """List model providing locations for 2D or 3D view."""
+
     ObjectRole = Qt.UserRole + 1
 
     maxChanged = Signal()

@@ -30,16 +30,16 @@ help:
 	@echo "        Clean repository"
 
 install:
-	sudo apt-get -y install build-essential python3.7
-	python3.7 -m pip install pip
-	python3.7 -m pip install virtualenv
+	sudo apt-get -y install build-essential python3.8 python3.8-dev
+	python3.8 -m pip install pip
+	python3.8 -m pip install virtualenv
 	make venv
 	${VENV_ACTIVATE}; pre-commit install
 
 # Runs when the file changes
 venv: $(VENV_NAME)/bin/activate
 $(VENV_NAME)/bin/activate: requirements.txt requirements-dev.txt
-	test -d $(VENV_NAME) || virtualenv -p python3.7 $(VENV_NAME)
+	test -d $(VENV_NAME) || virtualenv -p python3.8 $(VENV_NAME)
 	${PYTHON} -m pip install -U pip
 	${PYTHON} -m pip install -r requirements.txt
 	${PYTHON} -m pip install -r requirements-dev.txt
@@ -55,6 +55,7 @@ lint: venv
 package: resources
 	${VENV_ACTIVATE}; pyinstaller --name="Virtual Warehouse" --windowed --clean \
 		--onefile main.py --icon="virtual_warehouse/resources/images/icon.png"
+# ${VENV_ACTIVATE}; nuitka3 main.py --show-progress --standalone --plugin-enable=qt-plugins,numpy --include-qt-plugins=all --windows-disable-console
 
 run: resources
 	${PYTHON} main.py

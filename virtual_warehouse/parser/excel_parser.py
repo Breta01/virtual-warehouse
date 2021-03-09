@@ -51,7 +51,7 @@ def parse_document(data_path):
             item_id, description, gtype, zone, unit_levels[0], unit_levels
         )
 
-    # Parse Inventory Ballance sheet  ('balance' in final version, most likely)
+    # Parse Inventory Balance sheet  ('balance' in final version, most likely)
     sheet = document.sheet_by_name("Inventory Ballance")
     balance = {}
     for row in range(1, sheet.nrows):

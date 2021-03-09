@@ -1,5 +1,6 @@
 # Packaging
-PyInstaller
+# PyInstaller
+nuitka
 
 # Linting and code style
 black==19.10b0
