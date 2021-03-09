@@ -3,8 +3,8 @@ import os
 import sys
 
 from PySide2 import QtCore
-from PySide2.QtGui import QGuiApplication, QIcon, QImage
-from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
+from PySide2.QtGui import QGuiApplication, QIcon
+from PySide2.QtQml import QQmlApplicationEngine
 
 import virtual_warehouse.main_rc
 from virtual_warehouse.view_controller import ViewController

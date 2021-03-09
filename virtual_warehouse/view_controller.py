@@ -1,15 +1,11 @@
-from matplotlib import cm
 from PySide2.QtCore import (
     Property,
-    QAbstractListModel,
-    QModelIndex,
     QObject,
     Qt,
     QThread,
     QUrl,
     Signal,
-    Slot,
-)
+    Slot)
 
 import virtual_warehouse.parser.excel_parser as parser
 from virtual_warehouse.heatmap import calculate_frquencies
