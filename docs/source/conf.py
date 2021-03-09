@@ -157,8 +157,7 @@ def linkcode_resolve(domain, info):
 
     if "+" in virtual_warehouse.__version__:
         return f"https://github.com/Breta01/virtual-warehouse/blob/master/virtual_warehouse/{fn}{linespec}"
-    else:
-        return (
-            f"https://github.com/Breta01/virtual-warehouse/blob/"
-            f"v{virtual_warehouse.__version__}/virtual_warehouse/{fn}{linespec}"
-        )
+    return (
+        f"https://github.com/Breta01/virtual-warehouse/blob/"
+        f"v{virtual_warehouse.__version__}/virtual_warehouse/{fn}{linespec}"
+    )

@@ -1,14 +1,4 @@
-from PySide2.QtCore import (
-    Property,
-    QAbstractListModel,
-    QModelIndex,
-    QObject,
-    QRunnable,
-    Qt,
-    QThreadPool,
-    Signal,
-    Slot,
-)
+from PySide2.QtCore import Property, QModelIndex, QObject, Qt, Signal, Slot
 
 from virtual_warehouse.environment import LOCATION_TYPE_MAP
 from virtual_warehouse.heatmap import get_heatmap_color
@@ -149,6 +139,6 @@ class UniversalLocationListModel(QObject):
         return None
 
     def roleNames(self):
-        roles = dict()
+        roles = {}
         roles[UniversalListModel.ObjectRole] = b"object"
         return roles
