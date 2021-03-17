@@ -74,10 +74,14 @@ Canvas {
             var idx = ViewController.get_selected_idx(i)
             if (idx >= 0) {
                 item = ViewController.model2D.get(idx)
-                ctx.fillStyle = "red"
-                ctx.fillRect((item.x - min_x) * params.coef + params.padding_x,
-                             (item.y - min_y) * params.coef + params.padding_y,
-                             item.width * params.coef, item.length * params.coef)
+                ctx.beginPath();
+                ctx.lineWidth = "3";
+                ctx.strokeStyle = "red";
+                ctx.rect((item.x - min_x) * params.coef + params.padding_x,
+                         (item.y - min_y) * params.coef + params.padding_y,
+                         item.width * params.coef, item.length * params.coef);
+                ctx.stroke();
+
             }
         }
     }

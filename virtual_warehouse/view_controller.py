@@ -206,7 +206,7 @@ class ViewController(QObject):
         if idx >= 0:
             self.selected_idxs.add(idx)
             names = self.model._get_idx(idx).names
-            self._location_model.set_checked(names)
+            self._location_model.set_checked(names, control)
             self._sidebar_model.set_selected(names)
         else:
             self._location_model.set_checked([])
