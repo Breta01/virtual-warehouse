@@ -1,6 +1,6 @@
 # Packaging
-# PyInstaller
-nuitka
+PyInstaller
+# nuitka
 
 # Linting and code style
 black==19.10b0
@@ -13,4 +13,3 @@ pylint==2.5.3
 sphinx
 pydata-sphinx-theme
 sphinx-inline-tabs
-# furo

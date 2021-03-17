@@ -55,7 +55,7 @@ lint: venv
 package: resources
 	${VENV_ACTIVATE}; pyinstaller --name="Virtual Warehouse" --windowed --clean \
 		--onefile main.py --icon="virtual_warehouse/resources/images/icon.png"
-# ${VENV_ACTIVATE}; nuitka3 main.py --show-progress --standalone --plugin-enable=qt-plugins,numpy --include-qt-plugins=all --windows-disable-console
+# ${VENV_ACTIVATE}; nuitka3 main.py --show-progress --standalone --plugin-enable=pyside2 --include-qt-plugins=all --windows-disable-console
 
 run: resources
 	${PYTHON} main.py
