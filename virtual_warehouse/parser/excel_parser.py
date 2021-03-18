@@ -74,7 +74,11 @@ def parse_document(data_path):
         if not order_id:
             continue
 
-        orders[order_id] = Order(*(sheet.cell(row, i).value for i in range(11)))
+        o = Order(*(sheet.cell(row, i).value for i in range(11)))
+        if order_id in orders:
+            orders[order_id].add_order(o)
+        else:
+            orders[order_id] = o
 
     return locations, items, balance, orders
 

@@ -121,7 +121,7 @@ Item {
             Text {
                 id: orderContentQtyText
                 color: "#333333"
-                text: "QTY:"
+                text: "Num. Items:"
                 anchors.left: orderContentItem.right
                 anchors.top: orderID.bottom
                 font.pixelSize: 14
@@ -133,7 +133,7 @@ Item {
             Text {
                 id: orderContentQty
                 color: "#333333"
-                text: model.object.total_qty
+                text: model.object.num_items
                 anchors.left: orderContentQtyText.right
                 anchors.top: orderID.bottom
                 font.pixelSize: 14

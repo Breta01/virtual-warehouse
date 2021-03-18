@@ -1,5 +1,5 @@
 """Data model for loading from Excel file."""
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import List
 
 from virtual_warehouse.parser.utils import (
@@ -89,6 +89,16 @@ class Location:
 
 
 @dataclass
+class OrderedItem:
+    """Description of item instance in order."""
+
+    id: str
+    requested_qty: int
+    total_qty: int
+    qty_uom: str
+
+
+@dataclass
 class Order:
     """Description of single order from warehouse."""
 
@@ -99,16 +109,26 @@ class Order:
     s_ship_date: str
     a_ship_date: str
     line_num: int
-    item_id: str
-    requested_qty: int
-    total_qty: int
-    qty_uom: str
+    item_id: InitVar[str]
+    requested_qty: InitVar[int]
+    total_qty: InitVar[int]
+    qty_uom: InitVar[str]
 
-    def __post_init__(self):
+    num_items: int = 1
+    items: List[OrderedItem] = field(default_factory=list)
+
+    def __post_init__(self, item_id, requested_qty, total_qty, qty_uom):
         self.id = str(self.id)
         self.delivery_date = convert_date(self.delivery_date, "%d.%m.%Y")
         self.s_ship_date = convert_date(self.s_ship_date, "%d.%m.%Y")
         self.a_ship_date = convert_date(self.a_ship_date, "%d.%m.%Y")
+
+        self.items.append(OrderedItem(item_id, requested_qty, total_qty, qty_uom))
+
+    def add_order(self, order):
+        assert self.id == order.id, "Can not add orders with different ids."
+        self.items.extend(order.items)
+        self.num_items += order.num_items
 
 
 @dataclass

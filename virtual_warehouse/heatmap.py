@@ -15,9 +15,10 @@ def calculate_frquencies(locations, items, balance, orders):
 
     date = list(item_locs.keys())[-1]
 
-    for k, o in orders.items():
-        for loc in item_locs[date][o.item_id]:
-            locations[loc].freq += o.total_qty
+    for order in orders.values():
+        for item in order.items:
+            for loc in item_locs[date][item.id]:
+                locations[loc].freq += item.total_qty
 
 
 # Bytes representing values of viridis colors for 0 to 255

@@ -82,10 +82,6 @@ class Item(QObject):
 
     @Property(str, constant=True)
     def description(self):
-        return self._i.description
-
-    @Property(str, constant=True)
-    def description(self):
         if self._i.gtype:
             return f"{self._i.description} | {self._i.gtype}"
         return self._i.description
@@ -136,11 +132,13 @@ class Order(QObject):
 
     @Property(str, constant=True)
     def item_id(self):
-        return str(self._i.item_id)
+        if len(self._i.items) == 1:
+            return str(self._i.items[0].item_id)
+        return "Multi-item"
 
-    @Property(str, constant=True)
-    def total_qty(self):
-        return f"{int(self._i.total_qty)} {self._i.qty_uom}"
+    @Property(int, constant=True)
+    def num_items(self):
+        return self._i.num_items
 
     @Property(bool, constant=False, notify=checkedChanged)
     def checked(self):
@@ -275,7 +273,7 @@ class HoverListModel(UniversalListModel):
         else:
             self._objects = {k: self._object_class(v) for k, v in objects.items()}
 
-    def set_selected(self, selected):
+    def set_selected(self, selected, check=False):
         self._selected = list(reversed(selected))
         self.layoutChanged.emit()
 

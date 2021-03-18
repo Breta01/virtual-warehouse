@@ -8,7 +8,6 @@ class SingleLocation:
     """Class representing single location in warehouse."""
 
     def __init__(self, location):
-        # QObject.__init__(self)
         self._i = location
         self._color = LOCATION_TYPE_MAP[self._i.ltype]["color"]
         self._gcolor = LOCATION_TYPE_MAP[self._i.ltype]["gray_color"]
@@ -39,7 +38,6 @@ class MultiLocation:
     """Class representing multiple locations merged together."""
 
     def __init__(self, locations):
-        # QObject.__init__(self)
         self._l = locations
         self._i = locations[0]
         self._color = LOCATION_TYPE_MAP[self._i.ltype]["color"]
@@ -93,7 +91,6 @@ class UniversalLocationListModel(QObject):
         if objects:
             self._max_heat = self._get_max_heat()
             self._max_level = max(l._i.coord.z for l in self._objects.values())
-            print(self._max_level)
             self.maxChanged.emit()
 
     def _get_max_heat(self):
