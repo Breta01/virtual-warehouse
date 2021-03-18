@@ -245,7 +245,7 @@ class UniversalListModel(QAbstractListModel):
         elif self._filter == 1:
             self._selected = sorted(list(self._checked))
         elif self._filter == 2:
-            self._selected = [k for k in self._all_selected if not k in self._checked]
+            self._selected = [k for k in self._all_selected if k not in self._checked]
         self.layoutChanged.emit()
 
 

@@ -3,7 +3,14 @@ from pathlib import Path
 
 from xlrd import open_workbook
 
-from virtual_warehouse.parser.data_model import *
+from virtual_warehouse.parser.data_model import (
+    Coord,
+    Inventory,
+    Item,
+    ItemUnit,
+    Location,
+    Order,
+)
 
 
 # TODO: Check duplicit IDs
@@ -60,7 +67,7 @@ def parse_document(data_path):
         if not date:
             continue
 
-        if not date in balance:
+        if date not in balance:
             balance[date] = {}
         balance[date][location_id] = Inventory(
             *(sheet.cell(row, i).value for i in range(10))
