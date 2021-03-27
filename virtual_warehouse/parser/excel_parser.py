@@ -13,13 +13,13 @@ from virtual_warehouse.parser.data_model import (
 )
 
 
-# TODO: Check duplicit IDs
-def parse_document(data_path):
-    print("Data path:", data_path)
-    document = open_workbook(data_path)
-
+def parse_locations(
+    document,
+    location_sheet_name="LOCATIONmaster",
+    coordinates_sheet_name="XYZ_coordinates",
+):
     # Parse LOCATIONmaster sheet
-    sheet = document.sheet_by_name("LOCATIONmaster")
+    sheet = document.sheet_by_name(locations_sheet)
     locations = {}
     for row in range(1, sheet.nrows):
         location_id = str(sheet.cell(row, 0).value)
@@ -31,7 +31,7 @@ def parse_document(data_path):
         )
 
     # Parse XYZ_coordinates sheet
-    sheet = document.sheet_by_name("XYZ_coordinates")
+    sheet = document.sheet_by_name(coordinates_sheet)
     for row in range(1, sheet.nrows):
         location_id = str(sheet.cell(row, 0).value)
         if not location_id:
@@ -40,8 +40,12 @@ def parse_document(data_path):
         coord = Coord(*(sheet.cell(row, i).value for i in range(1, 4)))
         locations[location_id].set_coord(coord)
 
+    return locations
+
+
+def parse_items(document, sheet_name="ITEMmaster"):
     # Parse ITEMmaster sheet
-    sheet = document.sheet_by_name("ITEMmaster")
+    sheet = document.sheet_by_name(sheet_name)
     items = {}
     for row in range(1, sheet.nrows):
         item_id, description, gtype, zone = (sheet.cell(row, i).value for i in range(4))
@@ -58,8 +62,12 @@ def parse_document(data_path):
             item_id, description, gtype, zone, unit_levels[0], unit_levels
         )
 
+    return items
+
+
+def parse_inventory_balance(document, sheet_name="Inventory Ballance"):
     # Parse Inventory Balance sheet  ('balance' in final version, most likely)
-    sheet = document.sheet_by_name("Inventory Ballance")
+    sheet = document.sheet_by_name(sheet_name)
     balance = {}
     for row in range(1, sheet.nrows):
         date, location_id = sheet.cell(row, 0).value, sheet.cell(row, 1).value
@@ -73,6 +81,10 @@ def parse_document(data_path):
             *(sheet.cell(row, i).value for i in range(10))
         )
 
+    return balance
+
+
+def parse_orders(document, sheet_name="Order"):
     # Parse Order sheet
     sheet = document.sheet_by_name("Order")
     orders = {}
@@ -87,9 +99,16 @@ def parse_document(data_path):
         else:
             orders[order_id] = o
 
+    return orders
+
+
+def parse_document(data_path):
+    print("Data path:", data_path)
+    document = open_workbook(data_path)
+
+    locations = parse_locations(document)
+    items = parse_items(document)
+    balance = parse_inventory_balance(document)
+    orders = parse_orders(document)
+
     return locations, items, balance, orders
-
-
-if __name__ == "__main__":
-    data_file = Path(__file__).parent.joinpath("../assets/warehouse_data_v2.xlsx")
-    locations, items, balance, orders = parse_document(data_file)
