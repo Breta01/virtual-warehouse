@@ -4,7 +4,6 @@ from pathlib import Path
 from xlrd import open_workbook
 
 from virtual_warehouse.parser.data_model import (
-    Coord,
     Inventory,
     Item,
     ItemUnit,
@@ -15,30 +14,31 @@ from virtual_warehouse.parser.data_model import (
 
 def parse_locations(
     document,
-    location_sheet_name="LOCATIONmaster",
+    locations_sheet_name="LOCATIONmaster",
     coordinates_sheet_name="XYZ_coordinates",
 ):
     # Parse LOCATIONmaster sheet
-    sheet = document.sheet_by_name(locations_sheet)
+    sheet = document.sheet_by_name(locations_sheet_name)
     locations = {}
     for row in range(1, sheet.nrows):
         location_id = str(sheet.cell(row, 0).value)
         if not location_id:
             continue
 
-        locations[location_id] = Location(
+        locations[location_id] = Location.create(
             *(sheet.cell(row, i).value for i in range(11))
         )
 
     # Parse XYZ_coordinates sheet
-    sheet = document.sheet_by_name(coordinates_sheet)
+    sheet = document.sheet_by_name(coordinates_sheet_name)
     for row in range(1, sheet.nrows):
         location_id = str(sheet.cell(row, 0).value)
         if not location_id:
             continue
 
-        coord = Coord(*(sheet.cell(row, i).value for i in range(1, 4)))
-        locations[location_id].set_coord(coord)
+        locations[location_id].set_coord(
+            *(sheet.cell(row, i).value for i in range(1, 4))
+        )
 
     return locations
 
@@ -56,9 +56,12 @@ def parse_items(document, sheet_name="ITEMmaster"):
         unit_levels = []
         for col in range(4, sheet.ncols, 8):
             unit_levels.append(
-                ItemUnit(*(sheet.cell(row, col + i).value for i in range(8)))
+                ItemUnit.create(
+                    f"{item_id}-u{col}",
+                    *(sheet.cell(row, col + i).value for i in range(8)),
+                )
             )
-        items[item_id] = Item(
+        items[item_id] = Item.create(
             item_id, description, gtype, zone, unit_levels[0], unit_levels
         )
 
@@ -77,7 +80,7 @@ def parse_inventory_balance(document, sheet_name="Inventory Ballance"):
 
         if date not in balance:
             balance[date] = {}
-        balance[date][location_id] = Inventory(
+        balance[date][location_id] = Inventory.create(
             *(sheet.cell(row, i).value for i in range(10))
         )
 
@@ -93,11 +96,12 @@ def parse_orders(document, sheet_name="Order"):
         if not order_id:
             continue
 
-        o = Order(*(sheet.cell(row, i).value for i in range(11)))
         if order_id in orders:
-            orders[order_id].add_order(o)
+            orders[order_id].add_item(*(sheet.cell(row, i).value for i in range(7, 11)))
         else:
-            orders[order_id] = o
+            orders[order_id] = Order.create(
+                *(sheet.cell(row, i).value for i in range(11))
+            )
 
     return orders
 

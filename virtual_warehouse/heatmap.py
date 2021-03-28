@@ -4,12 +4,13 @@
 def item_locations(locations, items, balance):
     """Create dictionary mapping (date, item) to list of locations."""
     item_to_loc = {}
-    for date, bl in balance.items():
+    for date, balance in balance.items():
         item_to_loc[date] = {}
-        for loc_id, inv in bl.items():
-            if inv.item_id not in item_to_loc[date]:
-                item_to_loc[date][inv.item_id] = []
-            item_to_loc[date][inv.item_id].append(loc_id)
+        for loc_id, loc_inv in balance.items():
+            for item in loc_inv.has_items:
+                if item.name not in item_to_loc[date]:
+                    item_to_loc[date][item.name] = []
+                item_to_loc[date][item.name].append(loc_id)
 
     return item_to_loc
 
@@ -21,9 +22,9 @@ def calculate_frquencies(locations, items, balance, orders):
     date = list(item_locs.keys())[-1]
 
     for order in orders.values():
-        for item in order.items:
-            for loc in item_locs[date][item.id]:
-                locations[loc].freq += item.total_qty
+        for item in order.has_ordered_items:
+            for loc in item_locs[date][item.has_item.name]:
+                locations[loc].has_freq += item.has_total_qty
 
 
 # Bytes representing values of viridis colors for 0 to 255

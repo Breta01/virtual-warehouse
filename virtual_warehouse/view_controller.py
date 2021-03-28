@@ -54,14 +54,14 @@ class Map(QObject):
             self._max_z = 0
 
     def set_data(self, locations):
-        self._min_x = min(l.coord.x for l in locations.values())
-        self._max_x = max(l.coord.x + l.width for l in locations.values())
+        self._min_x = min(l.has_x for l in locations.values())
+        self._max_x = max(l.has_x + l.has_width for l in locations.values())
 
-        self._min_y = min(l.coord.y for l in locations.values())
-        self._max_y = max(l.coord.y + l.length for l in locations.values())
+        self._min_y = min(l.has_y for l in locations.values())
+        self._max_y = max(l.has_y + l.has_length for l in locations.values())
 
-        self._min_z = min(l.coord.z for l in locations.values())
-        self._max_z = max(l.coord.z + l.height for l in locations.values())
+        self._min_z = min(l.has_z for l in locations.values())
+        self._max_z = max(l.has_z + l.has_height for l in locations.values())
 
     @Property(float, constant=True)
     def min_x(self):
@@ -113,9 +113,9 @@ class ViewController(QObject):
         self._progress_value = 1
 
         # DEBUG:
-        # self.load(
-        #     "file:///home/breta/Documents/github/virtual-warehouse/data/warehouse_no_1_v2.xlsx"
-        # )
+        self.load(
+            "file:///home/breta/Documents/github/virtual-warehouse/data/warehouse_no_1_v2.xlsx"
+        )
 
     modelChanged = Signal()
     sidebarChanged = Signal()
@@ -254,7 +254,7 @@ class ViewController(QObject):
         self._location_model.set_data(locations)
         self._location_model.set_selected(
             # list(locations.keys())
-            [k for k, v in locations.items() if v.ltype == "rack"]
+            [k for k, v in locations.items() if v.has_ltype == "rack"]
         )
 
         self._sidebar_model.set_data(locations)

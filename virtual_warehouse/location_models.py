@@ -9,29 +9,29 @@ class SingleLocation:
 
     def __init__(self, location):
         self._i = location
-        self._color = LOCATION_TYPE_MAP[self._i.ltype]["color"]
-        self._gcolor = LOCATION_TYPE_MAP[self._i.ltype]["gray_color"]
-        self._mesh_file = LOCATION_TYPE_MAP[self._i.ltype]["mesh"]
+        self._color = LOCATION_TYPE_MAP[self._i.has_ltype]["color"]
+        self._gcolor = LOCATION_TYPE_MAP[self._i.has_ltype]["gray_color"]
+        self._mesh_file = LOCATION_TYPE_MAP[self._i.has_ltype]["mesh"]
         # Required for displaying selected locations
-        self.names = [str(self._i.id)]
+        self.names = [self._i.name]
 
     def get_dict(self):
         return {
-            "name": str(self._i.id),
-            "type": self._i.ltype,
+            "name": self._i.name,
+            "type": self._i.has_ltype,
             "mesh_file": self._mesh_file,
             "color": self._color,
             "gray_color": self._gcolor,
-            "x": self._i.coord.x,
-            "y": self._i.coord.y,
-            "z": self._i.coord.z,
-            "length": self._i.length,
-            "width": self._i.width,
-            "height": self._i.height,
+            "x": self._i.has_x,
+            "y": self._i.has_y,
+            "z": self._i.has_z,
+            "length": self._i.has_length,
+            "width": self._i.has_width,
+            "height": self._i.has_height,
         }
 
     def get_heat(self, level=-1):
-        return self._i.freq
+        return self._i.has_freq
 
 
 class MultiLocation:
@@ -40,29 +40,31 @@ class MultiLocation:
     def __init__(self, locations):
         self._l = locations
         self._i = locations[0]
-        self._color = LOCATION_TYPE_MAP[self._i.ltype]["color"]
-        self._gcolor = LOCATION_TYPE_MAP[self._i.ltype]["gray_color"]
-        self._mesh_file = LOCATION_TYPE_MAP[self._i.ltype]["mesh"]
+        self._color = LOCATION_TYPE_MAP[self._i.has_ltype]["color"]
+        self._gcolor = LOCATION_TYPE_MAP[self._i.has_ltype]["gray_color"]
+        self._mesh_file = LOCATION_TYPE_MAP[self._i.has_ltype]["mesh"]
         # Required for displaying selected locations
-        self.names = [i.id for i in locations]
+        self.names = [i.name for i in locations]
 
     def get_dict(self):
         return {
-            "name": str(self._i.id),
-            "type": self._i.ltype,
+            "name": self._i.name,
+            "type": self._i.has_ltype,
             "mesh_file": self._mesh_file,
             "color": self._color,
             "gray_color": self._gcolor,
-            "x": self._i.coord.x,
-            "y": self._i.coord.y,
-            "z": self._i.coord.z,
-            "length": self._i.length,
-            "width": self._i.width,
-            "height": self._i.height,
+            "x": self._i.has_x,
+            "y": self._i.has_y,
+            "z": self._i.has_z,
+            "length": self._i.has_length,
+            "width": self._i.has_width,
+            "height": self._i.has_height,
         }
 
     def get_heat(self, level=-1):
-        return self._l[level].freq if level != -1 else sum(i.freq for i in self._l)
+        return (
+            self._l[level].has_freq if level != -1 else sum(i.has_freq for i in self._l)
+        )
 
 
 class UniversalLocationListModel(QObject):
@@ -90,7 +92,7 @@ class UniversalLocationListModel(QObject):
                 self._name_to_idx[n] = i
         if objects:
             self._max_heat = self._get_max_heat()
-            self._max_level = max(l._i.coord.z for l in self._objects.values())
+            self._max_level = max(l._i.has_z for l in self._objects.values())
             self.maxChanged.emit()
 
     def _get_max_heat(self):
