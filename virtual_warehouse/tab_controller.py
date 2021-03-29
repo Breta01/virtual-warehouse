@@ -27,35 +27,35 @@ class Location(QObject):
 
     @Property(str, constant=True)
     def name(self):
-        return self._i.id
+        return self._i.name
 
     @Property(str, constant=True)
     def class_str(self):
-        if self._i.lsubclass:
-            return f"{self._i.lclass} > {self._i.lsubclass}"
-        return self._i.lclass
+        if self._i.has_lsubclass:
+            return f"{self._i.has_lclass} > {self._i.has_lsubclass}"
+        return self._i.has_lclass
 
     @Property(str, constant=True)
     def dimension_str(self):
-        return f"{self._i.length} x {self._i.width} x {self._i.height}"
+        return f"{self._i.has_length} x {self._i.has_width} x {self._i.has_height}"
 
     @Property(int, constant=True)
     def max_weight(self):
-        return self._i.max_weight
+        return self._i.has_max_weight
 
     @Property(str, constant=True)
     def zone(self):
-        return self._i.zone
+        return self._i.has_zone
 
     @Property(str, constant=True)
     def z(self):
-        return str(int(self._i.coord.z))
+        return str(int(self._i.has_z))
 
     @Slot(float, result=str)
     def heat(self, max_freq=None):
         if max_freq:
-            return get_heatmap_color(self._i.freq / max_freq)
-        return self._i.freq
+            return get_heatmap_color(self._i.has_freq / max_freq)
+        return self._i.has_freq
 
     @Property(bool, constant=False, notify=checkedChanged)
     def checked(self):
@@ -78,26 +78,26 @@ class Item(QObject):
 
     @Property(str, constant=True)
     def name(self):
-        return self._i.id
+        return self._i.name
 
     @Property(str, constant=True)
     def description(self):
-        if self._i.gtype:
-            return f"{self._i.description} | {self._i.gtype}"
-        return self._i.description
+        if self._i.has_gtype:
+            return f"{self._i.has_description} | {self._i.has_gtype}"
+        return self._i.has_description
 
     @Property(str, constant=True)
     def zone(self):
-        return self._i.zone
+        return self._i.has_zone
 
     @Property(str, constant=True)
     def base_dimension(self):
-        bu = self._i.base_unit
-        return f"{bu.length} x {bu.width} x {bu.height}"
+        bu = self._i.has_base_unit
+        return f"{bu.has_length} x {bu.has_width} x {bu.has_height}"
 
     @Property(float, constant=True)
     def base_weight(self):
-        return self._i.base_unit.weight
+        return self._i.has_base_unit.has_weight
 
     @Property(bool, constant=False, notify=checkedChanged)
     def checked(self):
@@ -120,25 +120,25 @@ class Order(QObject):
 
     @Property(str, constant=True)
     def name(self):
-        return str(self._i.id)
+        return str(self._i.name)
 
     @Property(str, constant=True)
     def direction(self):
-        return self._i.direction
+        return self._i.has_direction
 
     @Property(str, constant=True)
     def date(self):
-        return self._i.delivery_date.strftime("%x")
+        return self._i.has_delivery_date.strftime("%x")
 
     @Property(str, constant=True)
     def item_id(self):
-        if len(self._i.items) == 1:
-            return str(self._i.items[0].item_id)
+        if len(self._i.has_ordered_items) == 1:
+            return str(self._i.has_ordered_items[0].has_item.name)
         return "Multi-item"
 
     @Property(int, constant=True)
     def num_items(self):
-        return self._i.num_items
+        return len(self._i.has_ordered_items)
 
     @Property(bool, constant=False, notify=checkedChanged)
     def checked(self):

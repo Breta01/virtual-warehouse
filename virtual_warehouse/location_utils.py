@@ -13,8 +13,8 @@ def cluster_locations(locations: dict) -> dict:
     coord_to_locations = {}
 
     for key, loc in locations.items():
-        if not loc.coord.get_2d() in coord_to_locations:
-            coord_to_locations[loc.coord.get_2d()] = []
-        coord_to_locations[loc.coord.get_2d()].append(key)
+        if not loc.get_2d() in coord_to_locations:
+            coord_to_locations[loc.get_2d()] = []
+        coord_to_locations[loc.get_2d()].append(key)
 
     return coord_to_locations
