@@ -28,6 +28,7 @@ types = {
 
 
 def convert_type(type_str):
+    """Unify location type names."""
     try:
         return types[type_str.lower()]
     except:
@@ -35,18 +36,21 @@ def convert_type(type_str):
 
 
 def convert_dim(dim, uom):
+    """Convert dimension size to meters."""
     if uom:
         return dim * dim_factors[uom.lower()]
     return dim
 
 
 def convert_weight(weight, uom):
+    """Convert weight to kilograms."""
     if uom:
         return weight * weight_factors[uom.lower()]
     return weight
 
 
 def convert_date(date, fmt="%d.%m.%Y"):
+    """Convert string date to datetime."""
     if date:
         return datetime.strptime(date, fmt)
     return None

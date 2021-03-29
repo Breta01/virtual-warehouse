@@ -1,8 +1,15 @@
-"""Data model using Owlready2 ontology"""
+"""Data model using Owlready2 ontology."""
 import datetime
 from typing import List
 
-from owlready2 import *
+from owlready2 import (
+    DataProperty,
+    FunctionalProperty,
+    ObjectProperty,
+    Thing,
+    default_world,
+    get_ontology,
+)
 
 from virtual_warehouse.parser.utils import (
     convert_date,
@@ -265,6 +272,7 @@ with onto:
             total_qty: int,
             qty_uom: str,
         ):
+            _id = str(_id)
             # Convert to datetime
             delivery_date = convert_date(delivery_date, "%d.%m.%Y")
             s_ship_date = convert_date(s_ship_date, "%d.%m.%Y")
@@ -306,7 +314,7 @@ with onto:
                 has_total_qty=total_qty,
                 has_qty_uom=qty_uom,
             )
-            self.has_ordered_items.append()
+            self.has_ordered_items.append(oi)
 
         @staticmethod
         def get_by_items(items):
@@ -318,7 +326,6 @@ with onto:
             Returns:
                List[Order]: list of orders containing at leas one of the provided items
             """
-
             item_iris = " ".join(map(lambda x: f"<{x.iri}>", items))
             i1 = f"?p <{has_ordered_items.iri}> ?oi .\n"
             i2 = f"?oi <{has_item.iri}> ?item .\n"
@@ -385,7 +392,7 @@ with onto:
         range = [float]
 
     # Item properties
-    class in_order(Item >> OrderedItem):
+    class in_ordered_item(Item >> OrderedItem):
         inverse_property = has_item
 
     class has_description(DataProperty, FunctionalProperty):

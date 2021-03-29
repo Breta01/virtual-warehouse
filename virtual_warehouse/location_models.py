@@ -30,7 +30,7 @@ class SingleLocation:
             "height": self._i.has_height,
         }
 
-    def get_heat(self, level=-1):
+    def get_heat(self):
         return self._i.has_freq
 
 

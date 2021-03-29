@@ -20,8 +20,6 @@ except ImportError:
 
 
 def run():
-    dir_path = os.path.dirname(__file__)
-
     app = QGuiApplication(sys.argv)
     app.setOrganizationName("Bretislav Hajek")
     app.setOrganizationDomain("bretahajek.com")

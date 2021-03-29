@@ -1,6 +1,4 @@
 """Parser of Excel data files."""
-from pathlib import Path
-
 from xlrd import open_workbook
 
 from virtual_warehouse.parser.data_model import (
@@ -17,7 +15,7 @@ def parse_locations(
     locations_sheet_name="LOCATIONmaster",
     coordinates_sheet_name="XYZ_coordinates",
 ):
-    # Parse LOCATIONmaster sheet
+    """Parse LOCATIONmaster sheet."""
     sheet = document.sheet_by_name(locations_sheet_name)
     locations = {}
     for row in range(1, sheet.nrows):
@@ -44,7 +42,7 @@ def parse_locations(
 
 
 def parse_items(document, sheet_name="ITEMmaster"):
-    # Parse ITEMmaster sheet
+    """Parse ITEMmaster sheet."""
     sheet = document.sheet_by_name(sheet_name)
     items = {}
     for row in range(1, sheet.nrows):
@@ -69,7 +67,7 @@ def parse_items(document, sheet_name="ITEMmaster"):
 
 
 def parse_inventory_balance(document, sheet_name="Inventory Ballance"):
-    # Parse Inventory Balance sheet  ('balance' in final version, most likely)
+    """Parse Inventory Balance sheet  ('balance' in final version, most likely)."""
     sheet = document.sheet_by_name(sheet_name)
     balance = {}
     for row in range(1, sheet.nrows):
@@ -88,8 +86,8 @@ def parse_inventory_balance(document, sheet_name="Inventory Ballance"):
 
 
 def parse_orders(document, sheet_name="Order"):
-    # Parse Order sheet
-    sheet = document.sheet_by_name("Order")
+    """Parse Order sheet."""
+    sheet = document.sheet_by_name(sheet_name)
     orders = {}
     for row in range(1, sheet.nrows):
         order_id = str(sheet.cell(row, 0).value)

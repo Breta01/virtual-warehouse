@@ -33,7 +33,7 @@ class DataLoaderThread(QThread):
             QUrl(self.file_path).toLocalFile()
         )
         # TODO: Calculate after initial draw
-        calculate_frquencies(locations, items, balance, orders)
+        calculate_frquencies(locations, balance, orders)
         self.data = (locations, items, balance, orders)
         self.dataReady.emit(self.data)
 
@@ -182,7 +182,6 @@ class ViewController(QObject):
         """Switch 2D - 3D model and update selection."""
         self._is2D = not self._is2D
         self.reset_selection()
-        names = self._location_model._checked
         for name in self._location_model._checked:
             idx = self.model._name_to_idx[name]
             self.selected_idxs.add(idx)
