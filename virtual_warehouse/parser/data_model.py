@@ -15,15 +15,35 @@ from virtual_warehouse.parser.utils import (
 BASE_IRI = "http://warehouse/onto.owl"
 onto = get_ontology(BASE_IRI)
 
+
 with onto:
 
     class Country(Thing):
-        """Class representing different countries."""
+        """Class representing different countries.
+
+        Attributes:
+            name (str): Name of the country
+        """
 
         pass
 
     class Inventory(Thing):
-        """Description of inventory balance for given date and location."""
+        """Description of inventory balance for given date and location.
+        TODO: Re-work the structure of inventory saving (individual items)
+
+        Attributes:
+            name (str): unique ID of inventory object
+            has_date (datetime.datetime): date of the inventory status
+            has_location (Location): location object related to this inventory status
+            has_ltype (str): location type
+            has_items (List[Item]): list of items on given location
+            has_expiry_date (datetime.datetime): date of the item expiration
+            has_availabel_qty (int): availabel quantity of the item
+            has_onhand_qty (int): on-hand quantity of the item
+            has_transi_qty (int): transiting quantity of the item
+            has_allocated_qty (int): allocated quantity of the item
+            has_suspense_qty (int): suspended quantity of the item
+        """
 
         @classmethod
         def create(
@@ -59,7 +79,23 @@ with onto:
                 suspense_qty=suspense_qty,
             )
 
+        def add_item(self, item_id: str):
+            item = onto.search_one(iri=f"{BASE_IRI}#{item_id}")
+            self.has_items.append(item)
+
     class ItemUnit(Thing):
+        """Represents different packaging units of item.
+
+        Attributes:
+            name (str): unique id (item_id-unit_lvl)
+            has_conversion_qty (int): number of packages inside base unit
+            has_qty_uom (str): name of unit
+            has_length (float): length of packaging (in meters)
+            has_width (float): width of packaging (in meters)
+            has_height (float): height of packaging (in meters)
+            has_weight (float): weight of packaging (in kg)
+        """
+
         @classmethod
         def create(
             cls,
@@ -88,7 +124,16 @@ with onto:
             )
 
     class Item(Thing):
-        """Basic description of item, including packaging units."""
+        """Basic description of item, including packaging units.
+
+        Attributes:
+            name (str): id of item
+            has_description (str): description of items
+            has_gtype (str): type of goods
+            has_zone (str): required zone for storing item
+            has_base_unit (ItemUnit): base packaging unit
+            has_unit_levels (List[ItemUnit]): list of all different packaging units
+        """
 
         @classmethod
         def create(
@@ -110,7 +155,23 @@ with onto:
             )
 
     class Location(Thing):
-        """Description of location in warehouse."""
+        """Description of location in warehouse.
+
+        Attributes:
+            name (str): unique id of location
+            has_ltype (str): type of location
+            has_lclass (str): class of location
+            has_lsubclass (str): subclass of location
+            has_length (float): length of location
+            has_width (float): width of location
+            has_height (float): height of location
+            has_max_weight (float): maximal weight which can location hold
+            has_zone (str): zone where is location located
+            has_x (float): x coordinate of location
+            has_y (float): y coordinate of location
+            has_z (float): z coordinate of location
+            has_freq (int): frequency calculated for heat map displaying
+        """
 
         @classmethod
         def create(
@@ -155,19 +216,39 @@ with onto:
                 has_freq=freq,
             )
 
-        def set_coord(self, x, y, z):
+        def set_coord(self, x: float, y: float, z: float):
+            """Additionally set coordinates of the location."""
             self.has_x, self.has_y, self.has_z = x, y, z
 
         def get_2d(self):
+            """Get planar coordinates of location (used for top-down view)."""
             return (self.has_x, self.has_y)
 
     class OrderedItem(Thing):
-        """Description of item instance in order."""
+        """Description of item instance in order.
+
+        Attributes:
+            name (str): id of object (ordered_id-item_id)
+            has_requested_qty (int): requested amount of item inside ordered
+            has_total_qty (int): amount of item provided inside order
+            qty_uom (int): unit of measure of quantities
+        """
 
         pass
 
     class Order(Thing):
-        """Description of single order from warehouse."""
+        """Description of single order from warehouse.
+
+        Attributes:
+            name (str): id of the order
+            has_direction (str): outbound/inbound
+            has_country (str): Country object representing shipping destination
+            has_delivery_date (datetime.datetime): requested delivery date
+            has_s_ship_date (datetime.datetime): scheduled sipping date
+            has_a_ship_date (datetime.datetime): actual sipping date
+            has_line_num (int): ERP order line number
+            has_ordered_items (List[OrderedItem]): list of item instances inside order
+        """
 
         @classmethod
         def create(
@@ -213,7 +294,10 @@ with onto:
                 has_ordered_items=[oi],
             )
 
-        def add_item(self, item_id, requested_qty, total_qty, qty_uom):
+        def add_item(
+            self, item_id: str, requested_qty: int, total_qty: int, qty_uom: str
+        ):
+            """Create and add item instance into order."""
             item = onto.search_one(iri=f"{BASE_IRI}#{item_id}")
             oi = OrderedItem(
                 f"{self.name}-{item_id}",
@@ -223,6 +307,25 @@ with onto:
                 has_qty_uom=qty_uom,
             )
             self.has_ordered_items.append()
+
+        @staticmethod
+        def get_by_items(items):
+            """Get list of orders which contains given items.
+
+            Args:
+               items (List[Item]): list of items to look for.
+
+            Returns:
+               List[Order]: list of orders containing at leas one of the provided items
+            """
+
+            item_iris = " ".join(map(lambda x: f"<{x.iri}>", items))
+            i1 = f"?p <{has_ordered_items.iri}> ?oi .\n"
+            i2 = f"?oi <{has_item.iri}> ?item .\n"
+            i3 = "VALUES ?item { " + item_iris + " }"
+
+            query = "SELECT DISTINCT ?p WHERE { " + i1 + i2 + i3 + " }"
+            return list(default_world.sparql_query(query))
 
     # Order properties
     class has_direction(DataProperty, FunctionalProperty):
@@ -276,11 +379,6 @@ with onto:
     class has_conversion_qty(DataProperty, FunctionalProperty):
         domain = [ItemUnit]
         range = [int]
-
-    # class has_qty_uom(DataProperty, FunctionalProperty):
-    # class has_length(DataProperty, FunctionalProperty):
-    # class has_width(DataProperty, FunctionalProperty):
-    # class has_height(DataProperty, FunctionalProperty):
 
     class has_weight(DataProperty, FunctionalProperty):
         domain = [ItemUnit]
@@ -338,8 +436,6 @@ with onto:
         domain = [Location]
         range = [float]
 
-    # class has_zone(DataProperty, FunctionalProperty):
-
     class has_coord(DataProperty, FunctionalProperty):
         domain = [Location]
         range = [str]
@@ -368,8 +464,6 @@ with onto:
     class has_location(ObjectProperty, FunctionalProperty):
         domain = [Inventory]
         range = [Location]
-
-    # class has_ltype(DataProperty, FunctionalProperty):
 
     class has_items(Inventory >> Item):
         pass
@@ -400,41 +494,9 @@ with onto:
 
 
 if __name__ == "__main__":
-    o1 = Order("o1", direction="out")
-    o2 = Order("o2")
-    o3 = Order("o3")
-    Order("o4")
-    Order("o5")
-    i1 = Item("i1", has_for_direction="x1")
-
-    i2 = Item("i2")
-    i3 = Item("i3")
-
-    io1 = OrderedItem("io1", has_item=i1)
-    io2 = OrderedItem("io2", has_item=i2)
-    io3 = OrderedItem("io3", has_item=i2)
-
-    print("In", i2.in_order)
-
-    o1.has_ordered_items.append(io1)
-    o2.has_ordered_items.append(io1)
-    o2.has_ordered_items.append(io2)
-    o3.has_ordered_items.append(io3)
-
     # sync_reasoner(infer_property_values=True)
 
     # SQLite3
     # default_world.graph.db
     # default_world.graph.execute
-
-    ix = f"?p <{has_ordered_items.iri}> ?oi .\n"
-    i = f"?oi <{has_item.iri}> ?item .\n"
-
-    items = [i1, i2]
-    itms = " ".join(map(lambda x: f"<{x.iri}>", items))
-    ii = "VALUES ?item { " + itms + " }"
-
-    q = "SELECT DISTINCT ?p WHERE { " + ix + i + ii + " }"
-    print(q)
-    r = list(default_world.sparql_query(q))
-    print(r)
+    pass
