@@ -70,8 +70,9 @@ Canvas {
         }
 
         // Draw selected item
-        for (var i = 0; i < ViewController.count_selected(); i++) {
-            var idx = ViewController.get_selected_idx(i)
+        var selected_idxs = ViewController.get_selected()
+        for (var i = 0; i < selected_idxs.length; i++) {
+            var idx = selected_idxs[i];
             if (idx >= 0) {
                 item = ViewController.model2D.get(idx)
                 ctx.beginPath();

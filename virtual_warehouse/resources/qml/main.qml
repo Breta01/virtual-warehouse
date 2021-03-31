@@ -233,9 +233,10 @@ ApplicationWindow {
                 onSelectedElementChanged: {
                     // TODO: Control - selection of multiple locations
                     var control = false
+                    var selected_idxs = ViewController.get_selected()
                     for (var i = 0; !control
-                         && i < ViewController.count_selected(); i++) {
-                        var idx = ViewController.get_selected_idx(i)
+                         && i < selected_idxs.length; i++) {
+                        var idx = selected_idxs[i]
                         if (idx >= 0) {
                             surfacePlot.customItemList[idx].textureFile = ":/textures/default.png"
                         }

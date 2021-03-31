@@ -7,6 +7,7 @@ ToolBar {
     id: toolBar
     width: parent.width
     z: 30
+    Material.elevation: 1
 
     property var model
 
@@ -15,7 +16,7 @@ ToolBar {
         text: qsTr("All")
         anchors.left: parent.left
         checkable: true
-        checked: true
+        checked: model.filter === 0
         autoExclusive: true
         onClicked: model.filter = 0
 
@@ -33,6 +34,7 @@ ToolBar {
         text: qsTr("Checked")
         anchors.left: toolButton.right
         checkable: true
+        checked: model.filter === 1
         autoExclusive: true
         onClicked: model.filter = 1
 
@@ -50,6 +52,7 @@ ToolBar {
         text: qsTr("Unchecked")
         anchors.left: toolButton1.right
         checkable: true
+        checked: model.filter === 2
         autoExclusive: true
         onClicked: model.filter = 2
 

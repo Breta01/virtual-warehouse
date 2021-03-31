@@ -8,11 +8,12 @@ from virtual_warehouse.location_models import (
     UniversalLocationListModel,
 )
 from virtual_warehouse.location_utils import cluster_locations
+from virtual_warehouse.parser.data_model import Item, Location, Order
 from virtual_warehouse.tab_controller import (
     HoverListModel,
-    Item,
-    Location,
-    Order,
+    TabItem,
+    TabLocation,
+    TabOrder,
     UniversalListModel,
 )
 
@@ -101,10 +102,10 @@ class ViewController(QObject):
         self._model2D = UniversalLocationListModel(on_change=self.modelChanged.emit)
         self._map = Map()
 
-        self._sidebar_model = HoverListModel(Location)
-        self._location_model = UniversalListModel(Location)
-        self._item_model = UniversalListModel(Item)
-        self._order_model = UniversalListModel(Order)
+        self._sidebar_model = HoverListModel(TabLocation)
+        self._location_model = UniversalListModel(TabLocation)
+        self._item_model = UniversalListModel(TabItem)
+        self._order_model = UniversalListModel(TabOrder)
 
         self.selected_idxs = set()
         self.reset_selection()
@@ -212,6 +213,48 @@ class ViewController(QObject):
             self._sidebar_model.set_selected([])
         self.itemSelected.emit()
 
+    # Connecting sidebar tabs
+    # TODO: run in separate thread
+    def _connect_tabs(self, src_tab_model, dst_tab_model, connector):
+        if src_tab_model._checked:
+            objs = [src_tab_model._objects[k]._i for k in src_tab_model._checked]
+            res = connector(objs)
+            dst_tab_model.set_checked([i[0].name for i in res])
+        else:
+            dst_tab_model.set_checked([])
+
+    @Slot()
+    def checked_locations_to_items(self):
+        self._connect_tabs(
+            self._location_model, self._item_model, Item.get_by_locations
+        )
+
+    @Slot()
+    def checked_orders_to_items(self):
+        self._connect_tabs(self._order_model, self._item_model, Item.get_by_orders)
+
+    @Slot()
+    def checked_items_to_orders(self):
+        self._connect_tabs(self._item_model, self._order_model, Order.get_by_items)
+
+    @Slot()
+    def checked_locations_to_orders(self):
+        self._connect_tabs(
+            self._location_model, self._order_model, Order.get_by_locations
+        )
+
+    @Slot()
+    def checked_orders_to_locations(self):
+        self._connect_tabs(
+            self._order_model, self._location_model, Location.get_by_orders
+        )
+
+    @Slot()
+    def checked_items_to_locations(self):
+        self._connect_tabs(
+            self._item_model, self._location_model, Location.get_by_items
+        )
+
     @Slot(int)
     def hover_item(self, idx):
         if idx >= 0:
@@ -221,14 +264,9 @@ class ViewController(QObject):
             self._sidebar_model.set_hovered([], False)
         self.sidebarChanged.emit()
 
-    @Slot(int, result=int)
-    def get_selected_idx(self, idx):
-        return list(self.selected_idxs)[idx]
-
-    # TODO: Property might be better
-    @Slot(result=int)
-    def count_selected(self):
-        return len(self.selected_idxs)
+    @Slot(result="QVariantList")
+    def get_selected(self):
+        return list(self.selected_idxs)
 
     @Slot()
     def reset_selection(self):

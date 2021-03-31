@@ -10,10 +10,71 @@ Item {
         model: ViewController.order_model
     }
 
+    ToolBar {
+        id: connectionsBar
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 0
+        width: parent.width
+
+        Material.background: "white"
+        Material.foreground: Material.BlueGrey
+        Material.elevation: 0
+
+        ToolButton {
+            id: toolButton
+            text: qsTr("Related:")
+            enabled: false
+        }
+
+        ToolButton {
+            id: toolButton1
+            text: qsTr("Locations")
+            anchors.left: toolButton.right
+
+            onClicked: {
+                tabBar.currentIndex = 0
+                ViewController.checked_orders_to_locations()
+                ViewController.location_model.filter = 1
+            }
+        }
+
+        ToolButton {
+            id: toolButton2
+            text: qsTr("Items")
+            anchors.left: toolButton1.right
+
+            onClicked: {
+                tabBar.currentIndex = 1
+                ViewController.checked_orders_to_items()
+                ViewController.order_model.filter = 1
+            }
+        }
+
+        CheckDelegate {
+            id: mainCheckButton
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            tristate: true
+            checkState: toolBar.model.check_state
+            anchors.rightMargin: 16
+            padding: 8
+            width: 36
+            height: 36
+
+            onClicked: {
+                if (toolBar.model.check_state === 2) {
+                    toolBar.model.check_all(false)
+                } else {
+                    toolBar.model.check_all(true)
+                }
+            }
+        }
+    }
+
     ListView {
         id: orderList
         anchors.top: toolBar.bottom
-        anchors.bottom: parent.bottom
+        anchors.bottom: connectionsBar.top
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.topMargin: 0

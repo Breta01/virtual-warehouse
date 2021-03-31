@@ -15,7 +15,7 @@ from virtual_warehouse.heatmap import get_heatmap_color
 locale.setlocale(locale.LC_ALL, "")
 
 
-class Location(QObject):
+class TabLocation(QObject):
     """Location QObject for displaying list of selected locations."""
 
     def __init__(self, location):
@@ -66,7 +66,7 @@ class Location(QObject):
         self._checked = val
 
 
-class Item(QObject):
+class TabItem(QObject):
     """Item QObject for displaying list of items in warehouse."""
 
     def __init__(self, item):
@@ -108,7 +108,7 @@ class Item(QObject):
         self._checked = val
 
 
-class Order(QObject):
+class TabOrder(QObject):
     """Order QObject for displaying list of orders in warehouse."""
 
     def __init__(self, order):
@@ -169,6 +169,7 @@ class UniversalListModel(QAbstractListModel):
             self._objects = {k: self._object_class(v) for k, v in objects.items()}
 
     filterChanged = Signal()
+    checkChanged = Signal()
 
     def set_data(self, objects):
         self._objects = {k: self._object_class(v) for k, v in objects.items()}
@@ -205,13 +206,27 @@ class UniversalListModel(QAbstractListModel):
     def set_checked(self, checked, control=False):
         if not control:
             self.clear_checked()
+
         self._checked.update(checked)
         self._update_filter()
         for n in self._checked:
             self._objects[n].set_checked(True)
+
+        self.checkChanged.emit()
         self.dataChanged.emit(
             self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
         )
+
+    @Property(int, constant=False, notify=checkChanged)
+    def check_state(self):
+        """Return state of main checkbox of all visible check boxes.
+        States: unchecked (0)/ partially checked (1) / checked (2)
+        """
+        selected_set = set(self._selected)
+        match_count = sum(map(lambda x: x in selected_set, self._checked))
+        if match_count:
+            return 2 if match_count == len(self._selected) else 1
+        return 0
 
     @Property(int, constant=False, notify=filterChanged)
     def filter(self):
@@ -219,8 +234,16 @@ class UniversalListModel(QAbstractListModel):
 
     @filter.setter
     def set_filter(self, val):
-        self._filter = val
-        self._update_filter()
+        if self._filter != val:
+            self._filter = val
+            self.filterChanged.emit()
+            self._update_filter()
+            self.checkChanged.emit()
+
+    @Slot(bool)
+    def check_all(self, check=True):
+        """Check/Uncheck all currently visible list items."""
+        self.set_checked(self._selected if check else [])
 
     @Slot(str, bool)
     def check(self, _id, val):
@@ -230,12 +253,15 @@ class UniversalListModel(QAbstractListModel):
         else:
             self._checked.remove(_id)
 
+        self.checkChanged.emit()
+
     @Slot(str)
     def search(self, val):
         self._search = val
         self._update_filter()
 
     def _update_filter(self):
+        """Filtering items appearing in list: all/checked/unchecked/text search."""
         if self._search:
             self._selected = [
                 k for k in self._all_selected if self._search.lower() in k.lower()
@@ -247,6 +273,7 @@ class UniversalListModel(QAbstractListModel):
         elif self._filter == 2:
             self._selected = [k for k in self._all_selected if k not in self._checked]
         self.layoutChanged.emit()
+        self.checkChanged.emit()
 
 
 class HoverListModel(UniversalListModel):

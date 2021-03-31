@@ -22,7 +22,6 @@ from virtual_warehouse.parser.utils import (
 BASE_IRI = "http://warehouse/onto.owl"
 onto = get_ontology(BASE_IRI)
 
-
 with onto:
 
     class Country(Thing):
@@ -161,6 +160,43 @@ with onto:
                 has_unit_levels=unit_levels,
             )
 
+        @staticmethod
+        def get_by_locations(locations):
+            """Get list of items stored at given location.
+
+            Args:
+               locations (List[Locations]): list of locations to look for.
+
+            Returns:
+               List[Item]: list of items stored at locations
+            """
+            # TODO: Check inventory date
+            values = " ".join(map(lambda x: f"<{x.iri}>", locations))
+            i1 = "VALUES ?loc { " + values + " }"
+            i2 = f"?inv <{has_location.iri}> ?loc .\n"
+            i3 = f"?inv <{has_items.iri}> ?item .\n"
+
+            query = "SELECT DISTINCT ?item WHERE { " + i1 + i2 + i3 + " }"
+            return list(default_world.sparql_query(query))
+
+        @staticmethod
+        def get_by_orders(orders):
+            """Get list of items included in given orders.
+
+            Args:
+               orders (List[Order]): list of orders to search.
+
+            Returns:
+               List[Item]: list of items included in orders.
+            """
+            values = " ".join(map(lambda x: f"<{x.iri}>", orders))
+            i1 = "VALUES ?ord { " + values + " }"
+            i2 = f"?ord <{has_ordered_items.iri}> ?oi .\n"
+            i3 = f"?oi <{has_item.iri}> ?item .\n"
+
+            query = "SELECT DISTINCT ?item WHERE { " + i1 + i2 + i3 + " }"
+            return list(default_world.sparql_query(query))
+
     class Location(Thing):
         """Description of location in warehouse.
 
@@ -231,11 +267,50 @@ with onto:
             """Get planar coordinates of location (used for top-down view)."""
             return (self.has_x, self.has_y)
 
+        @staticmethod
+        def get_by_orders(orders):
+            """Get list of locations which are potentially accessed by given orders.
+
+            Args:
+               locations (List[Order]): list of locations to inspect
+
+            Returns:
+               List[Location]: list of locations containing ordered items
+            """
+            values = " ".join(map(lambda x: f"<{x.iri}>", orders))
+            i1 = "VALUES ?ord { " + values + " }"
+            i2 = f"?ord <{has_ordered_items.iri}> ?oi .\n"
+            i3 = f"?oi <{has_item.iri}> ?item .\n"
+            i4 = f"?inv <{has_items.iri}> ?item .\n"
+            i5 = f"?inv <{has_location.iri}> ?loc .\n"
+
+            query = "SELECT DISTINCT ?loc WHERE { " + i1 + i2 + i3 + i4 + i5 + " }"
+            return list(default_world.sparql_query(query))
+
+        @staticmethod
+        def get_by_items(items):
+            """Get list of locations storing given items.
+
+            Args:
+               items (List[Item]): list of items to locate items.
+
+            Returns:
+               List[Location]: list of locations storing items
+            """
+            values = " ".join(map(lambda x: f"<{x.iri}>", items))
+            i1 = "VALUES ?item { " + values + " }"
+            i2 = f"?inv <{has_items.iri}> ?item .\n"
+            i3 = f"?inv <{has_location.iri}> ?loc .\n"
+
+            query = "SELECT DISTINCT ?loc WHERE { " + i1 + i2 + i3 + " }"
+            return list(default_world.sparql_query(query))
+
     class OrderedItem(Thing):
         """Description of item instance in order.
 
         Attributes:
             name (str): id of object (ordered_id-item_id)
+            has_item (Item): item object instantiated by this order
             has_requested_qty (int): requested amount of item inside ordered
             has_total_qty (int): amount of item provided inside order
             qty_uom (int): unit of measure of quantities
@@ -326,12 +401,32 @@ with onto:
             Returns:
                List[Order]: list of orders containing at leas one of the provided items
             """
-            item_iris = " ".join(map(lambda x: f"<{x.iri}>", items))
-            i1 = f"?p <{has_ordered_items.iri}> ?oi .\n"
+            values = " ".join(map(lambda x: f"<{x.iri}>", items))
+            i1 = "VALUES ?item { " + values + " }"
             i2 = f"?oi <{has_item.iri}> ?item .\n"
-            i3 = "VALUES ?item { " + item_iris + " }"
+            i3 = f"?ord <{has_ordered_items.iri}> ?oi .\n"
 
-            query = "SELECT DISTINCT ?p WHERE { " + i1 + i2 + i3 + " }"
+            query = "SELECT DISTINCT ?ord WHERE { " + i1 + i2 + i3 + " }"
+            return list(default_world.sparql_query(query))
+
+        @staticmethod
+        def get_by_locations(locations):
+            """Get list of orders which potentially access given locations.
+
+            Args:
+               locations (List[Location]): list of locations to inspect
+
+            Returns:
+               List[Order]: list of orders containing items stored at given locations
+            """
+            values = " ".join(map(lambda x: f"<{x.iri}>", locations))
+            i1 = "VALUES ?loc { " + values + " }"
+            i2 = f"?inv <{has_location.iri}> ?loc .\n"
+            i3 = f"?inv <{has_items.iri}> ?item .\n"
+            i4 = f"?oi <{has_item.iri}> ?item .\n"
+            i5 = f"?ord <{has_ordered_items.iri}> ?oi .\n"
+
+            query = "SELECT DISTINCT ?ord WHERE { " + i1 + i2 + i3 + i4 + i5 + " }"
             return list(default_world.sparql_query(query))
 
     # Order properties
