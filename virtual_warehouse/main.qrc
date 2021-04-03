@@ -5,6 +5,7 @@
     <qresource prefix="/qml">
         <file alias="main.qml">resources/qml/main.qml</file>
         <file alias="CustomItem.qml">resources/qml/CustomItem.qml</file>
+        <file alias="Dialogs.qml">resources/qml/Dialogs.qml</file>
         <file alias="ItemListView.qml">resources/qml/ItemListView.qml</file>
         <file alias="LocationListView.qml">resources/qml/LocationListView.qml</file>
         <file alias="MapView2D.qml">resources/qml/MapView2D.qml</file>

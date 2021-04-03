@@ -1,10 +1,18 @@
-from PySide2.QtCore import Property, QModelIndex, QObject, Qt, Signal, Slot
+from PySide2.QtCore import (
+    Property,
+    QAbstractListModel,
+    QModelIndex,
+    QObject,
+    Qt,
+    Signal,
+    Slot,
+)
 
 from virtual_warehouse.environment import LOCATION_TYPE_MAP
 from virtual_warehouse.heatmap import get_heatmap_color
 
 
-class SingleLocation:
+class SingleLocation(QObject):
     """Class representing single location in warehouse."""
 
     def __init__(self, location):
@@ -16,6 +24,7 @@ class SingleLocation:
         self.names = [self._i.name]
 
     def get_dict(self):
+        """Returns dictionary representing the location."""
         return {
             "name": self._i.name,
             "type": self._i.has_ltype,
@@ -34,7 +43,7 @@ class SingleLocation:
         return self._i.has_freq
 
 
-class MultiLocation:
+class MultiLocation(QObject):
     """Class representing multiple locations merged together."""
 
     def __init__(self, locations):
@@ -47,6 +56,7 @@ class MultiLocation:
         self.names = [i.name for i in locations]
 
     def get_dict(self):
+        """Returns dictionary representing the locations."""
         return {
             "name": self._i.name,
             "type": self._i.has_ltype,
@@ -67,7 +77,7 @@ class MultiLocation:
         )
 
 
-class UniversalLocationListModel(QObject):
+class UniversalLocationListModel(QAbstractListModel):
     """List model providing locations for 2D or 3D view."""
 
     ObjectRole = Qt.UserRole + 1
@@ -91,14 +101,14 @@ class UniversalLocationListModel(QObject):
             for n in self._objects[k].names:
                 self._name_to_idx[n] = i
         if objects:
-            self._max_heat = self._get_max_heat()
+            self.update_max_heat()
             self._max_level = max(l._i.has_z for l in self._objects.values())
             self.maxChanged.emit()
 
-    def _get_max_heat(self):
+    def update_max_heat(self):
         if len(self._objects) == 0:
             return 0
-        return max(o.get_heat() for _, o in self._objects.items())
+        self._max_heat = max(o.get_heat() for _, o in self._objects.items())
 
     def _get_idx(self, idx):
         return self._objects[self._keys[idx]]

@@ -1,4 +1,3 @@
-import Qt.labs.platform 1.1
 import QtQuick 2.14
 import QtQuick.Controls 2.14
 import QtQuick.Window 2.14
@@ -16,6 +15,10 @@ ApplicationWindow {
     height: 600
     visible: true
 
+    Dialogs {
+        id: dialogs
+    }
+
     menuBar: MenuBar {
         id: menuBar
         z: 100
@@ -25,7 +28,7 @@ ApplicationWindow {
 
             MenuItem {
                 text: qsTr("&Open")
-                onTriggered: openDialog.open()
+                onTriggered: dialogs.openImportFileDialog()
             }
             //            MenuItem {
             //                text: qsTr("&Save As...")
@@ -54,7 +57,7 @@ ApplicationWindow {
 
             MenuItem {
                 text: qsTr("&Help")
-                onTriggered: helpDialog.open()
+                onTriggered: dialogs.openHelpDialog()
             }
             //            MenuItem {
             //                text: qsTr("&Settings")
@@ -99,6 +102,9 @@ ApplicationWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 value: ViewController.progress_value
                 indeterminate: (value == 0)
+                Behavior on value {
+                    NumberAnimation {}
+                }
             }
         }
     }
@@ -321,40 +327,19 @@ ApplicationWindow {
         }
     }
 
-    FileDialog {
-        id: openDialog
-        modality: Qt.WindowModal
-        title: "Please select a warehouse file"
-        nameFilters: ["Excel file (*.xls, *.xlsx)", "CSV file (*.csv)"]
-        folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
-        onAccepted: ViewController.load(openDialog.fileUrl)
-    }
-
-    Dialog {
-        id: helpDialog
-        title: "Help"
-        standardButtons: StandardButton.Close
-
-        Rectangle {
-            implicitWidth: 400
-            implicitHeight: 100
-            color: "transparent"
-
-            Text {
-                text: "TODO: Add link to documentation"
-            }
-        }
-    }
 
     Connections {
         target: ViewController
 
         function onModelChanged() {
-            surfacePlot.customItemList = []
+            console.log("Changed")
+            console.log(surfacePlot.children.length)
+
+            surfacePlot.removeCustomItems()
             for (var row = 0; row < ViewController.model3D.rowCount(); row++) {
                 var item = ViewController.model3D.get(row)
                 var component = Qt.createComponent("qrc:/qml/CustomItem.qml")
-                let instance = component.createObject(surfacePlot, {
+                var instance = component.createObject(surfacePlot, {
                                                           "objectName": item.name,
                                                           "meshFile": item.mesh_file,
                                                           "position": Qt.vector3d(
@@ -363,7 +348,7 @@ ApplicationWindow {
                                                                           item.y)
                                                       })
 
-                surfacePlot.customItemList.push(instance)
+                surfacePlot.addCustomItem(instance)
             }
         }
 

@@ -1,6 +1,6 @@
 from PySide2.QtCore import Property, QObject, Qt, QThread, QUrl, Signal, Slot
 
-import virtual_warehouse.parser.excel_parser as parser
+from virtual_warehouse import __version__
 from virtual_warehouse.heatmap import calculate_frquencies
 from virtual_warehouse.location_models import (
     MultiLocation,
@@ -9,6 +9,7 @@ from virtual_warehouse.location_models import (
 )
 from virtual_warehouse.location_utils import cluster_locations
 from virtual_warehouse.parser.data_model import Item, Location, Order
+from virtual_warehouse.parser.excel_parser import Document
 from virtual_warehouse.tab_controller import (
     HoverListModel,
     TabItem,
@@ -21,22 +22,56 @@ from virtual_warehouse.tab_controller import (
 class DataLoaderThread(QThread):
     """Thread which loads data from file."""
 
-    dataReady = Signal(object)
+    locationsReady = Signal(object)
+    itemsReady = Signal(object)
+    ordersReady = Signal(object)
+    frequenciesReady = Signal()
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, sheet_types):
+        """Initialize thread params for loading file in separate thread.
+
+        Args:
+            file_path (str): path to file for loading
+            sheet_types (list[dict[str, str]]): list of dictionaries, each containing
+                keys "name": name of the sheet, "type": name of the type.
+                There are 6 types ("None", "Locations", "Coordinates", "Items",
+                "Inventory", "Orders")
+        """
         super(DataLoaderThread, self).__init__()
         self.file_path = file_path
+        self.sheets = sheet_types
 
     def run(self):
         """Load data from file path and emit data through signal."""
-        # TODO: Split on loading of individual elements, measure speed?
-        locations, items, balance, orders = parser.parse_document(
-            QUrl(self.file_path).toLocalFile()
-        )
-        # TODO: Calculate after initial draw
+        where = lambda arr, y: (x["name"] for x in arr if x["type"] == y)
+
+        document = Document(QUrl(self.file_path).toLocalFile())
+
+        # locations, items, balance, orders = None, None, None, None
+
+        for sheet in where(self.sheets, "Locations"):
+            locations = document.parse_locations(sheet)
+
+        for sheet in where(self.sheets, "Coordinates"):
+            locations = document.parse_coordinates(sheet)
+
+        self.locationsReady.emit(locations)
+
+        for sheet in where(self.sheets, "Items"):
+            items = document.parse_items(sheet)
+
+        self.itemsReady.emit(items)
+
+        for sheet in where(self.sheets, "Inventory"):
+            balance = document.parse_inventory_balance(sheet)
+
+        for sheet in where(self.sheets, "Orders"):
+            orders = document.parse_orders(sheet)
+
+        self.ordersReady.emit(orders)
+
         calculate_frquencies(locations, balance, orders)
-        self.data = (locations, items, balance, orders)
-        self.dataReady.emit(self.data)
+        self.frequenciesReady.emit()
 
 
 class Map(QObject):
@@ -114,15 +149,19 @@ class ViewController(QObject):
         self._progress_value = 1
 
         # DEBUG:
-        self.load(
-            "file:///home/breta/Documents/github/virtual-warehouse/data/warehouse_no_1_v2.xlsx"
-        )
+        # self.load(
+        #     "file:///home/breta/Documents/github/virtual-warehouse/data/warehouse_no_1_v2.xlsx"
+        # )
 
     modelChanged = Signal()
     sidebarChanged = Signal()
     drawModeChanged = Signal()
     itemSelected = Signal()
     progressChanged = Signal()
+
+    @Property(str, constant=True)
+    def version(self):
+        return __version__
 
     @Property(QObject, constant=False, notify=modelChanged)
     def map(self):
@@ -272,18 +311,25 @@ class ViewController(QObject):
     def reset_selection(self):
         self.selected_idxs.clear()
 
-    @Slot(str)
-    def load(self, file_path):
+    @Slot(str, result="QVariantList")
+    def get_sheets(self, file_path):
+        return Document.get_sheet_names(QUrl(file_path).toLocalFile())
+
+    @Slot(str, "QVariantList")
+    def load(self, file_path, types):
+        print(types)
+        print(types[0])
         self.progress_value = 0
-        self.loader = DataLoaderThread(file_path)
-        self.loader.dataReady.connect(self._load, Qt.QueuedConnection)
+        self.loader = DataLoaderThread(file_path, types)
+        self.loader.locationsReady.connect(self._load_locations, Qt.QueuedConnection)
+        self.loader.itemsReady.connect(self._load_items, Qt.QueuedConnection)
+        self.loader.ordersReady.connect(self._load_orders, Qt.QueuedConnection)
+        self.loader.frequenciesReady.connect(
+            self._load_frequencies, Qt.QueuedConnection
+        )
         self.loader.start()
 
-    def _load(self, data):
-        # TODO: Split loading into multiple steps, update progress bar
-        #       updating progress bar requires extra thread
-        locations, items, balance, orders = data
-
+    def _load_locations(self, locations):
         self.reset_selection()
         self.locations = locations
 
@@ -296,12 +342,6 @@ class ViewController(QObject):
 
         self._sidebar_model.set_data(locations)
 
-        self._item_model.set_data(items)
-        self._item_model.set_selected(list(items.keys()))
-
-        self._order_model.set_data(orders)
-        self._order_model.set_selected(list(orders.keys()))
-
         self._model3D.set_data(
             {k: SingleLocation(v) for k, v in self.locations.items()}
         )
@@ -313,4 +353,19 @@ class ViewController(QObject):
         self._model2D.set_data(multi_loc)
 
         self.modelChanged.emit()
+        self.progress_value = 0.4
+
+    def _load_items(self, items):
+        self._item_model.set_data(items)
+        self._item_model.set_selected(list(items.keys()))
+        self.progress_value = 0.6
+
+    def _load_orders(self, orders):
+        self._order_model.set_data(orders)
+        self._order_model.set_selected(list(orders.keys()))
+        self.progress_value = 0.9
+
+    def _load_frequencies(self):
+        self._model2D.update_max_heat()
+        self._model3D.update_max_heat()
         self.progress_value = 1

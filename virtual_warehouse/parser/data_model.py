@@ -172,7 +172,7 @@ with onto:
             """
             # TODO: Check inventory date
             values = " ".join(map(lambda x: f"<{x.iri}>", locations))
-            i1 = "VALUES ?loc { " + values + " }"
+            i1 = "VALUES ?loc { " + values + " } .\n"
             i2 = f"?inv <{has_location.iri}> ?loc .\n"
             i3 = f"?inv <{has_items.iri}> ?item .\n"
 
@@ -190,7 +190,7 @@ with onto:
                List[Item]: list of items included in orders.
             """
             values = " ".join(map(lambda x: f"<{x.iri}>", orders))
-            i1 = "VALUES ?ord { " + values + " }"
+            i1 = "VALUES ?ord { " + values + " } .\n"
             i2 = f"?ord <{has_ordered_items.iri}> ?oi .\n"
             i3 = f"?oi <{has_item.iri}> ?item .\n"
 
@@ -278,7 +278,7 @@ with onto:
                List[Location]: list of locations containing ordered items
             """
             values = " ".join(map(lambda x: f"<{x.iri}>", orders))
-            i1 = "VALUES ?ord { " + values + " }"
+            i1 = "VALUES ?ord { " + values + " } .\n"
             i2 = f"?ord <{has_ordered_items.iri}> ?oi .\n"
             i3 = f"?oi <{has_item.iri}> ?item .\n"
             i4 = f"?inv <{has_items.iri}> ?item .\n"
@@ -298,7 +298,7 @@ with onto:
                List[Location]: list of locations storing items
             """
             values = " ".join(map(lambda x: f"<{x.iri}>", items))
-            i1 = "VALUES ?item { " + values + " }"
+            i1 = "VALUES ?item { " + values + " } .\n"
             i2 = f"?inv <{has_items.iri}> ?item .\n"
             i3 = f"?inv <{has_location.iri}> ?loc .\n"
 
@@ -402,7 +402,7 @@ with onto:
                List[Order]: list of orders containing at leas one of the provided items
             """
             values = " ".join(map(lambda x: f"<{x.iri}>", items))
-            i1 = "VALUES ?item { " + values + " }"
+            i1 = "VALUES ?item { " + values + " } .\n"
             i2 = f"?oi <{has_item.iri}> ?item .\n"
             i3 = f"?ord <{has_ordered_items.iri}> ?oi .\n"
 
@@ -420,7 +420,7 @@ with onto:
                List[Order]: list of orders containing items stored at given locations
             """
             values = " ".join(map(lambda x: f"<{x.iri}>", locations))
-            i1 = "VALUES ?loc { " + values + " }"
+            i1 = "VALUES ?loc { " + values + " } .\n"
             i2 = f"?inv <{has_location.iri}> ?loc .\n"
             i3 = f"?inv <{has_items.iri}> ?item .\n"
             i4 = f"?oi <{has_item.iri}> ?item .\n"
