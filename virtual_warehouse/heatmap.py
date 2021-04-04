@@ -1,12 +1,12 @@
 """Module calculating heat map and statistics on top of warehouse model."""
 
 
-def item_locations(balance):
+def item_locations(inventory):
     """Create dictionary mapping (date, item) to list of locations."""
     item_to_loc = {}
-    for date, balance in balance.items():
+    for date, inventory in inventory.items():
         item_to_loc[date] = {}
-        for loc_id, loc_inv in balance.items():
+        for loc_id, loc_inv in inventory.items():
             for item in loc_inv.has_items:
                 if item.name not in item_to_loc[date]:
                     item_to_loc[date][item.name] = []
@@ -15,9 +15,9 @@ def item_locations(balance):
     return item_to_loc
 
 
-def calculate_frquencies(locations, balance, orders):
+def calculate_frquencies(locations, inventory, orders):
     """Calculate order frequency for each location."""
-    item_locs = item_locations(balance)
+    item_locs = item_locations(inventory)
 
     date = list(item_locs.keys())[-1]
 

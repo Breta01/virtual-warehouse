@@ -8,6 +8,7 @@ from owlready2 import (
     ObjectProperty,
     Thing,
     default_world,
+    destroy_entity,
     get_ontology,
 )
 
@@ -21,6 +22,17 @@ from virtual_warehouse.parser.utils import (
 # We could use actual irl with already created ontology
 BASE_IRI = "http://warehouse/onto.owl"
 onto = get_ontology(BASE_IRI)
+
+
+def destroy_all(cls):
+    """Function for destroying all instances of given class.
+
+    Args:
+        cls (class): ontology class
+    """
+    for i in cls.instances():
+        destroy_entity(i)
+
 
 with onto:
 
@@ -88,6 +100,11 @@ with onto:
         def add_item(self, item_id: str):
             item = onto.search_one(iri=f"{BASE_IRI}#{item_id}")
             self.has_items.append(item)
+
+        @classmethod
+        def destroy_all(cls):
+            """Destroy all instances of Inventory class."""
+            destroy_all(cls)
 
     class ItemUnit(Thing):
         """Represents different packaging units of item.
@@ -159,6 +176,12 @@ with onto:
                 has_base_unit=base_unit,
                 has_unit_levels=unit_levels,
             )
+
+        @classmethod
+        def destroy_all(cls):
+            """Destroy all instances of Item class as well as related entities."""
+            destroy_all(cls)
+            destroy_all(ItemUnit)
 
         @staticmethod
         def get_by_locations(locations):
@@ -266,6 +289,11 @@ with onto:
         def get_2d(self):
             """Get planar coordinates of location (used for top-down view)."""
             return (self.has_x, self.has_y)
+
+        @classmethod
+        def destroy_all(cls):
+            """Destroy all instances of Location class."""
+            destroy_all(cls)
 
         @staticmethod
         def get_by_orders(orders):
@@ -390,6 +418,12 @@ with onto:
                 has_qty_uom=qty_uom,
             )
             self.has_ordered_items.append(oi)
+
+        @classmethod
+        def destroy_all(cls):
+            """Destroy all instances of Order class as well as related entities."""
+            destroy_all(cls)
+            destroy_all(OrderedItem)
 
         @staticmethod
         def get_by_items(items):

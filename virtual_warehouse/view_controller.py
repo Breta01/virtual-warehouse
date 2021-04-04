@@ -8,7 +8,7 @@ from virtual_warehouse.location_models import (
     UniversalLocationListModel,
 )
 from virtual_warehouse.location_utils import cluster_locations
-from virtual_warehouse.parser.data_model import Item, Location, Order
+from virtual_warehouse.parser.data_model import Inventory, Item, Location, Order
 from virtual_warehouse.parser.excel_parser import Document
 from virtual_warehouse.tab_controller import (
     HoverListModel,
@@ -24,10 +24,19 @@ class DataLoaderThread(QThread):
 
     locationsReady = Signal(object)
     itemsReady = Signal(object)
+    inventoryReady = Signal(object)
     ordersReady = Signal(object)
     frequenciesReady = Signal()
 
-    def __init__(self, file_path, sheet_types):
+    def __init__(
+        self,
+        file_path,
+        sheet_types,
+        locations=None,
+        items=None,
+        inventory=None,
+        orders=None,
+    ):
         """Initialize thread params for loading file in separate thread.
 
         Args:
@@ -36,41 +45,60 @@ class DataLoaderThread(QThread):
                 keys "name": name of the sheet, "type": name of the type.
                 There are 6 types ("None", "Locations", "Coordinates", "Items",
                 "Inventory", "Orders")
+            locations (dict[str, Location]): previously loaded locations
+            items (dict[str, Item]): previously loaded items
+            inventory (dict[str, Inventory]): previously loaded inventory
+            orders (dict[str, Inventory]): previously loaded orders
         """
         super(DataLoaderThread, self).__init__()
         self.file_path = file_path
         self.sheets = sheet_types
 
+        self.locations = locations
+        self.items = items
+        self.inventory = inventory
+        self.orders = orders
+
     def run(self):
         """Load data from file path and emit data through signal."""
-        where = lambda arr, y: (x["name"] for x in arr if x["type"] == y)
+        where = lambda arr, y: [x["name"] for x in arr if x["type"] == y]
 
         document = Document(QUrl(self.file_path).toLocalFile())
 
-        # locations, items, balance, orders = None, None, None, None
+        if len(where(self.sheets, "Locations")) and len(
+            where(self.sheets, "Coordinates")
+        ):
+            Location.destroy_all()
+            for sheet in where(self.sheets, "Locations"):
+                self.locations = document.parse_locations(sheet)
 
-        for sheet in where(self.sheets, "Locations"):
-            locations = document.parse_locations(sheet)
+            for sheet in where(self.sheets, "Coordinates"):
+                self.locations = document.parse_coordinates(sheet)
 
-        for sheet in where(self.sheets, "Coordinates"):
-            locations = document.parse_coordinates(sheet)
+            self.locationsReady.emit(self.locations)
 
-        self.locationsReady.emit(locations)
+        if len(where(self.sheets, "Items")):
+            Item.destroy_all()
+            for sheet in where(self.sheets, "Items"):
+                self.items = document.parse_items(sheet)
 
-        for sheet in where(self.sheets, "Items"):
-            items = document.parse_items(sheet)
+            self.itemsReady.emit(self.items)
 
-        self.itemsReady.emit(items)
+        if len(where(self.sheets, "Inventory")):
+            Inventory.destroy_all()
+            for sheet in where(self.sheets, "Inventory"):
+                self.inventory = document.parse_inventory_balance(sheet)
 
-        for sheet in where(self.sheets, "Inventory"):
-            balance = document.parse_inventory_balance(sheet)
+            self.inventoryReady.emit(self.inventory)
 
-        for sheet in where(self.sheets, "Orders"):
-            orders = document.parse_orders(sheet)
+        if len(where(self.sheets, "Orders")):
+            Order.destroy_all()
+            for sheet in where(self.sheets, "Orders"):
+                self.orders = document.parse_orders(sheet)
 
-        self.ordersReady.emit(orders)
+            self.ordersReady.emit(self.orders)
 
-        calculate_frquencies(locations, balance, orders)
+        calculate_frquencies(self.locations, self.inventory, self.orders)
         self.frequenciesReady.emit()
 
 
@@ -144,14 +172,13 @@ class ViewController(QObject):
 
         self.selected_idxs = set()
         self.reset_selection()
-        self.locations = {}
+
+        self.locations = None
+        self.items = None
+        self.inventory = None
+        self.orders = None
 
         self._progress_value = 1
-
-        # DEBUG:
-        # self.load(
-        #     "file:///home/breta/Documents/github/virtual-warehouse/data/warehouse_no_1_v2.xlsx"
-        # )
 
     modelChanged = Signal()
     sidebarChanged = Signal()
@@ -254,7 +281,8 @@ class ViewController(QObject):
 
     # Connecting sidebar tabs
     # TODO: run in separate thread
-    def _connect_tabs(self, src_tab_model, dst_tab_model, connector):
+    @staticmethod
+    def _connect_tabs(src_tab_model, dst_tab_model, connector):
         if src_tab_model._checked:
             objs = [src_tab_model._objects[k]._i for k in src_tab_model._checked]
             res = connector(objs)
@@ -320,9 +348,12 @@ class ViewController(QObject):
         print(types)
         print(types[0])
         self.progress_value = 0
-        self.loader = DataLoaderThread(file_path, types)
+        self.loader = DataLoaderThread(
+            file_path, types, self.locations, self.items, self.inventory, self.orders
+        )
         self.loader.locationsReady.connect(self._load_locations, Qt.QueuedConnection)
         self.loader.itemsReady.connect(self._load_items, Qt.QueuedConnection)
+        self.loader.inventoryReady.connect(self._load_inventory, Qt.QueuedConnection)
         self.loader.ordersReady.connect(self._load_orders, Qt.QueuedConnection)
         self.loader.frequenciesReady.connect(
             self._load_frequencies, Qt.QueuedConnection
@@ -334,9 +365,10 @@ class ViewController(QObject):
         self.locations = locations
 
         self._map.set_data(locations)
+
+        self._location_model.clear_checked()
         self._location_model.set_data(locations)
         self._location_model.set_selected(
-            # list(locations.keys())
             [k for k, v in locations.items() if v.has_ltype == "rack"]
         )
 
@@ -353,14 +385,22 @@ class ViewController(QObject):
         self._model2D.set_data(multi_loc)
 
         self.modelChanged.emit()
-        self.progress_value = 0.4
+        self.progress_value = 0.3
 
     def _load_items(self, items):
+        self.items = items
+        self._item_model.clear_checked()
         self._item_model.set_data(items)
         self._item_model.set_selected(list(items.keys()))
-        self.progress_value = 0.6
+        self.progress_value = 0.5
+
+    def _load_inventory(self, inventory):
+        self.inventory = inventory
+        self.progress_value = 0.7
 
     def _load_orders(self, orders):
+        self.orders = orders
+        self._order_model.clear_checked()
         self._order_model.set_data(orders)
         self._order_model.set_selected(list(orders.keys()))
         self.progress_value = 0.9

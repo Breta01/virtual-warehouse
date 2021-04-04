@@ -332,9 +332,6 @@ ApplicationWindow {
         target: ViewController
 
         function onModelChanged() {
-            console.log("Changed")
-            console.log(surfacePlot.children.length)
-
             surfacePlot.removeCustomItems()
             for (var row = 0; row < ViewController.model3D.rowCount(); row++) {
                 var item = ViewController.model3D.get(row)
