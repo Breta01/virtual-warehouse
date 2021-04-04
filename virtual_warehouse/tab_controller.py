@@ -160,7 +160,7 @@ class UniversalListModel(QAbstractListModel):
         self._selected = [] if selected_objects is None else selected_objects
         self._all_selected = self._selected
         self._checked = set()
-        self._search = ""
+        self._search_text = ""
         self._filter = 0
 
         if objects is None:
@@ -189,12 +189,14 @@ class UniversalListModel(QAbstractListModel):
             return self._objects[self._selected[index.row()]]
         return None
 
-    def roleNames(self):
+    def roleNames(self):  # skipcq: PYL-R0201
+        """Set role names, QAbstractListModel requires implementation of this method."""
         roles = {}
         roles[UniversalListModel.ObjectRole] = b"object"
         return roles
 
     def clear_checked(self):
+        """Clear all checked items in list."""
         for n in self._checked:
             self._objects[n].set_checked(False)
         self._checked.clear()
@@ -204,6 +206,13 @@ class UniversalListModel(QAbstractListModel):
         )
 
     def set_checked(self, checked, control=False):
+        """Set/add list of newly checked items in list.
+
+        Args:
+            checked (list[str]): list of ids of checked objects
+            control (bool): if control is set to true, items are added to checked items
+                otherwise originally checked items are cleared firs.
+        """
         if not control:
             self.clear_checked()
 
@@ -230,10 +239,16 @@ class UniversalListModel(QAbstractListModel):
 
     @Property(int, constant=False, notify=filterChanged)
     def filter(self):
+        """Filter property for splitting tabs on all(0)/checked(1)/unchecked(2)."""
         return self._filter
 
     @filter.setter
     def set_filter(self, val):
+        """Set value of filter property.
+
+        Args:
+            val (int): new value of filter (one of 0, 1, 2)
+        """
         if self._filter != val:
             self._filter = val
             self.filterChanged.emit()
@@ -246,9 +261,10 @@ class UniversalListModel(QAbstractListModel):
         self.set_checked(self._selected if check else [])
 
     @Slot(str, bool)
-    def check(self, _id, val):
-        self._objects[_id].set_checked(val)
-        if val:
+    def check(self, _id, check=True):
+        """Check/uncheck one item in the list."""
+        self._objects[_id].set_checked(check)
+        if check:
             self._checked.add(_id)
         else:
             self._checked.remove(_id)
@@ -256,15 +272,16 @@ class UniversalListModel(QAbstractListModel):
         self.checkChanged.emit()
 
     @Slot(str)
-    def search(self, val):
-        self._search = val
+    def search(self, text):
+        """Search for text between object ids."""
+        self._search_text = text
         self._update_filter()
 
     def _update_filter(self):
-        """Filtering items appearing in list: all/checked/unchecked/text search."""
-        if self._search:
+        """Filter items appearing in one of the lists: all/checked/unchecked/search."""
+        if self._search_text:
             self._selected = [
-                k for k in self._all_selected if self._search.lower() in k.lower()
+                k for k in self._all_selected if self._search_text.lower() in k.lower()
             ]
         elif self._filter == 0:
             self._selected = self._all_selected
@@ -289,7 +306,7 @@ class HoverListModel(UniversalListModel):
         hovered_objects=None,
         parent=None,
     ):
-        super(UniversalListModel, self).__init__(parent)
+        super(HoverListModel, self).__init__(parent)
         self._object_class = object_class
         self._selected = [] if selected_objects is None else selected_objects
         self._hovered = [] if hovered_objects is None else hovered_objects

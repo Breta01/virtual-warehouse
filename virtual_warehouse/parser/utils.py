@@ -23,7 +23,7 @@ types = {
     "inbound door": "inbound_door",
     "outbound door": "outbound_door",
     "staging area": "staging_area",
-    "custome": "custome",
+    "custom": "custom",
 }
 
 
@@ -31,8 +31,8 @@ def convert_type(type_str):
     """Unify location type names."""
     try:
         return types[type_str.lower()]
-    except:
-        return "custome"
+    except Exception:
+        return "custom"
 
 
 def convert_dim(dim, uom):

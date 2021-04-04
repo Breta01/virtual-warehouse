@@ -24,7 +24,7 @@ class SingleLocation(QObject):
         self.names = [self._i.name]
 
     def get_dict(self):
-        """Returns dictionary representing the location."""
+        """Return dictionary representing the location."""
         return {
             "name": self._i.name,
             "type": self._i.has_ltype,
@@ -56,7 +56,7 @@ class MultiLocation(QObject):
         self.names = [i.name for i in locations]
 
     def get_dict(self):
-        """Returns dictionary representing the locations."""
+        """Return dictionary representing the multi-location."""
         return {
             "name": self._i.name,
             "type": self._i.has_ltype,
@@ -149,7 +149,8 @@ class UniversalLocationListModel(QAbstractListModel):
             return self._get_idx(index.row())
         return None
 
-    def roleNames(self):
+    def roleNames(self):  # skipcq: PYL-R0201
+        """Set role names, QAbstractListModel requires implementation of this method."""
         roles = {}
-        roles[UniversalListModel.ObjectRole] = b"object"
+        roles[UniversalLocationListModel.ObjectRole] = b"object"
         return roles

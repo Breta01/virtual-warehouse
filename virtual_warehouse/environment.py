@@ -20,7 +20,7 @@ LOCATION_TYPE_MAP = {
         "gray_color": "#ddd",
         "mesh": ":/objects/floor.obj",
     },
-    "custome": {
+    "custom": {
         "color": "#fde724",
         "gray_color": "white",
         "mesh": ":/objects/floor.obj",

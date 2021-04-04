@@ -20,10 +20,10 @@ class Document:
         self.balance = {}
         self.orders = {}
         if self.is_xlsx:
-            # self.document = load_workbook(data_path, read_only=True, keep_links=False)
-            self.document = open_workbook(file_path)
+            # self.doc = load_workbook(data_path, read_only=True, keep_links=False)
+            self.doc = open_workbook(file_path)
         else:
-            self.document = open_workbook(file_path)
+            self.doc = open_workbook(file_path)
 
     @staticmethod
     def check_xlsx(file_path):
@@ -36,13 +36,13 @@ class Document:
         if Document.check_xlsx(file_path):
             doc = load_workbook(file_path, read_only=True, keep_links=False)
             return doc.sheetnames
-        else:
-            doc = open_workbook(file_path, on_demand=True)
-            return doc.sheet_names()
+
+        doc = open_workbook(file_path, on_demand=True)
+        return doc.sheet_names()
 
     def parse_locations(self, sheet_name="LOCATIONmaster"):
         """Parse LOCATIONmaster sheet."""
-        sheet = self.document.sheet_by_name(sheet_name)
+        sheet = self.doc.sheet_by_name(sheet_name)
         for row in range(1, sheet.nrows):
             location_id = str(sheet.cell(row, 0).value)
             if not location_id:
@@ -56,7 +56,7 @@ class Document:
 
     def parse_coordinates(self, sheet_name="XYZ_coordinates"):
         """Parse XYZ_coordinates sheet."""
-        sheet = self.document.sheet_by_name(sheet_name)
+        sheet = self.doc.sheet_by_name(sheet_name)
         for row in range(1, sheet.nrows):
             location_id = str(sheet.cell(row, 0).value)
             if not location_id:
@@ -70,7 +70,7 @@ class Document:
 
     def parse_items(self, sheet_name="ITEMmaster"):
         """Parse ITEMmaster sheet."""
-        sheet = self.document.sheet_by_name(sheet_name)
+        sheet = self.doc.sheet_by_name(sheet_name)
         for row in range(1, sheet.nrows):
             item_id, description, gtype, zone = (
                 sheet.cell(row, i).value for i in range(4)
@@ -95,7 +95,7 @@ class Document:
 
     def parse_inventory_balance(self, sheet_name="Inventory Ballance"):
         """Parse Inventory Balance sheet  ('balance' in final version, most likely)."""
-        sheet = self.document.sheet_by_name(sheet_name)
+        sheet = self.doc.sheet_by_name(sheet_name)
         for row in range(1, sheet.nrows):
             date, location_id = sheet.cell(row, 0).value, sheet.cell(row, 1).value
             location_id = str(location_id)
@@ -112,7 +112,7 @@ class Document:
 
     def parse_orders(self, sheet_name="Order"):
         """Parse Order sheet."""
-        sheet = self.document.sheet_by_name(sheet_name)
+        sheet = self.doc.sheet_by_name(sheet_name)
         for row in range(1, sheet.nrows):
             order_id = str(sheet.cell(row, 0).value)
             if not order_id:

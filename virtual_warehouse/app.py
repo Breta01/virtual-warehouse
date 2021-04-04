@@ -1,12 +1,11 @@
-# This Python file uses the following encoding: utf-8
-import os
+"""Main app module starting the Virtual Warehouse app."""
 import sys
 
 from PySide2 import QtCore
 from PySide2.QtGui import QGuiApplication, QIcon
 from PySide2.QtQml import QQmlApplicationEngine
 
-import virtual_warehouse.main_rc
+import virtual_warehouse.main_rc  # skipcq: PYL-W0611
 from virtual_warehouse.view_controller import ViewController
 
 try:
@@ -28,7 +27,6 @@ def run():
     engine = QQmlApplicationEngine()
 
     controller = ViewController()
-    #    qmlRegisterType(ViewController, "VirtualWarehouse", 1, 0, "ViewController")
     engine.rootContext().setContextProperty("ViewController", controller)
 
     app.setWindowIcon(QIcon(":/images/icon.png"))

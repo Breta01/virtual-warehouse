@@ -4,9 +4,9 @@
 def item_locations(inventory):
     """Create dictionary mapping (date, item) to list of locations."""
     item_to_loc = {}
-    for date, inventory in inventory.items():
+    for date, status in inventory.items():
         item_to_loc[date] = {}
-        for loc_id, loc_inv in inventory.items():
+        for loc_id, loc_inv in status.items():
             for item in loc_inv.has_items:
                 if item.name not in item_to_loc[date]:
                     item_to_loc[date][item.name] = []

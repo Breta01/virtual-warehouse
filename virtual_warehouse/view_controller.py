@@ -61,7 +61,9 @@ class DataLoaderThread(QThread):
 
     def run(self):
         """Load data from file path and emit data through signal."""
-        where = lambda arr, y: [x["name"] for x in arr if x["type"] == y]
+
+        def where(arr, y):
+            return [x["name"] for x in arr if x["type"] == y]
 
         document = Document(QUrl(self.file_path).toLocalFile())
 
@@ -348,17 +350,17 @@ class ViewController(QObject):
         print(types)
         print(types[0])
         self.progress_value = 0
-        self.loader = DataLoaderThread(
+        self._loader = DataLoaderThread(
             file_path, types, self.locations, self.items, self.inventory, self.orders
         )
-        self.loader.locationsReady.connect(self._load_locations, Qt.QueuedConnection)
-        self.loader.itemsReady.connect(self._load_items, Qt.QueuedConnection)
-        self.loader.inventoryReady.connect(self._load_inventory, Qt.QueuedConnection)
-        self.loader.ordersReady.connect(self._load_orders, Qt.QueuedConnection)
-        self.loader.frequenciesReady.connect(
+        self._loader.locationsReady.connect(self._load_locations, Qt.QueuedConnection)
+        self._loader.itemsReady.connect(self._load_items, Qt.QueuedConnection)
+        self._loader.inventoryReady.connect(self._load_inventory, Qt.QueuedConnection)
+        self._loader.ordersReady.connect(self._load_orders, Qt.QueuedConnection)
+        self._loader.frequenciesReady.connect(
             self._load_frequencies, Qt.QueuedConnection
         )
-        self.loader.start()
+        self._loader.start()
 
     def _load_locations(self, locations):
         self.reset_selection()

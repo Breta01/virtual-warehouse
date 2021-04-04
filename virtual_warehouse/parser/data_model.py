@@ -629,10 +629,8 @@ with onto:
         range = [int]
 
 
-if __name__ == "__main__":
-    # sync_reasoner(infer_property_values=True)
+# sync_reasoner(infer_property_values=True)
 
-    # SQLite3
-    # default_world.graph.db
-    # default_world.graph.execute
-    pass
+# SQLite3
+# default_world.graph.db
+# default_world.graph.execute
