@@ -315,8 +315,10 @@ Canvas {
                     }
                 }
             }
-
-            ViewController.select_item(-1, false)
+            // If CTRL is active, nothing happens
+            if (!(mouse.modifiers & Qt.ControlModifier)) {
+                ViewController.select_item(-1, false)
+            }
         }
 
         onPositionChanged: {

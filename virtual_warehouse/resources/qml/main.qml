@@ -222,6 +222,7 @@ ApplicationWindow {
                 axisX: ValueAxis3D {
                     max: 30
                     min: 0
+                    reversed: true
                 }
                 // Y is up
                 axisY: ValueAxis3D {

@@ -14,6 +14,8 @@ Item {
         id: connectionsBar
         toolBarModel: toolBar.model
 
+        isLocation: true
+
         dst1: "Items"
         idx1: 1
         fun1: ViewController.checked_locations_to_items

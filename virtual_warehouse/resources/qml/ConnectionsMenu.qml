@@ -12,6 +12,7 @@ ToolBar {
     Material.foreground: Material.BlueGrey
     Material.elevation: 0
 
+    property bool isLocation: false
     property string dst1
     property int    idx1
     property var    fun1
@@ -67,10 +68,11 @@ ToolBar {
         height: 36
 
         onClicked: {
-            if (toolBarModel.check_state === 2) {
-                toolBarModel.check_all(false)
-            } else {
-                toolBarModel.check_all(true)
+            var st  = toolBarModel.check_state !== 2
+            toolBarModel.check_all(st)
+
+            if (isLocation) {
+                ViewController.select_all(st)
             }
         }
     }

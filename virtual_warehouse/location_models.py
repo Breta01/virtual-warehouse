@@ -96,10 +96,14 @@ class UniversalLocationListModel(QAbstractListModel):
     def set_data(self, objects):
         self._objects = objects
         self._keys = list(objects.keys())
-        self._name_to_idx = {}
+        self.all_idxs = {}  # Pre-calculated value for selection of all locations
+        self.name_to_idx = {}
         for i, k in enumerate(self._keys):
+            if self._objects[k]._i.has_ltype == "rack":
+                self.all_idxs[i] = len(self._objects[k].names)
             for n in self._objects[k].names:
-                self._name_to_idx[n] = i
+                self.name_to_idx[n] = i
+
         if objects:
             self.update_max_heat()
             self._max_level = max(l._i.has_z for l in self._objects.values())
@@ -110,7 +114,7 @@ class UniversalLocationListModel(QAbstractListModel):
             return 0
         self._max_heat = max(o.get_heat() for _, o in self._objects.items())
 
-    def _get_idx(self, idx):
+    def get_idx(self, idx):
         return self._objects[self._keys[idx]]
 
     @Property(float, constant=False, notify=maxChanged)
@@ -127,7 +131,7 @@ class UniversalLocationListModel(QAbstractListModel):
 
     @Slot(int, result="QVariant")
     def get(self, index):
-        return self._get_idx(index).get_dict()
+        return self.get_idx(index).get_dict()
 
     @Property(int, constant=False, notify=levelChanged)
     def level(self):
@@ -139,14 +143,14 @@ class UniversalLocationListModel(QAbstractListModel):
 
     @Slot(int, float, result=str)
     def get_heat(self, index, max_heat=None):
-        freq = self._get_idx(index).get_heat(self._level)
+        freq = self.get_idx(index).get_heat(self._level)
         if max_heat:
             return get_heatmap_color(freq / max_heat)
         return get_heatmap_color(freq / self._max_heat)
 
     def data(self, index, role):
         if index.isValid() and role == UniversalLocationListModel.ObjectRole:
-            return self._get_idx(index.row())
+            return self.get_idx(index.row())
         return None
 
     def roleNames(self):  # skipcq: PYL-R0201
