@@ -27,6 +27,22 @@ types = {
 }
 
 
+def estimate_sheet_type(sheet):
+    """Estimate sheet type based on sheet name."""
+    sheet = sheet.lower()
+    if "coord" in sheet:
+        return "Coordinates"
+    elif "loc" in sheet:
+        return "Locations"
+    elif "item" in sheet:
+        return "Items"
+    elif "inv" in sheet:
+        return "Inventory"
+    elif "ord" in sheet:
+        return "Orders"
+    return "None"
+
+
 def convert_type(type_str):
     """Unify location type names."""
     try:

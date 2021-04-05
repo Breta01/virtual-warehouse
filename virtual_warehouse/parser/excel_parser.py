@@ -9,6 +9,7 @@ from virtual_warehouse.parser.data_model import (
     Location,
     Order,
 )
+from virtual_warehouse.parser.utils import estimate_sheet_type
 
 
 class Document:
@@ -35,10 +36,11 @@ class Document:
         """Get names of all sheets in document."""
         if Document.check_xlsx(file_path):
             doc = load_workbook(file_path, read_only=True, keep_links=False)
-            return doc.sheetnames
-
-        doc = open_workbook(file_path, on_demand=True)
-        return doc.sheet_names()
+            names = doc.sheetnames
+        else:
+            doc = open_workbook(file_path, on_demand=True)
+            names = doc.sheet_names()
+        return [[n, estimate_sheet_type(n)] for n in names]
 
     def parse_locations(self, sheet_name="LOCATIONmaster"):
         """Parse LOCATIONmaster sheet."""

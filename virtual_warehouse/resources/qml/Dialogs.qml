@@ -2,6 +2,7 @@ import Qt.labs.platform 1.1
 import QtQuick 2.0
 import QtQuick.Controls 2.14
 import QtQuick.Dialogs 1.3
+import QtQml 2.2
 
 Item {
 
@@ -93,8 +94,8 @@ Item {
             for (var i = 0; i < sheets.length; ++i) {
                 fileImportSheetsModel.append({
                                                  "index": i,
-                                                 "name": sheets[i],
-                                                 "type": "None"
+                                                 "name": sheets[i][0],
+                                                 "type": sheets[i][1]
                                              })
             }
         }
@@ -166,17 +167,19 @@ Item {
                                                           typeIndex)
                     }
 
+                    function getType() { return model.type }
+
                     ComboBox {
                         id: comboBox
                         anchors.right: parent.right
                         textRole: "type"
-
-                        model: sheetsTypesModel
-
+                        Component.onCompleted: currentIndex = indexOfValue(getType())
                         onActivated: {
                             // Prevent (ComboBox) model and (ListView) model name collision
                             updateType(currentText)
                         }
+
+                        model: sheetsTypesModel
                     }
                 }
             }
@@ -187,24 +190,12 @@ Item {
 
             ListModel {
                 id: sheetsTypesModel
-                ListElement {
-                    type: "None"
-                }
-                ListElement {
-                    type: "Coordinates"
-                }
-                ListElement {
-                    type: "Inventory"
-                }
-                ListElement {
-                    type: "Items"
-                }
-                ListElement {
-                    type: "Locations"
-                }
-                ListElement {
-                    type: "Orders"
-                }
+                ListElement { type: "None" }
+                ListElement { type: "Coordinates" }
+                ListElement { type: "Inventory" }
+                ListElement { type: "Items" }
+                ListElement { type: "Locations" }
+                ListElement { type: "Orders" }
             }
 
             DialogButtonBox {

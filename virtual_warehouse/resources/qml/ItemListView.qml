@@ -10,65 +10,19 @@ Item {
         model: ViewController.item_model
     }
 
-    ToolBar {
+    ConnectionsMenu {
         id: connectionsBar
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 0
-        width: parent.width
+        toolBarModel: toolBar.model
 
-        Material.background: "white"
-        Material.foreground: Material.BlueGrey
-        Material.elevation: 0
+        dst1: "Locations"
+        idx1: 0
+        fun1: ViewController.checked_items_to_locations
+        mdl1: ViewController.location_model
 
-        ToolButton {
-            id: toolButton
-            text: qsTr("Related:")
-            enabled: false
-        }
-
-        ToolButton {
-            id: toolButton1
-            text: qsTr("Locations")
-            anchors.left: toolButton.right
-
-            onClicked: {
-                tabBar.currentIndex = 0
-                ViewController.checked_items_to_locations()
-                ViewController.location_model.filter = 1
-            }
-        }
-
-        ToolButton {
-            id: toolButton2
-            text: qsTr("Orders")
-            anchors.left: toolButton1.right
-
-            onClicked: {
-                tabBar.currentIndex = 2
-                ViewController.checked_items_to_orders()
-                ViewController.order_model.filter = 1
-            }
-        }
-
-        CheckDelegate {
-            id: mainCheckButton
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            tristate: true
-            checkState: toolBar.model.check_state
-            anchors.rightMargin: 16
-            padding: 8
-            width: 36
-            height: 36
-
-            onClicked: {
-                if (toolBar.model.check_state === 2) {
-                    toolBar.model.check_all(false)
-                } else {
-                    toolBar.model.check_all(true)
-                }
-            }
-        }
+        dst2: "Orders"
+        idx2: 2
+        fun2: ViewController.checked_items_to_orders
+        mdl2: ViewController.order_model
     }
 
 

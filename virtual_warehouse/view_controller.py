@@ -1,3 +1,4 @@
+"""Module providing ViewController class - connector class between QML and Python."""
 from PySide2.QtCore import Property, QObject, Qt, QThread, QUrl, Signal, Slot
 
 from virtual_warehouse import __version__
@@ -8,6 +9,7 @@ from virtual_warehouse.location_models import (
     UniversalLocationListModel,
 )
 from virtual_warehouse.location_utils import cluster_locations
+from virtual_warehouse.map import Map
 from virtual_warehouse.parser.data_model import Inventory, Item, Location, Order
 from virtual_warehouse.parser.excel_parser import Document
 from virtual_warehouse.tab_controller import (
@@ -20,7 +22,7 @@ from virtual_warehouse.tab_controller import (
 
 
 class DataLoaderThread(QThread):
-    """Thread which loads data from file."""
+    """Thread which loads warehouse data from file."""
 
     locationsReady = Signal(object)
     itemsReady = Signal(object)
@@ -67,8 +69,9 @@ class DataLoaderThread(QThread):
 
         document = Document(QUrl(self.file_path).toLocalFile())
 
-        if len(where(self.sheets, "Locations")) and len(
-            where(self.sheets, "Coordinates")
+        if (
+            len(where(self.sheets, "Locations")) > 0
+            and len(where(self.sheets, "Coordinates")) > 0
         ):
             Location.destroy_all()
             for sheet in where(self.sheets, "Locations"):
@@ -79,79 +82,54 @@ class DataLoaderThread(QThread):
 
             self.locationsReady.emit(self.locations)
 
-        if len(where(self.sheets, "Items")):
+        if len(where(self.sheets, "Items")) > 0:
             Item.destroy_all()
             for sheet in where(self.sheets, "Items"):
                 self.items = document.parse_items(sheet)
 
             self.itemsReady.emit(self.items)
 
-        if len(where(self.sheets, "Inventory")):
+        if len(where(self.sheets, "Inventory")) > 0:
             Inventory.destroy_all()
             for sheet in where(self.sheets, "Inventory"):
                 self.inventory = document.parse_inventory_balance(sheet)
 
             self.inventoryReady.emit(self.inventory)
 
-        if len(where(self.sheets, "Orders")):
+        if len(where(self.sheets, "Orders")) > 0:
             Order.destroy_all()
             for sheet in where(self.sheets, "Orders"):
                 self.orders = document.parse_orders(sheet)
 
             self.ordersReady.emit(self.orders)
 
+        # First query is always slower than rest (probably some initialization going on)
+        Item.get_by_locations([self.locations[next(iter(self.locations))]])
+
         calculate_frquencies(self.locations, self.inventory, self.orders)
         self.frequenciesReady.emit()
 
 
-class Map(QObject):
-    """Object holding basic informations about the map."""
+class QueryThread(QThread):
+    """Thread runs database queries."""
 
-    def __init__(self, locations=None):
-        QObject.__init__(self)
-        if locations:
-            self.set_data(locations)
-        else:
-            self._min_x = 0
-            self._max_x = 0
-            self._min_y = 0
-            self._max_y = 0
-            self._min_z = 0
-            self._max_z = 0
+    dataReady = Signal(object)
 
-    def set_data(self, locations):
-        self._min_x = min(l.has_x for l in locations.values())
-        self._max_x = max(l.has_x + l.has_width for l in locations.values())
+    def __init__(self, function, *args):
+        """Initialize thread params for running the query.
 
-        self._min_y = min(l.has_y for l in locations.values())
-        self._max_y = max(l.has_y + l.has_length for l in locations.values())
+        Args:
+            function (Callable): function which runs the query.
+            *args: arguments which will be passed to the function
+        """
+        super(QueryThread, self).__init__()
+        self.function = function
+        self.args = args
 
-        self._min_z = min(l.has_z for l in locations.values())
-        self._max_z = max(l.has_z + l.has_height for l in locations.values())
-
-    @Property(float, constant=True)
-    def min_x(self):
-        return self._min_x
-
-    @Property(float, constant=True)
-    def max_x(self):
-        return self._max_x
-
-    @Property(float, constant=True)
-    def min_y(self):
-        return self._min_y
-
-    @Property(float, constant=True)
-    def max_y(self):
-        return self._max_y
-
-    @Property(float, constant=True)
-    def min_z(self):
-        return self._min_z
-
-    @Property(float, constant=True)
-    def max_z(self):
-        return self._max_z
+    def run(self):
+        """Runs the query and returns data."""
+        data = self.function(*self.args)
+        self.dataReady.emit(data)
 
 
 class ViewController(QObject):
@@ -180,6 +158,8 @@ class ViewController(QObject):
         self.inventory = None
         self.orders = None
 
+        self._query_thread = None
+        self._loader = None
         self._progress_value = 1
 
     modelChanged = Signal()
@@ -282,13 +262,17 @@ class ViewController(QObject):
         self.itemSelected.emit()
 
     # Connecting sidebar tabs
-    # TODO: run in separate thread
-    @staticmethod
-    def _connect_tabs(src_tab_model, dst_tab_model, connector):
+    def _connect_tabs(self, src_tab_model, dst_tab_model, connector):
+        def callback(data):
+            dst_tab_model.set_checked([i[0].name for i in data])
+            self._query_thread = None
+
         if src_tab_model._checked:
             objs = [src_tab_model._objects[k]._i for k in src_tab_model._checked]
-            res = connector(objs)
-            dst_tab_model.set_checked([i[0].name for i in res])
+            if self._query_thread is None:
+                self._query_thread = QueryThread(connector, objs)
+                self._query_thread.dataReady.connect(callback, Qt.QueuedConnection)
+                self._query_thread.start()
         else:
             dst_tab_model.set_checked([])
 
