@@ -13,6 +13,8 @@ from virtual_warehouse.parser.utils import estimate_sheet_type
 
 
 class Document:
+    """Document class which loads xls or xlsx file and parse different data objects."""
+
     def __init__(self, file_path):
         # Determines backend for loading documents (xlsx files uses openpyxl)
         self.is_xlsx = Document.check_xlsx(file_path)

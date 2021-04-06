@@ -1,3 +1,9 @@
+"""Module providing content for sidebar tabs: locations/items/orders.
+It provides classes wrapping the location/item/order objects along with list model.
+It also provides functionality for checking different items.
+
+HoverListModel is for displaying side view of location which is selected or hovered.
+"""
 import locale
 
 from PySide2.QtCore import (

@@ -308,7 +308,7 @@ Canvas {
                             && mouseY <= y2) {
 
                         // Holding CTRL - adding location
-                        ViewController.select_item(row, mouse.modifiers & Qt.ControlModifier)
+                        ViewController.select_map_location(row, mouse.modifiers & Qt.ControlModifier)
                         // TODO: Speed up drawing - extra canvas, less items...
                         // mapView2D.requestPaint()
                         return

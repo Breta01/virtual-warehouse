@@ -25,7 +25,7 @@ onto = get_ontology(BASE_IRI)
 
 
 def destroy_all(cls):
-    """Function for destroying all instances of given class.
+    """Destroy all instances of given class.
 
     Args:
         cls (class): ontology class
@@ -188,7 +188,7 @@ with onto:
             """Get list of items stored at given location.
 
             Args:
-               locations (List[Locations]): list of locations to look for.
+               locations (List[Location]): list of locations to look for.
 
             Returns:
                List[Item]: list of items stored at locations
@@ -284,7 +284,7 @@ with onto:
 
         def set_coord(self, x: float, y: float, z: float):
             """Additionally set coordinates of the location."""
-            self.has_x, self.has_y, self.has_z = x, y, z
+            self.has_x, self.has_y, self.has_z = x, y, z  # skipcq: PYL-W0201
 
         def get_2d(self):
             """Get planar coordinates of location (used for top-down view)."""

@@ -32,13 +32,13 @@ def estimate_sheet_type(sheet):
     sheet = sheet.lower()
     if "coord" in sheet:
         return "Coordinates"
-    elif "loc" in sheet:
+    if "loc" in sheet:
         return "Locations"
-    elif "item" in sheet:
+    if "item" in sheet:
         return "Items"
-    elif "inv" in sheet:
+    if "inv" in sheet:
         return "Inventory"
-    elif "ord" in sheet:
+    if "ord" in sheet:
         return "Orders"
     return "None"
 

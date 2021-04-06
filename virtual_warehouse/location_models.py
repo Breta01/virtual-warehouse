@@ -96,11 +96,8 @@ class UniversalLocationListModel(QAbstractListModel):
     def set_data(self, objects):
         self._objects = objects
         self._keys = list(objects.keys())
-        self.all_idxs = {}  # Pre-calculated value for selection of all locations
         self.name_to_idx = {}
         for i, k in enumerate(self._keys):
-            if self._objects[k]._i.has_ltype == "rack":
-                self.all_idxs[i] = len(self._objects[k].names)
             for n in self._objects[k].names:
                 self.name_to_idx[n] = i
 

@@ -87,7 +87,7 @@ Item {
                 onClicked: {
                     ViewController.location_model.check(model.object.name,
                                                         checked)
-                    ViewController.checked_location(model.object.name, checked)
+                    ViewController.select_location(model.object.name, checked)
                 }
             }
 

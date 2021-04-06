@@ -253,7 +253,7 @@ ApplicationWindow {
                         let item = surfacePlot.selectedCustomItem()
                         let idx = surfacePlot.selectedCustomItemIndex()
                         item.textureFile = ":/textures/red.png"
-                        ViewController.select_item(idx, control)
+                        ViewController.select_map_location(idx, control)
                     }
                 }
             }

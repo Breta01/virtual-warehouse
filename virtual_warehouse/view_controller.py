@@ -127,7 +127,7 @@ class QueryThread(QThread):
         self.args = args
 
     def run(self):
-        """Runs the query and returns data."""
+        """Run the query and emit data through dataReady signal."""
         data = self.function(*self.args)
         self.dataReady.emit(data)
 
@@ -235,21 +235,41 @@ class ViewController(QObject):
             self.selected_idxs[idx] = self.selected_idxs.get(idx, 0) + 1
         self.itemSelected.emit()
 
-    @Slot(str, bool)
-    def checked_location(self, selected, checked):
-        """Location checked/unchecked in tab list."""
-        idx = self.model.name_to_idx[selected]
-        # Add or remove one occurrence of locations from counter
-        self.selected_idxs[idx] = self.selected_idxs.get(idx, 0) + (
-            1 if checked else -1
-        )
-        if self.selected_idxs[idx] <= 0:
-            self.selected_idxs.pop(idx)
+    def _select_locations(self, selected, checked, clear):
+        """Update selected locations in the map.
+
+        Args:
+            selected (list[str]): list of names of selected locations
+            checked (bool): whether we should add or remove the locations from selection
+            clear (bool): if true previously selected indexes will be cleared
+        """
+        if clear:
+            self.selected_idxs.clear()
+
+        for name in selected:
+            idx = self.model.name_to_idx[name]
+            # Add or remove one occurrence of locations from counter
+            self.selected_idxs[idx] = self.selected_idxs.get(idx, 0) + (
+                1 if checked else -1
+            )
+            if self.selected_idxs[idx] <= 0:
+                self.selected_idxs.pop(idx)
+
         self.itemSelected.emit()
 
+    @Slot(str, bool)
+    def select_location(self, selected, checked):
+        """Select location index of location checked/unchecked in tab list.
+
+        Args:
+            selected (str): name of selected location
+            checked (bool): check state, if true add location, remove otherwise
+        """
+        self._select_locations([selected], checked, clear=False)
+
     @Slot(int, bool)
-    def select_item(self, idx, control=False):
-        """Location selected from map (CTRL adds location)."""
+    def select_map_location(self, idx, control=False):
+        """Update selected location from map (CTRL adds location)."""
         if not control:
             self.selected_idxs.clear()
 
@@ -265,18 +285,20 @@ class ViewController(QObject):
 
     @Slot(bool)
     def select_all(self, select):
-        """Select/unselect all location in the map."""
-        if select:
-            self.selected_idxs = self.model.all_idxs.copy()
-        else:
-            self.selected_idxs.clear()
-        self.itemSelected.emit()
+        """Select/unselect all locations from the tab list in the map."""
+        self._select_locations(self.location_model._selected, select, clear=True)
 
     # Connecting sidebar tabs
-    def _connect_tabs(self, src_tab_model, dst_tab_model, connector):
+    def _connect_tabs(self, src_tab_model, dst_tab_model, connector, locations=False):
+        """Run query and update tab model with resulting data."""
+
         def callback(data):
-            dst_tab_model.set_checked([i[0].name for i in data])
+            """Process data from query (callback function)."""
+            names = [i[0].name for i in data]
+            dst_tab_model.set_checked(names)
             self._query_thread = None
+            if locations:
+                self._select_locations(names, checked=True, clear=True)
 
         if src_tab_model._checked:
             objs = [src_tab_model._objects[k]._i for k in src_tab_model._checked]
@@ -315,14 +337,14 @@ class ViewController(QObject):
     def checked_orders_to_locations(self):
         """Connect orders -> locations tabs."""
         self._connect_tabs(
-            self._order_model, self._location_model, Location.get_by_orders
+            self._order_model, self._location_model, Location.get_by_orders, True
         )
 
     @Slot()
     def checked_items_to_locations(self):
         """Connect items -> locations tabs."""
         self._connect_tabs(
-            self._item_model, self._location_model, Location.get_by_items
+            self._item_model, self._location_model, Location.get_by_items, True
         )
 
     @Slot(int)
@@ -337,10 +359,19 @@ class ViewController(QObject):
 
     @Slot(result="QVariantList")
     def get_selected(self):
+        """Get list of indexes of selected locations inside the map."""
         return list(self.selected_idxs.keys())
 
     @Slot(str, result="QVariantList")
     def get_sheets(self, file_path):
+        """Get names of sheets inside the file and expected type.
+
+        Args:
+            file_path (str): file url
+
+        Returns:
+            list[tuple[str, str]]: list containing lists [[name, type_name], ...]
+        """
         return Document.get_sheet_names(QUrl(file_path).toLocalFile())
 
     @Slot(str, "QVariantList")
@@ -368,7 +399,7 @@ class ViewController(QObject):
         self._loader.start()
 
     def _load_locations(self, locations):
-        """Callback function - process loaded locations."""
+        """Process loaded locations (callback function)."""
         self.selected_idxs.clear()
         self.locations = locations
 
@@ -396,7 +427,7 @@ class ViewController(QObject):
         self.progress_value = 0.3
 
     def _load_items(self, items):
-        """Callback function - process loaded items."""
+        """Process loaded items (callback function)."""
         self.items = items
         self._item_model.clear_checked()
         self._item_model.set_data(items)
@@ -404,12 +435,12 @@ class ViewController(QObject):
         self.progress_value = 0.5
 
     def _load_inventory(self, inventory):
-        """Callback function - process loaded inventory."""
+        """Process loaded inventory (callback function)."""
         self.inventory = inventory
         self.progress_value = 0.7
 
     def _load_orders(self, orders):
-        """Callback function - process loaded orders."""
+        """Process loaded orders (callback function)."""
         self.orders = orders
         self._order_model.clear_checked()
         self._order_model.set_data(orders)
@@ -417,7 +448,8 @@ class ViewController(QObject):
         self.progress_value = 0.9
 
     def _load_frequencies(self):
-        """Callback function - reacts on update of frequencies."""
+        """Update frequencies (callback function)."""
         self._model2D.update_max_heat()
         self._model3D.update_max_heat()
         self.progress_value = 1
+        self.drawModeChanged.emit()

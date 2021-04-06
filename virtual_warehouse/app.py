@@ -19,6 +19,7 @@ except ImportError:
 
 
 def run():
+    """Start Virtual Warehouse application."""
     app = QGuiApplication(sys.argv)
     app.setOrganizationName("Bretislav Hajek")
     app.setOrganizationDomain("bretahajek.com")
