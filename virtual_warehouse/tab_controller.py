@@ -161,6 +161,15 @@ class UniversalListModel(QAbstractListModel):
     ObjectRole = Qt.UserRole + 1
 
     def __init__(self, object_class, objects=None, selected_objects=None, parent=None):
+        """Initialize list model.
+
+        Args:
+            object_class (cls): class which wraps objects stored in list (TabItem,...)
+            objects (dict[str, object]): dictionary of objects stored in list
+            selected_objects (list[str]): list of ids (keys) of selected objects,
+                selected objects are displayed in the list
+            parent (object): required param for initialization
+        """
         super(UniversalListModel, self).__init__(parent)
         self._object_class = object_class
         self._selected = [] if selected_objects is None else selected_objects
@@ -178,9 +187,11 @@ class UniversalListModel(QAbstractListModel):
     checkChanged = Signal()
 
     def set_data(self, objects):
+        """Set new objects and wrap then in wrapper class."""
         self._objects = {k: self._object_class(v) for k, v in objects.items()}
 
     def set_selected(self, selected, check=False):
+        """Set new list of selected objects."""
         self._selected = selected
         self._all_selected = selected
         if check:
@@ -314,6 +325,16 @@ class HoverListModel(UniversalListModel):
         hovered_objects=None,
         parent=None,
     ):
+        """Initialize list model.
+
+        Args:
+            object_class (cls): class which wraps objects stored in list (TabItem,...)
+            objects (dict[str, object]): dictionary of objects stored in list
+            selected_objects (list[str]): list of ids (keys) of selected objects,
+                selected objects are displayed in the list
+            hovered_objects (list[str]): list of ids (keys) of objects that are hovered
+            parent (object): required param for initialization
+        """
         super(HoverListModel, self).__init__(parent)
         self._object_class = object_class
         self._selected = [] if selected_objects is None else selected_objects

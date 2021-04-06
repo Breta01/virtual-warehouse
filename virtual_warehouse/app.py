@@ -6,6 +6,7 @@ from PySide2.QtGui import QGuiApplication, QIcon
 from PySide2.QtQml import QQmlApplicationEngine
 
 import virtual_warehouse.main_rc  # skipcq: PYL-W0611
+from virtual_warehouse import __version__
 from virtual_warehouse.view_controller import ViewController
 
 try:
@@ -29,6 +30,7 @@ def run():
 
     controller = ViewController()
     engine.rootContext().setContextProperty("ViewController", controller)
+    engine.rootContext().setContextProperty("versionNumber", __version__)
 
     app.setWindowIcon(QIcon(":/images/icon.png"))
     engine.load(QtCore.QUrl("qrc:/qml/main.qml"))

@@ -1,7 +1,6 @@
 """Module providing ViewController class - connector class between QML and Python."""
 from PySide2.QtCore import Property, QObject, Qt, QThread, QUrl, Signal, Slot
 
-from virtual_warehouse import __version__
 from virtual_warehouse.heatmap import calculate_frquencies
 from virtual_warehouse.location_models import (
     MultiLocation,
@@ -166,10 +165,6 @@ class ViewController(QObject):
     drawModeChanged = Signal()
     itemSelected = Signal()
     progressChanged = Signal()
-
-    @Property(str, constant=True)
-    def version(self):
-        return __version__
 
     @Property(QObject, constant=False, notify=modelChanged)
     def map(self):

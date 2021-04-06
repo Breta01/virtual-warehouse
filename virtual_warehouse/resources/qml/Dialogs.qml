@@ -48,7 +48,7 @@ Item {
                 anchors.top: imageLogo.bottom
                 anchors.left: parent.left
                 anchors.margins: 8
-                text: "Version: " + ViewController.version
+                text: "Version: " + versionNumber
             }
 
             Text {
