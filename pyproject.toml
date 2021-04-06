@@ -5,6 +5,56 @@ title = "Virtual Warehouse"
 name = "Břetislav Hájek"
 
 
+
+
+
+[tool.briefcase]
+project_name = "virtual_warehouse"
+bundle = "com.bretahajek.virtual-warehouse"
+version = "0.0.1"
+url = "https://github.com/Breta01/virtual-warehouse"
+license = ""
+author = 'Břetislav Hájek'
+author_email = "info@bretahajek.com"
+
+[tool.briefcase.app.virtual_warehouse]
+formal_name = "Virtual Warehouse"
+description = "Application displaying warehouse"
+icon = "virtual_warehouse/resources/images/icon"
+sources = ['virtual_warehouse']
+requires = [
+    'PySide2==5.15.0',
+    'xlrd==1.2.0',
+    'Owlready2==0.29',
+    'rdflib',
+    'openpyxl',]
+
+
+[tool.briefcase.app.virtual_warehouse.macOS]
+requires = []
+
+[tool.briefcase.app.virtual_warehouse.linux]
+requires = []
+system_requires = []
+
+[tool.briefcase.app.virtual_warehouse.windows]
+requires = []
+
+# Mobile deployments
+[tool.briefcase.app.virtual_warehouse.iOS]
+requires = []
+
+[tool.briefcase.app.virtual_warehouse.android]
+requires = []
+
+
+
+
+
+
+
+
+
 [build-system]
 requires = ["setuptools", "wheel"]
 
