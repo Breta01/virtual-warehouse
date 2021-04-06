@@ -188,9 +188,11 @@ class UniversalListModel(QAbstractListModel):
         self.layoutChanged.emit()
 
     def rowCount(self, parent=QModelIndex()):
+        """Number of items in list (required method)."""
         return len(self._selected)
 
     def data(self, index, role):
+        """Return data for given role and index (required method)."""
         if index.isValid() and role == UniversalListModel.ObjectRole:
             return self._objects[self._selected[index.row()]]
         return None
@@ -324,20 +326,24 @@ class HoverListModel(UniversalListModel):
             self._objects = {k: self._object_class(v) for k, v in objects.items()}
 
     def set_selected(self, selected, check=False):
+        """Set list of names of clicked locations."""
         self._selected = list(reversed(selected))
         self.layoutChanged.emit()
 
     def set_hovered(self, hovered, is_hovered=True):
+        """Set list of names of currently hovered locations."""
         self._is_hovered = is_hovered
         self._hovered = list(reversed(hovered))
         self.layoutChanged.emit()
 
     def rowCount(self, parent=QModelIndex()):
+        """Number of items in list (required method)."""
         if self._is_hovered:
             return len(self._hovered)
         return len(self._selected)
 
     def data(self, index, role):
+        """Return data for given role and index (required method)."""
         if index.isValid() and role == UniversalListModel.ObjectRole:
             if self._is_hovered:
                 return self._objects[self._hovered[index.row()]]

@@ -106,7 +106,7 @@ Item {
         title: "File Import Settings"
         standardButtons: StandardButton.Open | StandardButton.Cancel
 
-        property var fileUrl
+        property var fileUrl: ""
         height: 200
         width: 300
 
@@ -127,75 +127,119 @@ Item {
         contentItem: Rectangle {
             id: rectangle
             anchors.fill: parent
-            implicitHeight: 400
+            implicitHeight: 460
             implicitWidth: 500
             color: "#eee"
 
-            Text {
-                id: dialogHeader
-                text: "Select types of individual sheets:"
-                anchors.left: parent.left
+
+            Rectangle {
+                id: header
                 anchors.top: parent.top
-                anchors.margins: 8
-            }
-
-            ListView {
-                id: sheetsTypesList
-                model: fileImportSheetsModel
-
-                property var mModel: model
-
-                anchors.top: dialogHeader.bottom
-                anchors.bottom: dialogButtons.top
-                anchors.right: parent.right
                 anchors.left: parent.left
-                anchors.margins: 16
+                anchors.right: parent.right
+                height: 85
+                z: 10
 
-                delegate: Item {
-                    id: sheetItem
-                    height: 50
-                    width: sheetsTypesList.width
+                Text {
+                    id: fileUrlTitle
+                    text: "Opening file:"
+                    anchors.left: parent.left
+                    anchors.baseline: fileUrlText.baseline
+                    anchors.baselineOffset: 1
+                    anchors.margins: 8
+                }
 
-                    Text {
-                        anchors.left: parent.left
-                        anchors.verticalCenter: comboBox.verticalCenter
-                        text: model.name
+                TextField {
+                    id: fileUrlText
+                    anchors.left: fileUrlTitle.right
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 8
+                    anchors.rightMargin: 32
+                    text: importFileDialog.fileUrl.toString()
+                    font.pixelSize: 12
+                    readOnly: true
+                    activeFocusOnPress: false
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: importFileDialog.open()
                     }
+                }
 
-                    function updateType(typeIndex) {
-                        fileImportSheetsModel.setProperty(model.index, "type",
-                                                          typeIndex)
-                    }
-
-                    function getType() { return model.type }
-
-                    ComboBox {
-                        id: comboBox
-                        anchors.right: parent.right
-                        textRole: "type"
-                        Component.onCompleted: currentIndex = indexOfValue(getType())
-                        onActivated: {
-                            // Prevent (ComboBox) model and (ListView) model name collision
-                            updateType(currentText)
-                        }
-
-                        model: sheetsTypesModel
-                    }
+                Text {
+                    id: dialogHeader
+                    text: "Select sheets' types:"
+                    anchors.left: parent.left
+                    anchors.top: fileUrlText.bottom
+                    anchors.margins: 8
                 }
             }
 
-            ListModel {
-                id: fileImportSheetsModel
-            }
+            ScrollView {
+                anchors.top: header.bottom
+                anchors.bottom: dialogButtons.top
+                anchors.right: parent.right
+                anchors.left: parent.left
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-            ListModel {
-                id: sheetsTypesModel
-                ListElement { type: "None" }
-                ListElement { type: "Coordinates" }
-                ListElement { type: "Inventory" }
-                ListElement { type: "Items" }
-                ListElement { type: "Locations" }
-                ListElement { type: "Orders" }
+                ListView {
+                    id: sheetsTypesList
+                    model: fileImportSheetsModel
+
+                    property var mModel: model
+
+                    anchors.fill: parent
+                    anchors.margins:  16
+                    anchors.bottomMargin: 4
+                    anchors.topMargin: 4
+
+                    delegate: Item {
+                        id: sheetItem
+                        height: 50
+                        width: sheetsTypesList.width
+
+                        Text {
+                            anchors.left: parent.left
+                            anchors.verticalCenter: comboBox.verticalCenter
+                            text: model.name
+                        }
+
+                        function updateType(typeIndex) {
+                            fileImportSheetsModel.setProperty(model.index, "type",
+                                                              typeIndex)
+                        }
+
+                        function getType() { return model.type }
+
+                        ComboBox {
+                            id: comboBox
+                            anchors.right: parent.right
+                            textRole: "type"
+                            Component.onCompleted: currentIndex = indexOfValue(getType())
+                            onActivated: {
+                                // Prevent (ComboBox) model and (ListView) model name collision
+                                updateType(currentText)
+                            }
+
+                            model: sheetsTypesModel
+                        }
+                    }
+                }
+
+                ListModel {
+                    id: fileImportSheetsModel
+                }
+
+                ListModel {
+                    id: sheetsTypesModel
+                    ListElement { type: "None" }
+                    ListElement { type: "Coordinates" }
+                    ListElement { type: "Inventory" }
+                    ListElement { type: "Items" }
+                    ListElement { type: "Locations" }
+                    ListElement { type: "Orders" }
+                }
             }
 
             DialogButtonBox {

@@ -317,7 +317,7 @@ Canvas {
             }
             // If CTRL is active, nothing happens
             if (!(mouse.modifiers & Qt.ControlModifier)) {
-                ViewController.select_item(-1, false)
+                ViewController.select_map_location(-1, false)
             }
         }
 

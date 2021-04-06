@@ -143,6 +143,7 @@ with onto:
                 has_qty_uom=qty_uom,
                 has_length=length,
                 has_width=width,
+                has_height=height,
                 has_weight=weight,
             )
 
