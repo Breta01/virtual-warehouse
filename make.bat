@@ -1,21 +1,14 @@
 @echo off
 
-SET 
-SHELL=\bin\bash
-SET 
-VENV_NAME?=venv
-SET VENV_BIN=$(shell pwd)\${VENV_NAME}\bin
-SET VENV_ACTIVATE=source $(VENV_NAME)\bin\activate
-SET 
-PROJECT_DIR=virtual_warehouse
-SET 
-PYTHON=${VENV_NAME}\bin\python3
+SET PYTHON_VERSION=python3
+SET VENV_NAME=venv
+
+SET VENV_ACTIVATE=%VENV_NAME%\Scripts\activate.bat
+SET PYTHON=python3
 
 IF /I "%1"==".DEFAULT" GOTO .DEFAULT
 IF /I "%1"=="help" GOTO help
-IF /I "%1"=="install" GOTO install
 IF /I "%1"=="venv" GOTO venv
-IF /I "%1"=="$(VENV_NAME)/bin/activate" GOTO $(VENV_NAME)/bin/activate
 IF /I "%1"=="resources" GOTO resources
 IF /I "%1"=="lint" GOTO lint
 IF /I "%1"=="package" GOTO package
@@ -29,58 +22,54 @@ GOTO error
 	GOTO :EOF
 
 :help
-	@echo "Make file commands:"
-	@echo "    make install"
-	@echo "        Prepare complete development environment"
-	@echo "    make lint"
-	@echo "        Run pylint and mypy"
-	@echo "    make resources"
-	@echo "        Make qrc resources file - main_rc.py"
-	@echo "    make package"
-	@echo "        Create packaged application"
-	@echo "    make run"
-	@echo "        Run application"
-	@echo "    make docs"
-	@echo "        Generate HTML documentation"
-	@echo "    make clean"
-	@echo "        Clean repository"
-	GOTO :EOF
-
-:install
-	sudo apt-get -y install build-essential python3.8 python3.8-dev
-	python3.8 -m pip install pip
-	python3.8 -m pip install virtualenv
-	make venv
-	%VENV_ACTIVATE%; pre-commit install
+	ECHO "Make file commands:"
+	ECHO "    make venv"
+	ECHO "        Prepare complete development environment"
+	ECHO "    make lint"
+	ECHO "        Run pylint and mypy"
+	ECHO "    make resources"
+	ECHO "        Make qrc resources file - main_rc.py"
+	ECHO "    make package"
+	ECHO "        Create packaged application"
+	ECHO "    make run"
+	ECHO "        Run application"
+	ECHO "    make docs"
+	ECHO "        Generate HTML documentation"
+	ECHO "    make clean"
+	ECHO "        Clean repository"
 	GOTO :EOF
 
 :venv
-	CALL make.bat $(VENV_NAME)/bin/activate
-	GOTO :EOF
-
-:$(VENV_NAME)/bin/activate
-	CALL make.bat requirements.txt
-	CALL make.bat requirements-dev.txt
-	test -d %VENV_NAME% || virtualenv -p python3.8 %VENV_NAME%
+	virtualenv -p %PYTHON_VERSION% %VENV_NAME%
+	%VENV_ACTIVATE%
 	%PYTHON% -m pip install -U pip
-	%PYTHON% -m pip install -r requirements.txt
-	%PYTHON% -m pip install -r requirements-dev.txt
-	touch %VENV_NAME%/bin/activate
+	%PYTHON% -m pip install -r requirements.txt -r requirements-dev.txt
 	GOTO :EOF
 
 :resources
-	%VENV_ACTIVATE%; pyside2-rcc virtual_warehouse/main.qrc -o virtual_warehouse/main_rc.py
+	%VENV_ACTIVATE%
+  pyside2-rcc virtual_warehouse/main.qrc -o virtual_warehouse/main_rc.py
 	GOTO :EOF
 
 :lint
 	CALL make.bat venv
+	%VENV_ACTIVATE%
 	%PYTHON% -m pylint virtual_warehouse
 	%PYTHON% -m flake8 virtual_warehouse
 	GOTO :EOF
 
 :package
 	CALL make.bat resources
-	%VENV_ACTIVATE%; pyinstaller --name="Virtual Warehouse" --windowed --clean --onedir main.py --icon="virtual_warehouse/resources/images/icon.ico" --add-data %VENV_NAME%/lib/python3.8/site-packages/owlready2/pellet:owlready2/pellet
+
+	%VENV_ACTIVATE%
+
+  for /f "tokens=* delims=" %%a in (
+    '"python3 -c ""import owlready2 as _; print(_.__file__[:-11])"""'
+  ) do (
+    pyinstaller --name="Virtual Warehouse" --windowed --clean --onedir main.py --icon="virtual_warehouse/resources/images/icon.ico" --add-data "%%a"/pellet:owlready2/pellet
+  )
+
+	PUSHD dist; tar.exe -caf virtual-warehouse.zip "Virtual Warehouse" && POPD
 	GOTO :EOF
 
 :run
@@ -89,11 +78,10 @@ GOTO error
 	GOTO :EOF
 
 :docs
-	%VENV_ACTIVATE%; cd docs; make html
+	%VENV_ACTIVATE%; PUSHD docs; make.bat html && POPD
 	GOTO :EOF
 
 :clean
-	find . -name '*.pyc' -exec rm --force {} +
 	DEL /Q %VENV_NAME% *.eggs *.egg-info dist build docs/_build .cache -rf
 	GOTO :EOF
 

@@ -1,0 +1,38 @@
+publish_task_template: &PUBLISH_TASK_TEMPLATE
+  only_if: $BRANCH == "packaging" 
+   
+task:
+  << : *PUBLISH_TASK_TEMPLATE
+  name: Publish (Linux)
+
+  container:
+    image: python:3-slim
+
+  pip_cache:
+    folder: venv
+    fingerprint_script: echo $PYTHON_VERSION && cat requirements.txt && cat requirements-dev.txt
+    populate_script: make venv PYTHON_VERSION=python3
+
+  publish_script: make package 
+
+  build_artifacts:
+    path: dist/virtual-warehouse.tar.gz
+
+task:
+  << : *PUBLISH_TASK_TEMPLATE
+  name: Publish (Windows)
+
+  windows_container:
+    image: cirrusci/windowsservercore:2019
+
+  install_script: choco install -y python wixtoolset
+  pip_cache:
+    folder: venv
+    fingerprint_script: python --version && type requirements.txt && type requirements-dev.txt
+    populate_script: make.bat install
+
+  publish_script: make.bat package 
+
+  build_artifacts:
+    path: dist/virtual-warehouse.zip
+
