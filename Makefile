@@ -34,8 +34,8 @@ help:
 
 install:
 	sudo apt-get -y install build-essential $(PYTHON_VERSION) $(PYTHON_VERSION)-dev
-	python3 -m pip install pip
-	python3 -m pip install virtualenv
+	${PYTHON_VERSION} -m pip install pip
+	${PYTHON_VERSION} -m pip install virtualenv
 	make venv
 	${VENV_ACTIVATE}; pre-commit install
 

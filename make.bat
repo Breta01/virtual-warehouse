@@ -4,7 +4,7 @@ SET PYTHON_VERSION=python3
 SET VENV_NAME=venv
 
 SET VENV_ACTIVATE=%VENV_NAME%\Scripts\activate.bat
-SET PYTHON=python3
+SET PYTHON=python
 
 IF /I "%1"==".DEFAULT" GOTO .DEFAULT
 IF /I "%1"=="help" GOTO help
@@ -22,54 +22,56 @@ GOTO error
 	GOTO :EOF
 
 :help
-	ECHO "Make file commands:"
-	ECHO "    make venv"
-	ECHO "        Prepare complete development environment"
-	ECHO "    make lint"
-	ECHO "        Run pylint and mypy"
-	ECHO "    make resources"
-	ECHO "        Make qrc resources file - main_rc.py"
-	ECHO "    make package"
-	ECHO "        Create packaged application"
-	ECHO "    make run"
-	ECHO "        Run application"
-	ECHO "    make docs"
-	ECHO "        Generate HTML documentation"
-	ECHO "    make clean"
-	ECHO "        Clean repository"
+	ECHO Make file commands:
+	ECHO     make venv
+	ECHO         Prepare complete development environment
+	ECHO     make lint
+	ECHO         Run pylint and mypy
+	ECHO     make resources
+	ECHO         Make qrc resources file - main_rc.py
+	ECHO     make package
+	ECHO         Create packaged application
+	ECHO     make run
+	ECHO         Run application
+	ECHO     make docs
+	ECHO         Generate HTML documentation
+	ECHO     make clean
+	ECHO         Clean repository
 	GOTO :EOF
 
 :venv
-	virtualenv -p %PYTHON_VERSION% %VENV_NAME%
-	%VENV_ACTIVATE%
+	py -m pip install virtualenv
+	py -m virtualenv -p %PYTHON_VERSION% %VENV_NAME%
+	CALL %VENV_ACTIVATE%
 	%PYTHON% -m pip install -U pip
 	%PYTHON% -m pip install -r requirements.txt -r requirements-dev.txt
 	GOTO :EOF
 
 :resources
-	%VENV_ACTIVATE%
-  pyside2-rcc virtual_warehouse/main.qrc -o virtual_warehouse/main_rc.py
+	CALL %VENV_ACTIVATE%
+	pyside2-rcc virtual_warehouse/main.qrc -o virtual_warehouse/main_rc.py
 	GOTO :EOF
 
 :lint
-	CALL make.bat venv
-	%VENV_ACTIVATE%
+	CALL %VENV_ACTIVATE%
 	%PYTHON% -m pylint virtual_warehouse
 	%PYTHON% -m flake8 virtual_warehouse
 	GOTO :EOF
 
 :package
 	CALL make.bat resources
+	CALL %VENV_ACTIVATE%
 
-	%VENV_ACTIVATE%
+	for /f "tokens=* delims=" %%a in (
+		'python -c "import owlready2 as _; print(_.__file__[:-11])"'
+	) do (
+		ECHO %%a
+		pyinstaller --name="Virtual Warehouse" --windowed --clean --onedir main.py --icon="virtual_warehouse/resources/images/icon.ico" --add-data %%apellet;owlready2\pellet
+	)
 
-  for /f "tokens=* delims=" %%a in (
-    '"python3 -c ""import owlready2 as _; print(_.__file__[:-11])"""'
-  ) do (
-    pyinstaller --name="Virtual Warehouse" --windowed --clean --onedir main.py --icon="virtual_warehouse/resources/images/icon.ico" --add-data "%%a"/pellet:owlready2/pellet
-  )
-
-	PUSHD dist; tar.exe -caf virtual-warehouse.zip "Virtual Warehouse" && POPD
+	PUSHD dist
+	tar.exe -caf virtual-warehouse.zip "Virtual Warehouse"
+	POPD
 	GOTO :EOF
 
 :run
@@ -78,7 +80,8 @@ GOTO error
 	GOTO :EOF
 
 :docs
-	%VENV_ACTIVATE%; PUSHD docs; make.bat html && POPD
+	CALL %VENV_ACTIVATE%
+	docs\make.bat html
 	GOTO :EOF
 
 :clean

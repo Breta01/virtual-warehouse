@@ -1,19 +1,25 @@
 publish_task_template: &PUBLISH_TASK_TEMPLATE
-  only_if: $BRANCH == "packaging" 
+  only_if: $BRANCH == "master"
+  trigger_type: manual
    
 task:
   << : *PUBLISH_TASK_TEMPLATE
   name: Publish (Linux)
 
   container:
-    image: python:3-slim
+    image: python:3.7-slim-stretch
 
-  pip_cache:
-    folder: venv
-    fingerprint_script: echo $PYTHON_VERSION && cat requirements.txt && cat requirements-dev.txt
-    populate_script: make venv PYTHON_VERSION=python3
+  install_script:
+    - apt-get update
+    - apt-get -y install --no-install-recommends make binutils libc-bin
+    - apt-get -y install qt5-default
+    - pip install virtualenv
 
-  publish_script: make package 
+  # pip_cache - it would make sense to create cache out of virtualenv (had some issues)
+  virtualenv_script: make venv PYTHON_VERSION=python3
+
+  publish_script:
+    - make package 
 
   build_artifacts:
     path: dist/virtual-warehouse.tar.gz
@@ -25,13 +31,13 @@ task:
   windows_container:
     image: cirrusci/windowsservercore:2019
 
-  install_script: choco install -y python wixtoolset
-  pip_cache:
-    folder: venv
-    fingerprint_script: python --version && type requirements.txt && type requirements-dev.txt
-    populate_script: make.bat install
+  install_script: choco install -y python --version=3.8.9 & refreshenv
 
-  publish_script: make.bat package 
+  # pip_cache - it would make sense to create cache out of virtualenv (had some issues)
+  virtualenv_script: make.bat venv
+
+  publish_script: make.bat package
+    - make.bat package
 
   build_artifacts:
     path: dist/virtual-warehouse.zip
