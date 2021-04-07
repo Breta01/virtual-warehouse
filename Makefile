@@ -54,7 +54,8 @@ lint: venv
 
 package: resources
 	${VENV_ACTIVATE}; pyinstaller --name="Virtual Warehouse" --windowed --clean \
-		--onefile main.py --icon="virtual_warehouse/resources/images/icon.png"
+		--onedir main.py --icon="virtual_warehouse/resources/images/icon.png" \
+        --add-data ${VENV_NAME}/lib/python3.8/site-packages/owlready2/pellet:owlready2/pellet
 # ${VENV_ACTIVATE}; nuitka3 main.py --show-progress --standalone --plugin-enable=pyside2 --include-qt-plugins=all --windows-disable-console
 
 run: resources
