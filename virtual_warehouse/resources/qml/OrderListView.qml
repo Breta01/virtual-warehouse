@@ -21,7 +21,7 @@ Item {
 
         dst2: "Items"
         idx2: 1
-        fun2: ViewController.checked_locations_to_items
+        fun2: ViewController.checked_orders_to_items
         mdl2: ViewController.item_model
     }
 
