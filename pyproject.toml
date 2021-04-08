@@ -10,8 +10,8 @@ requires = ["poetry_core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "virtaul-warehouse"
-version = "0.0.1"
+name = "virtual-warehouse"
+version = "0.0.1a"
 description = "Warehouse visualisation app"
 authors = ["Břetislav Hájek <info@bretahajek.com>"]
 readme = "README.md"
@@ -21,18 +21,22 @@ keywords = ["visualization", "warehouse"]
 packages = [
     { include = "virtual_warehouse" },
 ]
+include = ["virtual_warehouse/main_rc.py"]
 
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
 
 [tool.poetry.dependencies]
-python = "^3"
+python = ">=3.6,<3.9"
 PySide2 = "5.15.0"
 xlrd = "1.2.0"
 Owlready2 = "0.29"
 rdflib = "^5.0.0"
 openpyxl = "^3.0.7"
+
+[tool.poetry.scripts]
+virtual-warehouse = "virtual_warehouse.__main__:main"
 
 
 ### Briefcase packaging section - EXPERIMENtAL ###

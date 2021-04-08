@@ -17,14 +17,20 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.8'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+    - name: Build resources
+      run: |
+        # Grep current version of PySide and install it. Then build resources from main.qrc
+        grep PySide requirements.txt | xargs pip install
+        pyside2-rcc virtual_warehouse/main.qrc -o virtual_warehouse/main_rc.py
     - name: Build and publish
       env:
         POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
       run: |
+        source $HOME/.poetry/env
         poetry publish --build
 
