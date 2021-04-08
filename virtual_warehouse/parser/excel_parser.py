@@ -134,6 +134,7 @@ class Document:
         return self.orders
 
     def parse_document(self):
+        """Parse the whole document."""
         locations = self.parse_locations()
         locations = self.parse_coordinates()
         items = self.parse_items()

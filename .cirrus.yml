@@ -1,0 +1,44 @@
+publish_task_template: &PUBLISH_TASK_TEMPLATE
+  only_if: $BRANCH == "master"
+  trigger_type: manual
+   
+task:
+  << : *PUBLISH_TASK_TEMPLATE
+  name: Publish (Linux)
+
+  container:
+    image: python:3.7-slim-stretch
+
+  install_script:
+    - apt-get update
+    - apt-get -y install --no-install-recommends make binutils libc-bin
+    - apt-get -y install qt5-default
+    - pip install virtualenv
+
+  # pip_cache - it would make sense to create cache out of virtualenv (had some issues)
+  virtualenv_script: make venv PYTHON_VERSION=python3
+
+  publish_script:
+    - make package 
+
+  build_artifacts:
+    path: dist/virtual-warehouse.tar.gz
+
+task:
+  << : *PUBLISH_TASK_TEMPLATE
+  name: Publish (Windows)
+
+  windows_container:
+    image: cirrusci/windowsservercore:2019
+
+  install_script: choco install -y python --version=3.8.9 & refreshenv
+
+  # pip_cache - it would make sense to create cache out of virtualenv (had some issues)
+  virtualenv_script: make.bat venv
+
+  publish_script: make.bat package
+    - make.bat package
+
+  build_artifacts:
+    path: dist/virtual-warehouse.zip
+

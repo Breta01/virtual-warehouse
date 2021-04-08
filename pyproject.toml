@@ -4,10 +4,79 @@ title = "Virtual Warehouse"
 [owner]
 name = "Břetislav Hájek"
 
-
+### Build using poetry ###
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
+[tool.poetry]
+name = "virtaul-warehouse"
+version = "0.0.1"
+description = "Warehouse visualisation app"
+authors = ["Břetislav Hájek <info@bretahajek.com>"]
+readme = "README.md"
+repository = "https://github.com/Breta01/virtual-warehouse"
+documentation = "https://virtual-warehouse.readthedocs.io"
+keywords = ["visualization", "warehouse"]
+packages = [
+    { include = "virtual_warehouse" },
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+
+[tool.poetry.dependencies]
+python = "^3"
+PySide2 = "5.15.0"
+xlrd = "1.2.0"
+Owlready2 = "0.29"
+rdflib = "^5.0.0"
+openpyxl = "^3.0.7"
+
+
+### Briefcase packaging section - EXPERIMENtAL ###
+[tool.briefcase]
+project_name = "virtual_warehouse"
+bundle = "com.bretahajek.virtual-warehouse"
+version = "0.0.1"
+url = "https://github.com/Breta01/virtual-warehouse"
+license = ""
+author = 'Bretislav Hajek'
+author_email = "info@bretahajek.com"
+
+[tool.briefcase.app.virtual_warehouse]
+formal_name = "Virtual Warehouse"
+description = "Warehouse visualisation app"
+icon = "virtual_warehouse/resources/images/icon"
+sources = ['virtual_warehouse']
+requires = [
+    'PySide2==5.15.0',
+    'xlrd==1.2.0',
+    'Owlready2==0.29',
+    'rdflib',
+    'openpyxl',]
+
+
+[tool.briefcase.app.virtual_warehouse.macOS]
+requires = []
+
+[tool.briefcase.app.virtual_warehouse.linux]
+requires = []
+system_requires = []
+
+[tool.briefcase.app.virtual_warehouse.windows]
+requires = []
+
+# Mobile deployments
+[tool.briefcase.app.virtual_warehouse.iOS]
+requires = []
+
+[tool.briefcase.app.virtual_warehouse.android]
+requires = []
+
+
+### Linting and Code Style ###
 
 # NOTE: you have to use single-quoted strings in TOML for regular expressions.
 # It's the equivalent of r-strings in Python.  Multiline strings are treated as
