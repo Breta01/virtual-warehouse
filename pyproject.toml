@@ -42,7 +42,7 @@ bundle = "com.bretahajek.virtual-warehouse"
 version = "0.0.1"
 url = "https://github.com/Breta01/virtual-warehouse"
 license = ""
-author = 'Břetislav Hájek'
+author = 'Bretislav Hajek'
 author_email = "info@bretahajek.com"
 
 [tool.briefcase.app.virtual_warehouse]
