@@ -16,7 +16,7 @@ Installation (pre-build)
 
 .. tab:: Unix (Linux / macOS)
 
-   :download:`virtual-warehouse_linux.zip <https://drive.google.com/file/d/1dOpJeUEHHL79EZ7MNEoo-NDB2y56YMjw/view?usp=sharing>`
+   :download:`virtual-warehouse_linux.tar.gz <https://drive.google.com/file/d/1ABhmw5eDQxY55qfiys1DiB1bvxh-VTRD/view?usp=sharing>`
 
 .. tab:: Windows
 
@@ -29,14 +29,15 @@ Installation (pre-build)
 
    .. code-block:: bash
 
-      unzip virtual-warehouse_linux.zip
+      tar xvf virtual-warehouse_linux.tar.gz
+      cd "Virtual Warehouse"
 
 
 .. tab:: Windows
 
    .. code-block:: console
 
-      Use some archive manager
+      Use some archive manager then enter the directory
 
 
 3. Run the executable:
@@ -56,6 +57,11 @@ Installation (pre-build)
       # Double-click "Virtual Warehouse.exe" or run in command line:
       start "Virtual Warehouse.exe"
 
+.. warning::
+
+   **Windows:** Application isn't signed right now. That means that you might see window "Winows protected your PC" from Windows Defender SmartScreen. Just click on "More info" and then "Run anyway".
+
+
 
 Installation (from source)
 ==========================
@@ -66,7 +72,7 @@ Application requires **Python 3** and following requirements:
 
 
 
-It is recommended to use `Makefile <https://github.com/Breta01/virtual-warehouse/blob/master/Makefile>`_ if possible. It installs all requirements (creating a separate virtual environment). Build the project using the following command:
+It is recommended to use `Makefile <https://github.com/Breta01/virtual-warehouse/blob/master/Makefile>`_ if possible. It installs all requirements (creating a separate virtual environment). There is Windows equivalent of Makefile in form of `make.bat <https://github.com/Breta01/virtual-warehouse/blob/master/make.bat>`_. Build the project using the following command:
 
 .. warning::
 
@@ -83,11 +89,13 @@ It is recommended to use `Makefile <https://github.com/Breta01/virtual-warehouse
    .. code-block:: bash
 
       # Install Python 3 (follow instructions at https://www.python.org)
-      make.bat install
-      start "Virtual Warehouse.exe"
+      # Following command creates virtual environment venv with all requirements
+      make.bat venv
 
 
-Run the application by running the `main.py <https://github.com/Breta01/virtual-warehouse/blob/master/main.py>`_ file in the root directory. You can also use Makefile:
+It is recommended to use Makefile (make.bat) for running the application. Before running the application you have to build resources (Makefile/make.bat does that automatically). After that you can also run the application by running the `main.py <https://github.com/Breta01virtual-warehouse/blob/master/main.py>`_ file in the root directory.
+
+Using Makefile/make.bat as follows:
 
 .. tab:: Unix (Linux / macOS)
 
