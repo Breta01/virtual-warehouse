@@ -45,10 +45,7 @@ def estimate_sheet_type(sheet):
 
 def convert_type(type_str):
     """Unify location type names."""
-    try:
-        return types[type_str.lower()]
-    except Exception:
-        return "custom"
+    return types.get(type_str.lower(), "custom")
 
 
 def convert_dim(dim, uom):

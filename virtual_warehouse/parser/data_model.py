@@ -5,7 +5,6 @@ from typing import List
 from owlready2 import (
     DataProperty,
     FunctionalProperty,
-    ObjectProperty,
     Thing,
     default_world,
     destroy_entity,
@@ -497,7 +496,7 @@ with onto:
 
     # OrderedItem properties
     class has_item(OrderedItem >> Item, FunctionalProperty):
-        """Item which is instantiated"""
+        """Item which is instantiated."""
 
     class in_order(OrderedItem >> Order, FunctionalProperty):
         """Pointer to Order which contains this OrderedItem."""
@@ -598,7 +597,7 @@ with onto:
         """Date of Inventory report."""
 
     class has_location(Inventory >> Location, FunctionalProperty):
-        """Location described by Inventory"""
+        """Location described by Inventory."""
 
     class has_items(Inventory >> Item):
         """Items reported by Inventory."""

@@ -33,42 +33,44 @@ class TabLocation(QObject):
 
     @Property(str, constant=True)
     def name(self):
+        """Get location name (property)."""
         return self._i.name
 
     @Property(str, constant=True)
     def class_str(self):
+        """Get class + subclass representation (property)."""
         if self._i.has_lsubclass:
             return f"{self._i.has_lclass} > {self._i.has_lsubclass}"
         return self._i.has_lclass
 
     @Property(str, constant=True)
     def dimension_str(self):
+        """Get dimension representation (property)."""
         return f"{self._i.has_length} x {self._i.has_width} x {self._i.has_height}"
 
     @Property(int, constant=True)
     def max_weight(self):
+        """Get maximal weight supported by location (property)."""
         return self._i.has_max_weight
 
     @Property(str, constant=True)
     def zone(self):
+        """Get zone where is location located (property)."""
         return self._i.has_zone
 
     @Property(str, constant=True)
     def z(self):
+        """Get z (vertical direction) coordinate of location (property)."""
         return str(int(self._i.has_z))
-
-    @Slot(float, result=str)
-    def heat(self, max_freq=None):
-        if max_freq:
-            return get_heatmap_color(self._i.has_freq / max_freq)
-        return self._i.has_freq
 
     @Property(bool, constant=False, notify=checkedChanged)
     def checked(self):
+        """Get checked state of location (property)."""
         return self._checked
 
     @checked.setter
     def set_checked(self, val):
+        """Set checked state of location (property setter)."""
         self._checked = val
 
 
@@ -84,33 +86,40 @@ class TabItem(QObject):
 
     @Property(str, constant=True)
     def name(self):
+        """Get item name (property)."""
         return self._i.name
 
     @Property(str, constant=True)
     def description(self):
+        """Get representation of item description (property)."""
         if self._i.has_gtype:
             return f"{self._i.has_description} | {self._i.has_gtype}"
         return self._i.has_description
 
     @Property(str, constant=True)
     def zone(self):
+        """Get item required zone (property)."""
         return self._i.has_zone
 
     @Property(str, constant=True)
     def base_dimension(self):
+        """Get representation of base dimension of item package (property)."""
         bu = self._i.has_base_unit
         return f"{bu.has_length} x {bu.has_width} x {bu.has_height}"
 
     @Property(float, constant=True)
     def base_weight(self):
+        """Get base weight of item package (property)."""
         return self._i.has_base_unit.has_weight
 
     @Property(bool, constant=False, notify=checkedChanged)
     def checked(self):
+        """Get item checked state (property)."""
         return self._checked
 
     @checked.setter
     def set_checked(self, val):
+        """Set item checked state (property setter)."""
         self._checked = val
 
 
@@ -126,18 +135,22 @@ class TabOrder(QObject):
 
     @Property(str, constant=True)
     def name(self):
+        """Get name order (property)."""
         return str(self._i.name)
 
     @Property(str, constant=True)
     def direction(self):
+        """Get direction of order (property)."""
         return self._i.has_direction
 
     @Property(str, constant=True)
     def date(self):
+        """Get formatted date of order (property)."""
         return self._i.has_delivery_date.strftime("%x")
 
     @Property(str, constant=True)
     def item_id(self):
+        """Get representation of item/items (property)."""
         if len(self._i.has_ordered_items) == 1:
             return str(self._i.has_ordered_items[0].has_item.name)
         return "Multi-item"
@@ -148,10 +161,12 @@ class TabOrder(QObject):
 
     @Property(bool, constant=False, notify=checkedChanged)
     def checked(self):
+        """Get order checked state (property)."""
         return self._checked
 
     @checked.setter
     def set_checked(self, val):
+        """Set order checked state (property setter)."""
         self._checked = val
 
 
@@ -199,7 +214,7 @@ class UniversalListModel(QAbstractListModel):
         self.layoutChanged.emit()
 
     def rowCount(self, parent=QModelIndex()):
-        """Number of items in list (required method)."""
+        """Get number of items in list (required method)."""
         return len(self._selected)
 
     def data(self, index, role):
@@ -358,7 +373,7 @@ class HoverListModel(UniversalListModel):
         self.layoutChanged.emit()
 
     def rowCount(self, parent=QModelIndex()):
-        """Number of items in list (required method)."""
+        """Get number of items in list (required method)."""
         if self._is_hovered:
             return len(self._hovered)
         return len(self._selected)

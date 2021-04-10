@@ -377,12 +377,11 @@ class ViewController(QObject):
 
     @Slot(QUrl)
     def save_ontology(self, file_path):
-        """Save ontology in RDF/XML format
+        """Save ontology in RDF/XML format.
 
         Args:
             file_path (QUrl): file url object
         """
-        print(file_path.toLocalFile())
         file_path = file_path.toLocalFile()
         if file_path[-4:] != ".rdf":
             file_path += ".rdf"
