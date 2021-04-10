@@ -30,9 +30,10 @@ ApplicationWindow {
                 text: qsTr("&Open")
                 onTriggered: dialogs.openImportFileDialog()
             }
-            //            MenuItem {
-            //                text: qsTr("&Save As...")
-            //            }
+            MenuItem {
+                text: qsTr("&Export Ontology")
+                onTriggered: dialogs.openSaveFileDialog()
+            }
             MenuItem {
                 text: qsTr("&Quit")
                 onTriggered: Qt.quit()

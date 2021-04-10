@@ -74,10 +74,6 @@ Application requires **Python 3** and following requirements:
 
 It is recommended to use `Makefile <https://github.com/Breta01/virtual-warehouse/blob/master/Makefile>`_ if possible. It installs all requirements (creating a separate virtual environment). There is Windows equivalent of Makefile in form of `make.bat <https://github.com/Breta01/virtual-warehouse/blob/master/make.bat>`_. Build the project using the following command:
 
-.. warning::
-
-   make.bat is not available right now
-
 .. tab:: Unix (Linux / macOS)
 
    .. code-block:: bash
@@ -93,7 +89,7 @@ It is recommended to use `Makefile <https://github.com/Breta01/virtual-warehouse
       make.bat venv
 
 
-It is recommended to use Makefile (make.bat) for running the application. Before running the application you have to build resources (Makefile/make.bat does that automatically). After that you can also run the application by running the `main.py <https://github.com/Breta01virtual-warehouse/blob/master/main.py>`_ file in the root directory.
+It is recommended to use Makefile (make.bat) for running the application. Before running the application you have to build resources (Makefile/make.bat does that automatically). After that you can also run the application by running the `main.py <https://github.com/Breta01/virtual-warehouse/blob/master/main.py>`_ file in the root directory.
 
 Using Makefile/make.bat as follows:
 

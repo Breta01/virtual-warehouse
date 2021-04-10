@@ -9,7 +9,13 @@ from virtual_warehouse.location_models import (
 )
 from virtual_warehouse.location_utils import cluster_locations
 from virtual_warehouse.map import Map
-from virtual_warehouse.parser.data_model import Inventory, Item, Location, Order
+from virtual_warehouse.parser.data_model import (
+    Inventory,
+    Item,
+    Location,
+    Order,
+    save_ontology,
+)
 from virtual_warehouse.parser.excel_parser import Document
 from virtual_warehouse.tab_controller import (
     HoverListModel,
@@ -66,7 +72,7 @@ class DataLoaderThread(QThread):
         def where(arr, y):
             return [x["name"] for x in arr if x["type"] == y]
 
-        document = Document(QUrl(self.file_path).toLocalFile())
+        document = Document(self.file_path)
 
         if (
             len(where(self.sheets, "Locations")) > 0
@@ -357,24 +363,37 @@ class ViewController(QObject):
         """Get list of indexes of selected locations inside the map."""
         return list(self.selected_idxs.keys())
 
-    @Slot(str, result="QVariantList")
+    @Slot(QUrl, result="QVariantList")
     def get_sheets(self, file_path):
         """Get names of sheets inside the file and expected type.
 
         Args:
-            file_path (str): file url
+            file_path (QUrl): file url
 
         Returns:
             list[tuple[str, str]]: list containing lists [[name, type_name], ...]
         """
-        return Document.get_sheet_names(QUrl(file_path).toLocalFile())
+        return Document.get_sheet_names(file_path.toLocalFile())
 
-    @Slot(str, "QVariantList")
+    @Slot(QUrl)
+    def save_ontology(self, file_path):
+        """Save ontology in RDF/XML format
+
+        Args:
+            file_path (QUrl): file url object
+        """
+        print(file_path.toLocalFile())
+        file_path = file_path.toLocalFile()
+        if file_path[-4:] != ".rdf":
+            file_path += ".rdf"
+        save_ontology(file_path)
+
+    @Slot(QUrl, "QVariantList")
     def load(self, file_path, types):
         """Load excel file with corresponding sheet types.
 
         Args:
-            file_path (str): file url should be processed with QUrl(file_path)
+            file_path (QUrl): file url object
             types (list[dict[str, str]]): list of dictionaries, each containing
                 keys "name": name of the sheet, "type": name of the type.
                 There are 6 types ("None", "Locations", "Coordinates", "Items",
@@ -382,7 +401,12 @@ class ViewController(QObject):
         """
         self.progress_value = 0
         self._loader = DataLoaderThread(
-            file_path, types, self.locations, self.items, self.inventory, self.orders
+            file_path.toLocalFile(),
+            types,
+            self.locations,
+            self.items,
+            self.inventory,
+            self.orders,
         )
         self._loader.locationsReady.connect(self._load_locations, Qt.QueuedConnection)
         self._loader.itemsReady.connect(self._load_items, Qt.QueuedConnection)

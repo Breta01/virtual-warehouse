@@ -14,6 +14,10 @@ Item {
         importFileDialog.open()
     }
 
+    function openSaveFileDialog() {
+        saveFileDialog.open()
+    }
+
     Dialog {
         id: helpDialog
         title: "Help"
@@ -78,6 +82,15 @@ Item {
                 onRejected: helpDialog.close()
             }
         }
+    }
+
+    FileDialog {
+        id: saveFileDialog
+        modality: Qt.WindowModal
+        folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        selectExisting: false
+        nameFilters: ["RDF/XML format (*.rdf)"]
+        onAccepted: ViewController.save_ontology(saveFileDialog.fileUrl)
     }
 
     FileDialog {

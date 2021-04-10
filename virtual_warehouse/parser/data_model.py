@@ -34,6 +34,15 @@ def destroy_all(cls):
         destroy_entity(i)
 
 
+def save_ontology(file_path):
+    """Save ontology in RDF/XML format.
+
+    Args:
+        file_path (str): file url should be processed with QUrl(file_path)
+    """
+    onto.save(file_path, format="rdfxml")
+
+
 with onto:
 
     class Country(Thing):
@@ -56,9 +65,9 @@ with onto:
             has_ltype (str): location type
             has_items (List[Item]): list of items on given location
             has_expiry_date (datetime.datetime): date of the item expiration
-            has_availabel_qty (int): availabel quantity of the item
+            has_available_qty (int): available quantity of the item
             has_onhand_qty (int): on-hand quantity of the item
-            has_transi_qty (int): transiting quantity of the item
+            has_transit_qty (int): transiting quantity of the item
             has_allocated_qty (int): allocated quantity of the item
             has_suspense_qty (int): suspended quantity of the item
         """
@@ -73,7 +82,7 @@ with onto:
             expiry_date: str,
             available_qty: int,
             onhand_qty: int,
-            transi_qty: int,
+            transit_qty: int,
             allocated_qty: int,
             suspense_qty: int,
         ):
@@ -90,9 +99,9 @@ with onto:
                 has_ltype=ltype,
                 has_items=[item],
                 has_expiry_date=expiry_date,
-                has_availabel_qty=available_qty,
+                has_available_qty=available_qty,
                 has_onhand_qty=onhand_qty,
-                has_transi_qty=transi_qty,
+                has_transit_qty=transit_qty,
                 has_allocated_qty=allocated_qty,
                 suspense_qty=suspense_qty,
             )
@@ -465,169 +474,152 @@ with onto:
             return list(default_world.sparql_query(query))
 
     # Order properties
-    class has_direction(DataProperty, FunctionalProperty):
-        domain = [Order]
-        range = [str]
+    class has_direction(Order >> str, FunctionalProperty):
+        """Direction of Order."""
 
-    class has_country(ObjectProperty, FunctionalProperty):
-        domain = [Order]
-        range = [Country]
+    class has_country(Order >> Country, FunctionalProperty):
+        """Country of destination of Order."""
 
-    class has_delivery_date(DataProperty, FunctionalProperty):
-        domain = [Order]
-        range = [datetime.datetime]
+    class has_delivery_date(Order >> datetime.datetime, FunctionalProperty):
+        """Delivery date of Order."""
 
-    class has_s_ship_date(DataProperty, FunctionalProperty):
-        domain = [Order]
-        range = [datetime.date]
+    class has_s_ship_date(Order >> datetime.datetime, FunctionalProperty):
+        """Scheduled shipping date of Order."""
 
-    class has_a_ship_date(DataProperty, FunctionalProperty):
-        domain = [Order]
-        range = [datetime.date]
+    class has_a_ship_date(Order >> datetime.datetime, FunctionalProperty):
+        """Actual shipping date of Order."""
 
-    class has_line_num(DataProperty, FunctionalProperty):
-        domain = [Order]
-        range = [int]
+    class has_line_num(Order >> int, FunctionalProperty):
+        """Line number of Order."""
 
     class has_ordered_items(Order >> OrderedItem):
-        pass
+        """List of OrderedItem (instances of Item) inside Order."""
 
     # OrderedItem properties
-    class has_item(ObjectProperty, FunctionalProperty):
-        domain = [OrderedItem]
-        range = [Item]
+    class has_item(OrderedItem >> Item, FunctionalProperty):
+        """Item which is instantiated"""
 
-    class in_order(OrderedItem >> Order):
+    class in_order(OrderedItem >> Order, FunctionalProperty):
+        """Pointer to Order which contains this OrderedItem."""
+
         inverse_property = has_ordered_items
 
-    class has_requested_qty(DataProperty, FunctionalProperty):
-        domain = [OrderedItem]
-        range = [int]
+    class has_requested_qty(OrderedItem >> int, FunctionalProperty):
+        """Requested quantity of Item."""
 
-    class has_total_qty(DataProperty, FunctionalProperty):
-        domain = [OrderedItem]
-        range = [int]
+    class has_total_qty(OrderedItem >> int, FunctionalProperty):
+        """Total quantity of Item."""
 
     class has_qty_uom(DataProperty, FunctionalProperty):
+        """Quantity unit of measure used for total_qty and requested_qty."""
+
         domain = [OrderedItem, ItemUnit]
         range = [str]
 
     # ItemUnit properties
-    class has_conversion_qty(DataProperty, FunctionalProperty):
-        domain = [ItemUnit]
-        range = [int]
+    class has_conversion_qty(ItemUnit >> int, FunctionalProperty):
+        """Conversion quantity of ItemUnit."""
 
-    class has_weight(DataProperty, FunctionalProperty):
-        domain = [ItemUnit]
-        range = [float]
+    class has_weight(ItemUnit >> float, FunctionalProperty):
+        """Conversion quantity of ItemUnit."""
 
     # Item properties
     class in_ordered_item(Item >> OrderedItem):
+        """List of OrderedItems (Item instantiations) where Item appears."""
+
         inverse_property = has_item
 
-    class has_description(DataProperty, FunctionalProperty):
-        domain = [Item]
-        range = [str]
+    class has_description(Item >> str, FunctionalProperty):
+        """Description of Item."""
 
-    class has_gtype(DataProperty, FunctionalProperty):
-        domain = [Item]
-        range = [str]
+    class has_gtype(Item >> str, FunctionalProperty):
+        """Good type of Item."""
 
     class has_zone(DataProperty, FunctionalProperty):
+        """Zone required by Item or Zone of Location."""
+
         domain = [Item, Location]
         range = [str]
 
-    class has_base_unit(ObjectProperty, FunctionalProperty):
-        domain = [Item]
-        range = [ItemUnit]
+    class has_base_unit(Item >> ItemUnit, FunctionalProperty):
+        """Base ItemUnit of Item."""
 
     class has_unit_levels(Item >> ItemUnit):
-        pass
+        """List of ItemUnits (unit levels) of Item."""
 
     # Location properties
     class has_ltype(DataProperty, FunctionalProperty):
+        """Location type."""
+
         domain = [Location, Inventory]
         range = [str]
 
-    class has_lclass(DataProperty, FunctionalProperty):
-        domain = [Location]
-        range = [str]
+    class has_lclass(Location >> str, FunctionalProperty):
+        """Location class."""
 
-    class has_lsubclass(DataProperty, FunctionalProperty):
-        domain = [Location]
-        range = [str]
+    class has_lsubclass(Location >> str, FunctionalProperty):
+        """Location subclass."""
 
     class has_length(DataProperty, FunctionalProperty):
+        """Length of Location/ItemUnit."""
+
         domain = [Location, ItemUnit]
         range = [float]
 
     class has_width(DataProperty, FunctionalProperty):
+        """Width of Location/ItemUnit."""
+
         domain = [Location, ItemUnit]
         range = [float]
 
     class has_height(DataProperty, FunctionalProperty):
+        """Height of Location/ItemUnit."""
+
         domain = [Location, ItemUnit]
         range = [float]
 
-    class has_max_weight(DataProperty, FunctionalProperty):
-        domain = [Location]
-        range = [float]
+    class has_max_weight(Location >> float, FunctionalProperty):
+        """Max weight which Location can hold."""
 
-    class has_coord(DataProperty, FunctionalProperty):
-        domain = [Location]
-        range = [str]
+    class has_freq(Location >> int, FunctionalProperty):
+        """Frequency calculated for the location."""
 
-    class has_freq(DataProperty, FunctionalProperty):
-        domain = [Location]
-        range = [int]
+    class has_x(Location >> float, FunctionalProperty):
+        """x coordinate of Location."""
 
-    class has_x(DataProperty, FunctionalProperty):
-        domain = [Location]
-        range = [float]
+    class has_y(Location >> float, FunctionalProperty):
+        """y coordinate of Location."""
 
-    class has_y(DataProperty, FunctionalProperty):
-        domain = [Location]
-        range = [float]
-
-    class has_z(DataProperty, FunctionalProperty):
-        domain = [Location]
-        range = [float]
+    class has_z(Location >> float, FunctionalProperty):
+        """z coordinate of Location."""
 
     # Inventory properties
-    class has_date(DataProperty, FunctionalProperty):
-        domain = [Inventory]
-        range = [datetime.datetime]
+    class has_date(Inventory >> datetime.datetime, FunctionalProperty):
+        """Date of Inventory report."""
 
-    class has_location(ObjectProperty, FunctionalProperty):
-        domain = [Inventory]
-        range = [Location]
+    class has_location(Inventory >> Location, FunctionalProperty):
+        """Location described by Inventory"""
 
     class has_items(Inventory >> Item):
-        pass
+        """Items reported by Inventory."""
 
-    class has_expiry_date(DataProperty, FunctionalProperty):
-        domain = [Inventory]
-        range = [datetime.datetime]
+    class has_expiry_date(Inventory >> datetime.datetime, FunctionalProperty):
+        """Expiry date of Item in Inventory."""
 
-    class has_availabel_qty(DataProperty, FunctionalProperty):
-        domain = [Inventory]
-        range = [int]
+    class has_available_qty(Inventory >> int, FunctionalProperty):
+        """Available quantity of Item."""
 
-    class has_onhand_qty(DataProperty, FunctionalProperty):
-        domain = [Inventory]
-        range = [int]
+    class has_onhand_qty(Inventory >> int, FunctionalProperty):
+        """On-hand quantity of Item."""
 
-    class has_transi_qty(DataProperty, FunctionalProperty):
-        domain = [Inventory]
-        range = [int]
+    class has_transit_qty(Inventory >> int, FunctionalProperty):
+        """Quantity in transit of Item."""
 
-    class has_allocated_qty(DataProperty, FunctionalProperty):
-        domain = [Inventory]
-        range = [int]
+    class has_allocated_qty(Inventory >> int, FunctionalProperty):
+        """Allocated quantity of Item."""
 
-    class has_supsense_qty(DataProperty, FunctionalProperty):
-        domain = [Inventory]
-        range = [int]
+    class has_supsense_qty(Inventory >> int, FunctionalProperty):
+        """Suspense quantity of Item."""
 
 
 # sync_reasoner(infer_property_values=True)
