@@ -33,7 +33,7 @@ class TabLocation(QObject):
 
     @Property(str, constant=True)
     def name(self):
-        """Get location name (property)."""
+        """Get name of location (property)."""
         return self._i.name
 
     @Property(str, constant=True)
@@ -60,8 +60,15 @@ class TabLocation(QObject):
 
     @Property(str, constant=True)
     def z(self):
-        """Get z (vertical direction) coordinate of location (property)."""
+        """Get z - vertical direction - coordinate of location (property)."""
         return str(int(self._i.has_z))
+
+    @Slot(float, result=str)
+    def heat(self, max_freq=None):
+        """Calculate heat for side-view."""
+        if max_freq:
+            return get_heatmap_color(self._i.has_freq / max_freq)
+        return get_heatmap_color(self._i.has_freq)
 
     @Property(bool, constant=False, notify=checkedChanged)
     def checked(self):
@@ -86,19 +93,19 @@ class TabItem(QObject):
 
     @Property(str, constant=True)
     def name(self):
-        """Get item name (property)."""
+        """Get name of item (property)."""
         return self._i.name
 
     @Property(str, constant=True)
     def description(self):
-        """Get representation of item description (property)."""
+        """Get description representation of item (property)."""
         if self._i.has_gtype:
             return f"{self._i.has_description} | {self._i.has_gtype}"
         return self._i.has_description
 
     @Property(str, constant=True)
     def zone(self):
-        """Get item required zone (property)."""
+        """Get zone which item requires (property)."""
         return self._i.has_zone
 
     @Property(str, constant=True)
@@ -327,7 +334,7 @@ class UniversalListModel(QAbstractListModel):
         self.checkChanged.emit()
 
 
-class HoverListModel(UniversalListModel):
+class SideviewListModel(UniversalListModel):
     """List model for displaying location side view for hovered/selected location."""
 
     ObjectRole = Qt.UserRole + 1
@@ -350,7 +357,7 @@ class HoverListModel(UniversalListModel):
             hovered_objects (list[str]): list of ids (keys) of objects that are hovered
             parent (object): required param for initialization
         """
-        super(HoverListModel, self).__init__(parent)
+        super(SideviewListModel, self).__init__(parent)
         self._object_class = object_class
         self._selected = [] if selected_objects is None else selected_objects
         self._hovered = [] if hovered_objects is None else hovered_objects

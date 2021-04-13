@@ -4,10 +4,7 @@ import QtQuick.Controls.Material 2.14
 
 Canvas {
     id: mapView2D
-    width: contentView.width
-    height: contentView.height
-    anchors.top: contentView.top
-    anchors.left: contentView.left
+    anchors.fill: parent
     visible: true
 
     // handler to override for drawing
@@ -135,7 +132,7 @@ Canvas {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: 1
 
-            model: ViewController.sidebar_model
+            model: ViewController.sideview_model
 
             delegate: Item {
                 id: sideViewItem

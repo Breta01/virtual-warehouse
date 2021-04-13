@@ -6,6 +6,11 @@ class Map(QObject):
     """Object holding basic informations about the map."""
 
     def __init__(self, locations=None):
+        """Initialize basic properties of map.
+
+        Args:
+            locations (dict): dictionary of all locations.
+        """
         QObject.__init__(self)
         if locations:
             self.set_data(locations)
@@ -18,6 +23,12 @@ class Map(QObject):
             self._max_z = 0
 
     def set_data(self, locations):
+        """Update properties of map with new data.
+
+        Args:
+            locations (dict): dictionary of all locations.
+        """
+
         self._min_x = min(l.has_x for l in locations.values())
         self._max_x = max(l.has_x + l.has_width for l in locations.values())
 

@@ -18,7 +18,7 @@ from virtual_warehouse.parser.data_model import (
 )
 from virtual_warehouse.parser.excel_parser import Document
 from virtual_warehouse.tab_controller import (
-    HoverListModel,
+    SideviewListModel,
     TabItem,
     TabLocation,
     TabOrder,
@@ -70,6 +70,7 @@ class DataLoaderThread(QThread):
         """Load data from file path and emit data through signal."""
 
         def where(arr, y):
+            """Filter array items by type."""
             return [x["name"] for x in arr if x["type"] == y]
 
         document = Document(self.file_path)
@@ -150,7 +151,7 @@ class ViewController(QObject):
         self._model2D = UniversalLocationListModel(on_change=self.modelChanged.emit)
         self._map = Map()
 
-        self._sidebar_model = HoverListModel(TabLocation)
+        self._sideview_model = SideviewListModel(TabLocation)
         self._location_model = UniversalListModel(TabLocation)
         self._item_model = UniversalListModel(TabItem)
         self._order_model = UniversalListModel(TabOrder)
@@ -167,62 +168,75 @@ class ViewController(QObject):
         self._progress_value = 1
 
     modelChanged = Signal()
-    sidebarChanged = Signal()
+    sideviewChanged = Signal()
     drawModeChanged = Signal()
     itemSelected = Signal()
     progressChanged = Signal()
 
     @Property(QObject, constant=False, notify=modelChanged)
     def map(self):
+        """Map object with basic statistics."""
         return self._map
 
     @Property(QObject, constant=False, notify=modelChanged)
     def model(self):
+        """Current model (2D or 3D) depending on selection."""
         return self._model2D if self._is2D else self._model3D
 
     @Property(QObject, constant=False, notify=modelChanged)
     def model2D(self):
+        """List model with list of 2D locations."""
         return self._model2D
 
     @Property(QObject, constant=False, notify=modelChanged)
     def model3D(self):
+        """List model with list of 3D locations."""
         return self._model3D
+
+    @Property(QObject, constant=False, notify=sideviewChanged)
+    def sideview_model(self):
+        """Hover side-view for 2D location map."""
+        return self._sideview_model
 
     @Property(QObject, constant=False, notify=modelChanged)
     def location_model(self):
+        """Location list model for locations tab."""
         return self._location_model
-
-    @Property(QObject, constant=False, notify=sidebarChanged)
-    def sidebar_model(self):
-        return self._sidebar_model
 
     @Property(QObject, constant=False, notify=modelChanged)
     def item_model(self):
+        """Item list model for items tab."""
         return self._item_model
 
     @Property(QObject, constant=False, notify=modelChanged)
     def order_model(self):
+        """Order list model for orders tab."""
         return self._order_model
 
     @Property(bool, constant=False, notify=drawModeChanged)
     def is_heatmap(self):
+        """State of heat-map statistics."""
         return self._is_heatmap
 
     @Property(float, constant=False, notify=progressChanged)
     def progress_value(self):
+        """Value of overlay progress bar (1 = progress bar is hidden)."""
         return self._progress_value
 
     @progress_value.setter
     def set_progress_value(self, val):
+        """Set progress bar value."""
         self._progress_value = val
         self.progressChanged.emit()
 
     @Slot(result=bool)
     def is2D(self):
+        """Selection between 2D and 3D view."""
         return self._is2D
 
     @Slot()
     def switch_heatmap(self):
+        """Switch heat-map display state."""
         self._is_heatmap = not self._is_heatmap
         self.drawModeChanged.emit()
 
@@ -278,10 +292,10 @@ class ViewController(QObject):
             names = self.model.get_idx(idx).names
             self.selected_idxs[idx] = len(names)
             self._location_model.set_checked(names, control)
-            self._sidebar_model.set_selected(names)
+            self._sideview_model.set_selected(names)
         else:
             self._location_model.set_checked([])
-            self._sidebar_model.set_selected([])
+            self._sideview_model.set_selected([])
         self.itemSelected.emit()
 
     @Slot(bool)
@@ -350,13 +364,13 @@ class ViewController(QObject):
 
     @Slot(int)
     def hover_item(self, idx):
-        """Hover location on the map - displaying statistics in sidebar."""
+        """Hover location on the map - displaying statistics in sideview."""
         if idx >= 0:
             names = self.model.get_idx(idx).names
-            self._sidebar_model.set_hovered(names, True)
+            self._sideview_model.set_hovered(names, True)
         else:
-            self._sidebar_model.set_hovered([], False)
-        self.sidebarChanged.emit()
+            self._sideview_model.set_hovered([], False)
+        self.sideviewChanged.emit()
 
     @Slot(result="QVariantList")
     def get_selected(self):
@@ -429,7 +443,7 @@ class ViewController(QObject):
             [k for k, v in locations.items() if v.has_ltype == "rack"]
         )
 
-        self._sidebar_model.set_data(locations)
+        self._sideview_model.set_data(locations)
 
         self._model3D.set_data(
             {k: SingleLocation(v) for k, v in self.locations.items()}
