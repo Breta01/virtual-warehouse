@@ -2,4 +2,4 @@ PySide2==5.15.0
 xlrd==1.2.0
 Owlready2==0.29
 rdflib
-openpyxl
+python-xlsxio

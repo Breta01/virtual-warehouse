@@ -258,7 +258,7 @@ with onto:
             length: float,
             width: float,
             height: float,
-            dim_uom: str,
+            dim_uom: str = None,
             max_weight: float = None,
             weight_uom: str = None,
             zone: str = None,

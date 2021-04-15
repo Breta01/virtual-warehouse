@@ -114,6 +114,7 @@ class DataLoaderThread(QThread):
 
         calculate_frquencies(self.locations, self.inventory, self.orders)
         self.frequenciesReady.emit()
+        document.close()
 
 
 class QueryThread(QThread):
@@ -180,7 +181,7 @@ class ViewController(QObject):
 
     @Property(QObject, constant=False, notify=modelChanged)
     def model(self):
-        """Current model (2D or 3D) depending on selection."""
+        """Get current model 2D or 3D depending on selection."""
         return self._model2D if self._is2D else self._model3D
 
     @Property(QObject, constant=False, notify=modelChanged)
@@ -231,7 +232,7 @@ class ViewController(QObject):
 
     @Slot(result=bool)
     def is2D(self):
-        """Selection between 2D and 3D view."""
+        """Select between 2D and 3D view."""
         return self._is2D
 
     @Slot()

@@ -28,7 +28,6 @@ class Map(QObject):
         Args:
             locations (dict): dictionary of all locations.
         """
-
         self._min_x = min(l.has_x for l in locations.values())
         self._max_x = max(l.has_x + l.has_width for l in locations.values())
 
