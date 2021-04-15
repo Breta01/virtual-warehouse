@@ -24,14 +24,12 @@ class Document:
         self.orders = {}
         if self.is_xlsx:
             self.doc = xlsxio.XlsxioReader(file_path)
-            # self.doc = open_workbook(file_path)
         else:
             self.doc = open_workbook(file_path)
 
     @staticmethod
     def check_xlsx(file_path):
         """Check if document is .xlsx document (required for openpyxl library)."""
-        # return False
         return file_path[-5:] == ".xlsx"
 
     @staticmethod
@@ -55,7 +53,7 @@ class Document:
         if self.is_xlsx:
             types = [str, str, str, str, float, float, float, str, float, str, str]
             with self.doc.get_sheet(sheet_name, types=types) as sheet:
-                header = sheet.read_header()
+                sheet.read_header()
                 for row in sheet.iter_rows():
                     if len(row) == 0 or not row[0]:
                         continue
@@ -82,7 +80,7 @@ class Document:
         if self.is_xlsx:
             types = [str, float, float, float]
             with self.doc.get_sheet(sheet_name, types=types) as sheet:
-                header = sheet.read_header()
+                sheet.read_header()
                 for row in sheet.iter_rows():
                     if len(row) == 0 or not row[0]:
                         continue
@@ -117,7 +115,7 @@ class Document:
                 str,
             ]
             with self.doc.get_sheet(sheet_name, types=types) as sheet:
-                header = sheet.read_header()
+                sheet.read_header()
                 for row in sheet.iter_rows():
                     if len(row) == 0 or not row[0]:
                         continue
@@ -162,7 +160,7 @@ class Document:
         if self.is_xlsx:
             types = [str, str, str, str, str, int, int, int, int, int]
             with self.doc.get_sheet(sheet_name, types=types) as sheet:
-                header = sheet.read_header()
+                sheet.read_header()
                 for row in sheet.iter_rows():
                     if len(row) == 0 or not row[0]:
                         continue
@@ -193,7 +191,7 @@ class Document:
         if self.is_xlsx:
             types = [str, str, str, str, str, str, int, str, int, int, str]
             with self.doc.get_sheet(sheet_name, types=types) as sheet:
-                header = sheet.read_header()
+                sheet.read_header()
                 for row in sheet.iter_rows():
                     if len(row) == 0 or not row[0]:
                         continue

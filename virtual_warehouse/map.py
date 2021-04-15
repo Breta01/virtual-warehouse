@@ -39,24 +39,30 @@ class Map(QObject):
 
     @Property(float, constant=True)
     def min_x(self):
+        """Get minimal value of X coordinate."""
         return self._min_x
 
     @Property(float, constant=True)
     def max_x(self):
+        """Get maximal value of X coordinate."""
         return self._max_x
 
     @Property(float, constant=True)
     def min_y(self):
+        """Get minimal value of Y coordinate."""
         return self._min_y
 
     @Property(float, constant=True)
     def max_y(self):
+        """Get maximal value of Y coordinate."""
         return self._max_y
 
     @Property(float, constant=True)
     def min_z(self):
+        """Get minimal value of Z coordinate."""
         return self._min_z
 
     @Property(float, constant=True)
     def max_z(self):
+        """Get maximal value of Z coordinate."""
         return self._max_z

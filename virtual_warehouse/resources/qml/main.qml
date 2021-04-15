@@ -214,6 +214,8 @@ ApplicationWindow {
                     id: surfacePlot
                     width: mapView3D.width
                     height: mapView3D.height
+                    selectionMode: AbstractGraph3D.SelectionSlice | AbstractGraph3D.SelectionItemAndRow
+                    scene.activeCamera.cameraPreset: Camera3D.CameraPresetIsometricLeft
                     theme: Theme3D {
                         type: Theme3D.ThemeStoneMoss
                         font.family: "STCaiyun"
@@ -351,6 +353,7 @@ ApplicationWindow {
 
                 surfacePlot.addCustomItem(instance)
             }
+
         }
 
         function onItemSelected() {// TODO: select items based on 2D map
