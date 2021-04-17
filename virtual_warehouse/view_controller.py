@@ -1,7 +1,7 @@
 """Module providing ViewController class - connector class between QML and Python."""
 from PySide2.QtCore import Property, QObject, Qt, QThread, QUrl, Signal, Slot
 
-from virtual_warehouse.heatmap import calculate_frquencies
+from virtual_warehouse.heatmap import calculate_frequencies
 from virtual_warehouse.location_models import (
     MultiLocation,
     SingleLocation,
@@ -112,7 +112,7 @@ class DataLoaderThread(QThread):
         # First query is always slower than rest (probably some initialization going on)
         Item.get_by_locations([self.locations[next(iter(self.locations))]])
 
-        calculate_frquencies(self.locations, self.inventory, self.orders)
+        calculate_frequencies(self.locations, self.inventory, self.orders)
         self.frequenciesReady.emit()
         document.close()
 

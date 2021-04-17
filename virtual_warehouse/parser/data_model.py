@@ -5,6 +5,7 @@ from typing import List
 from owlready2 import (
     DataProperty,
     FunctionalProperty,
+    ObjectProperty,
     Thing,
     default_world,
     destroy_entity,
@@ -54,15 +55,14 @@ with onto:
         pass
 
     class Inventory(Thing):
-        """Description of inventory balance for given date and location.
-        TODO: Re-work the structure of inventory saving (individual items)
+        """Description of inventory balance instance for given (date, location, item).
 
         Attributes:
             name (str): unique ID of inventory object
             has_date (datetime.datetime): date of the inventory status
             has_location (Location): location object related to this inventory status
             has_ltype (str): location type
-            has_items (List[Item]): list of items on given location
+            has_item (Item): item on given location
             has_expiry_date (datetime.datetime): date of the item expiration
             has_available_qty (int): available quantity of the item
             has_onhand_qty (int): on-hand quantity of the item
@@ -96,7 +96,7 @@ with onto:
                 has_date=date_t,
                 has_location=location,
                 has_ltype=ltype,
-                has_items=[item],
+                has_item=item,
                 has_expiry_date=expiry_date,
                 has_available_qty=available_qty,
                 has_onhand_qty=onhand_qty,
@@ -104,10 +104,6 @@ with onto:
                 has_allocated_qty=allocated_qty,
                 suspense_qty=suspense_qty,
             )
-
-        def add_item(self, item_id: str):
-            item = onto.search_one(iri=f"{BASE_IRI}#{item_id}")
-            self.has_items.append(item)
 
         @classmethod
         def destroy_all(cls):
@@ -495,8 +491,11 @@ with onto:
         """List of OrderedItem (instances of Item) inside Order."""
 
     # OrderedItem properties
-    class has_item(OrderedItem >> Item, FunctionalProperty):
+    class has_item(ObjectProperty, FunctionalProperty):
         """Item which is instantiated."""
+
+        domain = [OrderedItem, Inventory]
+        range = [Item]
 
     class in_order(OrderedItem >> Order, FunctionalProperty):
         """Pointer to Order which contains this OrderedItem."""

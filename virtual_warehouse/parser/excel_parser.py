@@ -166,8 +166,11 @@ class Document:
                         continue
                     date, location_id = row[:2]
                     if date not in self.balance:
-                        self.balance[date] = {}
-                    self.balance[date][location_id] = Inventory.create(*row[:10])
+                        self.balance[date] = {location_id: []}
+                    elif location_id not in self.balance[date]:
+                        self.balance[date][location_id] = []
+
+                    self.balance[date][location_id].append(Inventory.create(*row[:10]))
 
         else:
             sheet = self.doc.sheet_by_name(sheet_name)
@@ -179,9 +182,12 @@ class Document:
                     continue
 
                 if date not in self.balance:
-                    self.balance[date] = {}
-                self.balance[date][location_id] = Inventory.create(
-                    *(sheet.cell(row, i).value for i in range(10))
+                    self.balance[date] = {location_id: []}
+                elif location_id not in self.balance[date]:
+                    self.balance[date][location_id] = []
+
+                self.balance[date][location_id].append(
+                    Inventory.create(*(sheet.cell(row, i).value for i in range(10)))
                 )
 
         return self.balance
@@ -198,7 +204,7 @@ class Document:
 
                     order_id = row[0]
                     if order_id in self.orders:
-                        self.orders[order_id].add_item(*row[7:])
+                        self.orders[order_id].add_item(*row[7:11])
                     else:
                         self.orders[order_id] = Order.create(*row[:11])
 

@@ -182,7 +182,7 @@ Item {
 
                 Text {
                     id: dialogHeader
-                    text: "Select sheets' types:"
+                    text: "Select types of sheets:"
                     anchors.left: parent.left
                     anchors.top: fileUrlText.bottom
                     anchors.margins: 8

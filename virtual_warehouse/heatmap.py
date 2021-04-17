@@ -6,16 +6,16 @@ def item_locations(inventory):
     item_to_loc = {}
     for date, status in inventory.items():
         item_to_loc[date] = {}
-        for loc_id, loc_inv in status.items():
-            for item in loc_inv.has_items:
-                if item.name not in item_to_loc[date]:
-                    item_to_loc[date][item.name] = []
-                item_to_loc[date][item.name].append(loc_id)
+        for loc_id, loc_inventories in status.items():
+            for inv in loc_inventories:
+                if inv.has_item.name not in item_to_loc[date]:
+                    item_to_loc[date][inv.has_item.name] = []
+                item_to_loc[date][inv.has_item.name].append(loc_id)
 
     return item_to_loc
 
 
-def calculate_frquencies(locations, inventory, orders):
+def calculate_frequencies(locations, inventory, orders):
     """Calculate order frequency for each location."""
     item_locs = item_locations(inventory)
 
