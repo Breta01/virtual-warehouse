@@ -1,7 +1,6 @@
 """Module providing ViewController class - connector class between QML and Python."""
 from PySide2.QtCore import Property, QObject, Qt, QThread, QUrl, Signal, Slot
 
-from virtual_warehouse.heatmap import calculate_frequencies
 from virtual_warehouse.location_models import (
     MultiLocation,
     SingleLocation,
@@ -17,6 +16,7 @@ from virtual_warehouse.parser.data_model import (
     save_ontology,
 )
 from virtual_warehouse.parser.excel_parser import Document
+from virtual_warehouse.plugin import PluginManager
 from virtual_warehouse.tab_controller import (
     SideviewListModel,
     TabItem,
@@ -112,7 +112,7 @@ class DataLoaderThread(QThread):
         # First query is always slower than rest (probably some initialization going on)
         Item.get_by_locations([self.locations[next(iter(self.locations))]])
 
-        calculate_frequencies(self.locations, self.inventory, self.orders)
+        # calculate_frequencies(self.locations, self.inventory, self.orders)
         self.frequenciesReady.emit()
         document.close()
 
@@ -156,6 +156,8 @@ class ViewController(QObject):
         self._location_model = UniversalListModel(TabLocation)
         self._item_model = UniversalListModel(TabItem)
         self._order_model = UniversalListModel(TabOrder)
+
+        self.plugin_manager = PluginManager()
 
         self.selected_idxs = {}
 
@@ -482,6 +484,11 @@ class ViewController(QObject):
 
     def _load_frequencies(self):
         """Update frequencies (callback function)."""
+        self.plugin_manager.set_data(
+            self.locations, self.items, self.orders, self.inventory
+        )
+        self.plugin_manager.update()
+
         self._model2D.update_max_heat()
         self._model3D.update_max_heat()
         self.progress_value = 1

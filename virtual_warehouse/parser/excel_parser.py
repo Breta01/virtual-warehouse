@@ -1,4 +1,6 @@
 """Parser of Excel data files."""
+from datetime import datetime
+
 import xlsxio
 from xlrd import open_workbook
 
@@ -158,7 +160,7 @@ class Document:
     def parse_inventory_balance(self, sheet_name="Inventory Ballance"):
         """Parse Inventory Balance sheet  ('balance' in final version, most likely)."""
         if self.is_xlsx:
-            types = [str, str, str, str, str, int, int, int, int, int]
+            types = [datetime, str, str, str, datetime, int, int, int, int, int]
             with self.doc.get_sheet(sheet_name, types=types) as sheet:
                 sheet.read_header()
                 for row in sheet.iter_rows():
@@ -176,8 +178,8 @@ class Document:
             sheet = self.doc.sheet_by_name(sheet_name)
 
             for row in range(1, sheet.nrows):
-                date, location_id = sheet.cell(row, 0).value, sheet.cell(row, 1).value
-                location_id = str(location_id)
+                date = convert_date(sheet.cell(row, 0).value, "%d.%m.%Y")
+                location_id = str(sheet.cell(row, 1).value)
                 if not date:
                     continue
 

@@ -92,7 +92,7 @@ with onto:
             location = onto.search_one(iri=f"{BASE_IRI}#{location_id}")
 
             return cls(
-                f"{date}-{location_id}",
+                f"{date.strftime('%Y:%m:%d')}-{location_id}-{item_id}",
                 has_date=date_t,
                 has_location=location,
                 has_ltype=ltype,
@@ -109,6 +109,19 @@ with onto:
         def destroy_all(cls):
             """Destroy all instances of Inventory class."""
             destroy_all(cls)
+
+        @staticmethod
+        def get_by_item(item, date):
+            """Get list of inventories containing item on given date.
+
+            Args:
+                item (Item): item object to look for.
+                date (datetime.datetime): date of inventory
+
+            Returns:
+                List[Item]: list of items stored at locations
+            """
+            return onto.search(type=Inventory, has_item=item)
 
     class ItemUnit(Thing):
         """Represents different packaging units of item.
@@ -193,16 +206,16 @@ with onto:
             """Get list of items stored at given location.
 
             Args:
-               locations (List[Location]): list of locations to look for.
+                locations (List[Location]): list of locations to look for.
 
             Returns:
-               List[Item]: list of items stored at locations
+                List[Item]: list of items stored at locations
             """
             # TODO: Check inventory date
             values = " ".join(map(lambda x: f"<{x.iri}>", locations))
             i1 = "VALUES ?loc { " + values + " } .\n"
             i2 = f"?inv <{has_location.iri}> ?loc .\n"
-            i3 = f"?inv <{has_items.iri}> ?item .\n"
+            i3 = f"?inv <{has_item.iri}> ?item .\n"
 
             query = "SELECT DISTINCT ?item WHERE { " + i1 + i2 + i3 + " }"
             return list(default_world.sparql_query(query))
@@ -212,10 +225,10 @@ with onto:
             """Get list of items included in given orders.
 
             Args:
-               orders (List[Order]): list of orders to search.
+                orders (List[Order]): list of orders to search.
 
             Returns:
-               List[Item]: list of items included in orders.
+                List[Item]: list of items included in orders.
             """
             values = " ".join(map(lambda x: f"<{x.iri}>", orders))
             i1 = "VALUES ?ord { " + values + " } .\n"
@@ -305,16 +318,17 @@ with onto:
             """Get list of locations which are potentially accessed by given orders.
 
             Args:
-               locations (List[Order]): list of locations to inspect
+                locations (List[Order]): list of locations to inspect
 
             Returns:
-               List[Location]: list of locations containing ordered items
+                List[Location]: list of locations containing ordered items
             """
+            # TODO: speed up this query (reverse property???)
             values = " ".join(map(lambda x: f"<{x.iri}>", orders))
             i1 = "VALUES ?ord { " + values + " } .\n"
             i2 = f"?ord <{has_ordered_items.iri}> ?oi .\n"
             i3 = f"?oi <{has_item.iri}> ?item .\n"
-            i4 = f"?inv <{has_items.iri}> ?item .\n"
+            i4 = f"?inv <{has_item.iri}> ?item .\n"
             i5 = f"?inv <{has_location.iri}> ?loc .\n"
 
             query = "SELECT DISTINCT ?loc WHERE { " + i1 + i2 + i3 + i4 + i5 + " }"
@@ -325,14 +339,14 @@ with onto:
             """Get list of locations storing given items.
 
             Args:
-               items (List[Item]): list of items to locate items.
+                items (List[Item]): list of items to locate items.
 
             Returns:
-               List[Location]: list of locations storing items
+                List[Location]: list of locations storing items
             """
             values = " ".join(map(lambda x: f"<{x.iri}>", items))
             i1 = "VALUES ?item { " + values + " } .\n"
-            i2 = f"?inv <{has_items.iri}> ?item .\n"
+            i2 = f"?inv <{has_item.iri}> ?item .\n"
             i3 = f"?inv <{has_location.iri}> ?loc .\n"
 
             query = "SELECT DISTINCT ?loc WHERE { " + i1 + i2 + i3 + " }"
@@ -435,10 +449,10 @@ with onto:
             """Get list of orders which contains given items.
 
             Args:
-               items (List[Item]): list of items to look for.
+                items (List[Item]): list of items to look for.
 
             Returns:
-               List[Order]: list of orders containing at leas one of the provided items
+                List[Order]: list of orders containing at leas one of the provided items
             """
             values = " ".join(map(lambda x: f"<{x.iri}>", items))
             i1 = "VALUES ?item { " + values + " } .\n"
@@ -453,15 +467,15 @@ with onto:
             """Get list of orders which potentially access given locations.
 
             Args:
-               locations (List[Location]): list of locations to inspect
+                locations (List[Location]): list of locations to inspect
 
             Returns:
-               List[Order]: list of orders containing items stored at given locations
+                List[Order]: list of orders containing items stored at given locations
             """
             values = " ".join(map(lambda x: f"<{x.iri}>", locations))
             i1 = "VALUES ?loc { " + values + " } .\n"
             i2 = f"?inv <{has_location.iri}> ?loc .\n"
-            i3 = f"?inv <{has_items.iri}> ?item .\n"
+            i3 = f"?inv <{has_item.iri}> ?item .\n"
             i4 = f"?oi <{has_item.iri}> ?item .\n"
             i5 = f"?ord <{has_ordered_items.iri}> ?oi .\n"
 
@@ -597,9 +611,6 @@ with onto:
 
     class has_location(Inventory >> Location, FunctionalProperty):
         """Location described by Inventory."""
-
-    class has_items(Inventory >> Item):
-        """Items reported by Inventory."""
 
     class has_expiry_date(Inventory >> datetime.datetime, FunctionalProperty):
         """Expiry date of Item in Inventory."""
