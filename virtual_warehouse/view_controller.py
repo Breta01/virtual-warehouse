@@ -140,9 +140,10 @@ class QueryThread(QThread):
 
 
 class ViewController(QObject):
-    """Main controller which communicates with QML GUI."""
+    """Main controller which communicates with QML GUI and controls all components."""
 
     def __init__(self, parent=None):
+        """Initialize view controller which connects all app components."""
         super(ViewController, self).__init__(parent)
 
         self._is2D = True
@@ -158,7 +159,10 @@ class ViewController(QObject):
         self._order_model = UniversalListModel(TabOrder)
 
         self.plugin_manager = PluginManager(
-            self._location_model, self._item_model, self._order_model
+            self._location_model,
+            self._item_model,
+            self._order_model,
+            self.drawModeChanged,
         )
 
         self.selected_idxs = {}
@@ -489,9 +493,6 @@ class ViewController(QObject):
         self.plugin_manager.set_data(
             self.locations, self.items, self.orders, self.inventory
         )
-        self.plugin_manager.update()
 
-        self._model2D.update_max_heat()
-        self._model3D.update_max_heat()
         self.progress_value = 1
         self.drawModeChanged.emit()

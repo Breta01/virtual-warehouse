@@ -7,6 +7,8 @@ Canvas {
     anchors.fill: parent
     visible: true
 
+    property var max_heat: 1
+
     // handler to override for drawing
     onPaint: {
         if (!ViewController.is2D()) {
@@ -22,9 +24,9 @@ Canvas {
         var min_x = ViewController.map.min_x
         var min_y = ViewController.map.min_y
         var params = getDrawParams()
-        var item, heat
+        var item, heat, max = 1
+        var heats = []
 
-        // TODO: speed up drawing - sort by z coordinate?
         // Draw Floor first
         for (var row = 0; row < ViewController.model2D.rowCount(); row++) {
             item = ViewController.model2D.get(row)
@@ -35,14 +37,13 @@ Canvas {
                              (item.y - min_y) * params.coef + params.padding_y,
                              item.width * params.coef,
                              item.length * params.coef)
+            } else if (item.type === "rack") {
+                heats[row] = ViewController.model2D.get_heat(row)
+                max = Math.max(heats[row], max)
             }
         }
 
-        // Draw rest of the items
-        var max = ViewController.model2D.max_heat
-        if (ViewController.model2D.level !== -1) {
-            max = ViewController.model3D.max_heat
-        }
+        max_heat = max
 
         for (row = 0; row < ViewController.model2D.rowCount(); row++) {
             item = ViewController.model2D.get(row)
@@ -52,7 +53,7 @@ Canvas {
                 if (ViewController.is_heatmap) {
                     // is_heatmap() in future
                     if (item.type === "rack") {
-                        heat = ViewController.model2D.get_heat(row, max)
+                        heat = get_heat_color(heats[row], max)
                         ctx.fillStyle = heat
                     } else {
                         ctx.fillStyle = item.gray_color
@@ -69,17 +70,16 @@ Canvas {
         // Draw selected item
         var selected_idxs = ViewController.get_selected()
         for (var i = 0; i < selected_idxs.length; i++) {
-            var idx = selected_idxs[i];
+            var idx = selected_idxs[i]
             if (idx >= 0) {
                 item = ViewController.model2D.get(idx)
-                ctx.beginPath();
-                ctx.lineWidth = "3";
-                ctx.strokeStyle = "red";
+                ctx.beginPath()
+                ctx.lineWidth = "3"
+                ctx.strokeStyle = "red"
                 ctx.rect((item.x - min_x) * params.coef + params.padding_x,
                          (item.y - min_y) * params.coef + params.padding_y,
-                         item.width * params.coef, item.length * params.coef);
-                ctx.stroke();
-
+                         item.width * params.coef, item.length * params.coef)
+                ctx.stroke()
             }
         }
     }
@@ -142,7 +142,7 @@ Canvas {
 
                 Rectangle {
                     id: sideViewRect
-                    color: model.object.heat(ViewController.model3D.max_heat)
+                    color: get_heat_color(model.object.heat, max_heat)
                     anchors.top: parent.top
                     anchors.topMargin: 0
                     anchors.leftMargin: 0
@@ -155,7 +155,7 @@ Canvas {
                     id: sideViewLine
                     height: 1
                     width: 20
-                    color: model.object.heat(ViewController.model3D.max_heat)
+                    color: get_heat_color(model.object.heat, max_heat)
 
                     anchors.bottom: sideViewRect.bottom
                     anchors.left: sideViewRect.right
@@ -170,7 +170,7 @@ Canvas {
                     anchors.bottomMargin: -4
                     anchors.leftMargin: 4
                     font.pixelSize: 12
-                    color: model.object.heat(ViewController.model3D.max_heat)
+                    color: get_heat_color(model.object.heat, max_heat)
                 }
             }
         }
@@ -305,7 +305,8 @@ Canvas {
                             && mouseY <= y2) {
 
                         // Holding CTRL - adding location
-                        ViewController.select_map_location(row, mouse.modifiers & Qt.ControlModifier)
+                        ViewController.select_map_location(
+                                    row, mouse.modifiers & Qt.ControlModifier)
                         // TODO: Speed up drawing - extra canvas, less items...
                         // mapView2D.requestPaint()
                         return
@@ -362,8 +363,8 @@ Canvas {
         var min_x = ViewController.map.min_x
         var min_y = ViewController.map.min_y
 
-        var width = (ViewController.map.max_x - ViewController.map.min_x)
-        var height = (ViewController.map.max_y - ViewController.map.min_y)
+        var width = (ViewController.map.max_x - min_x)
+        var height = (ViewController.map.max_y - min_y)
 
         var coef_x = (mapView2D.width - 2 * padding_x) / width
         var coef_y = (mapView2D.height - 2 * padding_y) / height
@@ -383,14 +384,47 @@ Canvas {
         }
     }
 
-    function getHeatColor(heat, string) {
-        var h = Math.floor((1.0 - heat) * 240)
-        if (string)
-            return "hsl(" + h + ", 100%, 50%)"
-        return Qt.hsla(h / 360.0, 1, 0.5, 1)
+    property var colors: ["#440154", "#440255", "#440357", "#450558", "#45065A",
+        "#45085B", "#46095C", "#460B5E", "#460C5F", "#460E61", "#470F62", "#471163",
+        "#471265", "#471466", "#471567", "#471669", "#47186A", "#48196B", "#481A6C",
+        "#481C6E", "#481D6F", "#481E70", "#482071", "#482172", "#482273", "#482374",
+        "#472575", "#472676", "#472777", "#472878", "#472A79", "#472B7A", "#472C7B",
+        "#462D7C", "#462F7C", "#46307D", "#46317E", "#45327F", "#45347F", "#453580",
+        "#453681", "#443781", "#443982", "#433A83", "#433B83", "#433C84", "#423D84",
+        "#423E85", "#424085", "#414186", "#414286", "#404387", "#404487", "#3F4587",
+        "#3F4788", "#3E4888", "#3E4989", "#3D4A89", "#3D4B89", "#3D4C89", "#3C4D8A",
+        "#3C4E8A", "#3B508A", "#3B518A", "#3A528B", "#3A538B", "#39548B", "#39558B",
+        "#38568B", "#38578C", "#37588C", "#37598C", "#365A8C", "#365B8C", "#355C8C",
+        "#355D8C", "#345E8D", "#345F8D", "#33608D", "#33618D", "#32628D", "#32638D",
+        "#31648D", "#31658D", "#31668D", "#30678D", "#30688D", "#2F698D", "#2F6A8D",
+        "#2E6B8E", "#2E6C8E", "#2E6D8E", "#2D6E8E", "#2D6F8E", "#2C708E", "#2C718E",
+        "#2C728E", "#2B738E", "#2B748E", "#2A758E", "#2A768E", "#2A778E", "#29788E",
+        "#29798E", "#287A8E", "#287A8E", "#287B8E", "#277C8E", "#277D8E", "#277E8E",
+        "#267F8E", "#26808E", "#26818E", "#25828E", "#25838D", "#24848D", "#24858D",
+        "#24868D", "#23878D", "#23888D", "#23898D", "#22898D", "#228A8D", "#228B8D",
+        "#218C8D", "#218D8C", "#218E8C", "#208F8C", "#20908C", "#20918C", "#1F928C",
+        "#1F938B", "#1F948B", "#1F958B", "#1F968B", "#1E978A", "#1E988A", "#1E998A",
+        "#1E998A", "#1E9A89", "#1E9B89", "#1E9C89", "#1E9D88", "#1E9E88", "#1E9F88",
+        "#1EA087", "#1FA187", "#1FA286", "#1FA386", "#20A485", "#20A585", "#21A685",
+        "#21A784", "#22A784", "#23A883", "#23A982", "#24AA82", "#25AB81", "#26AC81",
+        "#27AD80", "#28AE7F", "#29AF7F", "#2AB07E", "#2BB17D", "#2CB17D", "#2EB27C",
+        "#2FB37B", "#30B47A", "#32B57A", "#33B679", "#35B778", "#36B877", "#38B976",
+        "#39B976", "#3BBA75", "#3DBB74", "#3EBC73", "#40BD72", "#42BE71", "#44BE70",
+        "#45BF6F", "#47C06E", "#49C16D", "#4BC26C", "#4DC26B", "#4FC369", "#51C468",
+        "#53C567", "#55C666", "#57C665", "#59C764", "#5BC862", "#5EC961", "#60C960",
+        "#62CA5F", "#64CB5D", "#67CC5C", "#69CC5B", "#6BCD59", "#6DCE58", "#70CE56",
+        "#72CF55", "#74D054", "#77D052", "#79D151", "#7CD24F", "#7ED24E", "#81D34C",
+        "#83D34B", "#86D449", "#88D547", "#8BD546", "#8DD644", "#90D643", "#92D741",
+        "#95D73F", "#97D83E", "#9AD83C", "#9DD93A", "#9FD938", "#A2DA37", "#A5DA35",
+        "#A7DB33", "#AADB32", "#ADDC30", "#AFDC2E", "#B2DD2C", "#B5DD2B", "#B7DD29",
+        "#BADE27", "#BDDE26", "#BFDF24", "#C2DF22", "#C5DF21", "#C7E01F", "#CAE01E",
+        "#CDE01D", "#CFE11C", "#D2E11B", "#D4E11A", "#D7E219", "#DAE218", "#DCE218",
+        "#DFE318", "#E1E318", "#E4E318", "#E7E419", "#E9E419", "#ECE41A", "#EEE51B",
+        "#F1E51C", "#F3E51E", "#F6E61F", "#F8E621", "#FAE622", "#FDE724"]
 
-        //        var h = Math.floor(heat * 255);
-        //        return "rgb( 0," + h + "," + h + ")";
+    function get_heat_color(heat, max) {
+        // Use value from predefined colors
+        return colors[Math.round((heat / max) * 255)]
     }
 }
 

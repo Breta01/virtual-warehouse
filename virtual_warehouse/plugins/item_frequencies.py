@@ -26,7 +26,6 @@ class Plugin(BasePlugin):
 
     def _calculate_freq(self, locations, items, orders):
         """Calculate frequency for individual locations based on selected orders."""
-
         date = list(self.inventory.keys())[-1]
         for item_id in items:
             invs = Inventory.get_by_item(self.items[item_id], date)

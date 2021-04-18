@@ -16,8 +16,6 @@ from PySide2.QtCore import (
     Slot,
 )
 
-from virtual_warehouse.heatmap import get_heatmap_color
-
 locale.setlocale(locale.LC_ALL, "")
 
 
@@ -63,12 +61,10 @@ class TabLocation(QObject):
         """Get z - vertical direction - coordinate of location (property)."""
         return str(int(self._i.has_z))
 
-    @Slot(float, result=str)
-    def heat(self, max_freq=None):
+    @Property(float, constant=True)
+    def heat(self):
         """Calculate heat for side-view."""
-        if max_freq:
-            return get_heatmap_color(self._i.has_freq / max_freq)
-        return get_heatmap_color(self._i.has_freq)
+        return self._i.has_freq
 
     @Property(bool, constant=False, notify=checkedChanged)
     def checked(self):
@@ -79,6 +75,7 @@ class TabLocation(QObject):
     def set_checked(self, val):
         """Set checked state of location (property setter)."""
         self._checked = val
+        self.checkedChanged.emit()
 
 
 class TabItem(QObject):
@@ -128,6 +125,7 @@ class TabItem(QObject):
     def set_checked(self, val):
         """Set item checked state (property setter)."""
         self._checked = val
+        self.checkedChanged.emit()
 
 
 class TabOrder(QObject):
@@ -175,6 +173,7 @@ class TabOrder(QObject):
     def set_checked(self, val):
         """Set order checked state (property setter)."""
         self._checked = val
+        self.checkedChanged.emit()
 
 
 class UniversalListModel(QAbstractListModel):
@@ -250,10 +249,6 @@ class UniversalListModel(QAbstractListModel):
         for n in self.checked:
             self._objects[n].set_checked(False)
         self.checked.clear()
-        # TODO: Specify correct range
-        self.dataChanged.emit(
-            self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
-        )
 
     def set_checked(self, checked, control=False):
         """Set/add list of newly checked items in list.
@@ -271,10 +266,7 @@ class UniversalListModel(QAbstractListModel):
         for n in self.checked:
             self._objects[n].set_checked(True)
 
-        self.checkChanged.emit([control, True, checked])
-        self.dataChanged.emit(
-            self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
-        )
+        self.checkChanged.emit([not control, True, checked])
 
     @Property(int, constant=False, notify=checkChanged)
     def check_state(self):
@@ -303,6 +295,9 @@ class UniversalListModel(QAbstractListModel):
             self._filter = val
             self.filterChanged.emit()
             self._update_filter()
+            self.checkChanged.emit(
+                [False, False, []]
+            )  # Required for check_state update
 
     @Slot(bool)
     def check_all(self, check=True):
@@ -339,7 +334,6 @@ class UniversalListModel(QAbstractListModel):
         elif self._filter == 2:
             self._selected = [k for k in self._all_selected if k not in self.checked]
         self.layoutChanged.emit()
-        self.checkChanged.emit([False, False, []])  # Required for check_state update
 
 
 class SideviewListModel(UniversalListModel):

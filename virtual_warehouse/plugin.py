@@ -89,7 +89,7 @@ class BasePlugin(ABC):
 class PluginManager:
     """Class loading and controlling all plugins and providing them to controller."""
 
-    def __init__(self, location_model, item_model, order_model):
+    def __init__(self, location_model, item_model, order_model, update_signal):
         """Initialize PluginManager holding all plugins from plugins folder."""
         self.plugin_modules = PluginManager.load_plugins()
         self.plugins = {}
@@ -99,45 +99,70 @@ class PluginManager:
         self._item_model = item_model
         self._order_model = order_model
 
+        self.update_signal = update_signal
+
         self._location_model.checkChanged.connect(
             self._locations_update, Qt.DirectConnection
         )
         self._item_model.checkChanged.connect(self._items_update, Qt.DirectConnection)
         self._order_model.checkChanged.connect(self._orders_update, Qt.DirectConnection)
 
+    def set_data(self, locations, items, orders, inventory):
+        """Set new warehouse data for all plugins."""
+        for name, module in self.plugin_modules.items():
+            self.plugins[name] = module.Plugin(locations, items, orders, inventory)
+        self._update()
+
+    def active_plugin(self, plugin_name):
+        """Activate selected plugin and update frequencies.
+
+        Args:
+            plugin_name (str): plugin name works as key for plugins dictionary
+        """
+        if self.active_plugin != plugin_name:
+            self.active_plugin = plugin_name
+            self._update()
+
     def _locations_update(self, args):
         """Update active plugin on locations update."""
-        self.plugins[self.active_plugin].on_locations_update(*args)
+        if self.active_plugin and (args[0] or len(args[2])):
+            self.plugins[self.active_plugin].on_locations_update(*args)
+            self.update_signal.emit()
 
     def _items_update(self, args):
         """Update active plugin on items update."""
-        self.plugins[self.active_plugin].on_items_update(*args)
+        if self.active_plugin and (args[0] or len(args[2])):
+            self.plugins[self.active_plugin].on_items_update(*args)
+            self.update_signal.emit()
 
     def _orders_update(self, args):
         """Update active plugin on orders update."""
-        self.plugins[self.active_plugin].on_orders_update(*args)
+        if self.active_plugin and (args[0] or len(args[2])):
+            self.plugins[self.active_plugin].on_orders_update(*args)
+            self.update_signal.emit()
 
-    def set_data(self, locations, items, orders, inventory):
-        """Set new warehouse date for all plugins."""
-        for name, module in self.plugin_modules.items():
-            self.plugins[name] = module.Plugin(locations, items, orders, inventory)
-
-    def update(self):
-        """Recalculate frequencies."""
-        self.plugins[self.active_plugin].calculate_frequencies(
-            self._location_model.checked,
-            self._item_model.checked,
-            self._order_model.checked,
-        )
+    def _update(self):
+        """Recalculate frequencies using active plugin."""
+        if self.active_plugin:
+            self.plugins[self.active_plugin].calculate_frequencies(
+                self._location_model.checked,
+                self._item_model.checked,
+                self._order_model.checked,
+            )
+            self.update_signal.emit()
 
     @staticmethod
     def _iter_namespace(ns_pkg):
-        """Iter modules in specified sub-package."""
+        """Iterate modules in specified sub-package."""
         return pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + ".")
 
     @staticmethod
     def load_plugins():
-        """Load plugin modules from virtual_warehouse.plugins sub-package."""
+        """Load plugin modules from virtual_warehouse.plugins sub-package.
+
+        Returns:
+            dict[str, module]: dictionary containing module name and module.
+        """
         import virtual_warehouse.plugins
 
         return {

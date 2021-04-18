@@ -9,13 +9,17 @@ from PySide2.QtCore import (
 )
 
 from virtual_warehouse.environment import LOCATION_TYPE_MAP
-from virtual_warehouse.heatmap import get_heatmap_color
 
 
 class SingleLocation(QObject):
     """Class representing single location in warehouse."""
 
     def __init__(self, location):
+        """Initialize location wrapper.
+
+        Args:
+            location (Location): location object to represent
+        """
         self._i = location
         self._color = LOCATION_TYPE_MAP[self._i.has_ltype]["color"]
         self._gcolor = LOCATION_TYPE_MAP[self._i.has_ltype]["gray_color"]
@@ -40,6 +44,7 @@ class SingleLocation(QObject):
         }
 
     def get_heat(self):
+        """Get heat of location."""
         return self._i.has_freq
 
 
@@ -47,6 +52,11 @@ class MultiLocation(QObject):
     """Class representing multiple locations merged together."""
 
     def __init__(self, locations):
+        """Initialize multi-location wrapper.
+
+        Args:
+            locations (list[Location]): locations to store and represent
+        """
         self._l = locations
         self._i = locations[0]
         self._color = LOCATION_TYPE_MAP[self._i.has_ltype]["color"]
@@ -72,6 +82,7 @@ class MultiLocation(QObject):
         }
 
     def get_heat(self, level=-1):
+        """Calculate heat of the whole location or single level."""
         return (
             self._l[level].has_freq if level != -1 else sum(i.has_freq for i in self._l)
         )
@@ -89,11 +100,11 @@ class UniversalLocationListModel(QAbstractListModel):
         super(UniversalLocationListModel, self).__init__(parent)
         self._on_change = on_change
         self.set_data({} if objects is None else objects)
-        self._max_heat = 0
         self._level = -1
         self._max_level = 1
 
     def set_data(self, objects):
+        """Set new objects which should already by wrapped by location class."""
         self._objects = objects
         self._keys = list(objects.keys())
         self.name_to_idx = {}
@@ -102,50 +113,45 @@ class UniversalLocationListModel(QAbstractListModel):
                 self.name_to_idx[n] = i
 
         if objects:
-            self.update_max_heat()
             self._max_level = max(l._i.has_z for l in self._objects.values())
             self.maxChanged.emit()
 
-    def update_max_heat(self):
-        if len(self._objects) == 0:
-            return 0
-        self._max_heat = max(o.get_heat() for _, o in self._objects.items())
-
     def get_idx(self, idx):
+        """Get object by index."""
         return self._objects[self._keys[idx]]
-
-    @Property(float, constant=False, notify=maxChanged)
-    def max_heat(self):
-        return self._max_heat
 
     @Property(int, constant=False, notify=maxChanged)
     def max_level(self):
+        """Get max level possible to select."""
         return self._max_level
 
     @Slot(result=int)
     def rowCount(self, parent=QModelIndex()):
+        """Get number of items in list (required method)."""
         return len(self._keys)
 
     @Slot(int, result="QVariant")
     def get(self, index):
+        """Get dictionary representing location at given index."""
         return self.get_idx(index).get_dict()
 
     @Property(int, constant=False, notify=levelChanged)
     def level(self):
+        """Get selected level property for heat-map visualization."""
         return self._level
 
     @level.setter
     def set_level(self, level):
+        """Set level property."""
         self._level = level
 
-    @Slot(int, float, result=str)
-    def get_heat(self, index, max_heat=None):
-        freq = self.get_idx(index).get_heat(self._level)
-        if max_heat:
-            return get_heatmap_color(freq / max_heat)
-        return get_heatmap_color(freq / self._max_heat)
+    @Slot(int, result=float)
+    def get_heat(self, index):
+        """Get heat of location on given index."""
+        return self.get_idx(index).get_heat(self._level)
 
     def data(self, index, role):
+        """Return data for given role and index (required method)."""
         if index.isValid() and role == UniversalLocationListModel.ObjectRole:
             return self.get_idx(index.row())
         return None
