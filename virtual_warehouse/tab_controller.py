@@ -178,7 +178,15 @@ class TabOrder(QObject):
 
 
 class UniversalListModel(QAbstractListModel):
-    """Universal class for holding lists in sidebar tabs (locations, items, orders)."""
+    """Universal class for holding lists in sidebar tabs (locations, items, orders).
+
+    Attributes:
+        checkChanged (Signal): emits on new item in list checked.
+            Emits update data (list[bool, bool, list[str]]) which represents:
+            [is_clear, is_add, list_of_object_ids]. This is used to update plugins.
+        filterChanged (Signal): emits on filter value changed
+
+    """
 
     ObjectRole = Qt.UserRole + 1
 
@@ -196,7 +204,7 @@ class UniversalListModel(QAbstractListModel):
         self._object_class = object_class
         self._selected = [] if selected_objects is None else selected_objects
         self._all_selected = self._selected
-        self._checked = set()
+        self.checked = set()
         self._search_text = ""
         self._filter = 0
 
@@ -205,8 +213,9 @@ class UniversalListModel(QAbstractListModel):
         else:
             self._objects = {k: self._object_class(v) for k, v in objects.items()}
 
+    # Emits list as [is_clear, is_add, list_of_ids]
+    checkChanged = Signal("QVariantList")
     filterChanged = Signal()
-    checkChanged = Signal()
 
     def set_data(self, objects):
         """Set new objects and wrap then in wrapper class."""
@@ -238,9 +247,9 @@ class UniversalListModel(QAbstractListModel):
 
     def clear_checked(self):
         """Clear all checked items in list."""
-        for n in self._checked:
+        for n in self.checked:
             self._objects[n].set_checked(False)
-        self._checked.clear()
+        self.checked.clear()
         # TODO: Specify correct range
         self.dataChanged.emit(
             self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
@@ -257,12 +266,12 @@ class UniversalListModel(QAbstractListModel):
         if not control:
             self.clear_checked()
 
-        self._checked.update(checked)
+        self.checked.update(checked)
         self._update_filter()
-        for n in self._checked:
+        for n in self.checked:
             self._objects[n].set_checked(True)
 
-        self.checkChanged.emit()
+        self.checkChanged.emit([control, True, checked])
         self.dataChanged.emit(
             self.createIndex(0, 0), self.createIndex(len(self._selected) - 1, 0)
         )
@@ -273,7 +282,7 @@ class UniversalListModel(QAbstractListModel):
         States: unchecked (0)/ partially checked (1) / checked (2)
         """
         selected_set = set(self._selected)
-        match_count = sum(map(lambda x: x in selected_set, self._checked))
+        match_count = sum(map(lambda x: x in selected_set, self.checked))
         if match_count:
             return 2 if match_count == len(self._selected) else 1
         return 0
@@ -294,7 +303,6 @@ class UniversalListModel(QAbstractListModel):
             self._filter = val
             self.filterChanged.emit()
             self._update_filter()
-            self.checkChanged.emit()
 
     @Slot(bool)
     def check_all(self, check=True):
@@ -306,11 +314,11 @@ class UniversalListModel(QAbstractListModel):
         """Check/uncheck one item in the list."""
         self._objects[_id].set_checked(check)
         if check:
-            self._checked.add(_id)
+            self.checked.add(_id)
         else:
-            self._checked.remove(_id)
+            self.checked.remove(_id)
 
-        self.checkChanged.emit()
+        self.checkChanged.emit([False, check, [_id]])
 
     @Slot(str)
     def search(self, text):
@@ -327,11 +335,11 @@ class UniversalListModel(QAbstractListModel):
         elif self._filter == 0:
             self._selected = self._all_selected
         elif self._filter == 1:
-            self._selected = sorted(list(self._checked))
+            self._selected = sorted(list(self.checked))
         elif self._filter == 2:
-            self._selected = [k for k in self._all_selected if k not in self._checked]
+            self._selected = [k for k in self._all_selected if k not in self.checked]
         self.layoutChanged.emit()
-        self.checkChanged.emit()
+        self.checkChanged.emit([False, False, []])  # Required for check_state update
 
 
 class SideviewListModel(UniversalListModel):

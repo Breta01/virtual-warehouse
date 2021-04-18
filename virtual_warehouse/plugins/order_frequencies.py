@@ -1,6 +1,5 @@
 """Module with plug-in for calculating selected items frequencies."""
 
-from virtual_warehouse.parser.data_model import Inventory
 from virtual_warehouse.plugin import BasePlugin
 
 
@@ -8,8 +7,6 @@ class Plugin(BasePlugin):
     """Sub-class of base plugin providing calculation of frequency.
     Calculate frequency as frequency of item in order.
     """
-
-    update_on_orders = True
 
     def __init__(self, locations, items, orders, inventory):
         """Initialize plugin and save required parameters.
@@ -43,7 +40,7 @@ class Plugin(BasePlugin):
 
         date = list(self.item_locs.keys())[-1]
 
-        for order_id in orders:
+        for order_id in self.orders.keys():
             for item in self.orders[order_id].has_ordered_items:
                 for loc in self.item_locs[date][item.has_item.name]:
                     self.locations[loc].has_freq += item.has_total_qty

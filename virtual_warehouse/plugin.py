@@ -2,21 +2,24 @@ import importlib
 import pkgutil
 from abc import ABC, abstractmethod
 
+from PySide2.QtCore import Qt
+
 
 class BasePlugin(ABC):
     """Base plugin class for calculating frequencies.
     Each plugin must be subclass of this BasePlugin class.
     Plugins must be placed as separate modules in virtual_warehouse.plugins
+    Implementation of (_calculate_freq(...)) initial frequency calculation is required.
+    Plugin can also implement some of following functions to dynamically update
+    frequencies:
+        on_locations_update(...)
+        on_items_update(...)
+        on_orders_update(...)
+
 
     Attributes:
-        update_on_locations (bool): true if plugin should be updated on locations update
-        update_on_items (bool) = true if plugin should be updated on items update
-        update_on_orders (bool) = true if plugin should be updated on orders update
+        locations (dict[str, Location]): always store dictionary of locations
     """
-
-    update_on_locations: bool = False
-    update_on_items: bool = False
-    update_on_orders: bool = False
 
     def __init__(self, locations, items, orders, inventory):
         """Initialize plugin, all plugins must implement constructor with same arguments.
@@ -29,18 +32,43 @@ class BasePlugin(ABC):
         """
         self.locations = locations
 
-    def calculate_frequencies(self):
+    def calculate_frequencies(self, *args):
         """Run initial frequency calculation."""
         self._clear_frequencies()
-        args = [None, None, None]
-        if self.update_on_locations:
-            args[0] = self.locations.keys()
-        if self.update_on_items:
-            args[1] = self.items.keys()
-        if self.update_on_orders:
-            args[2] = self.orders.keys()
-
         self._calculate_freq(*args)
+
+    def on_locations_update(self, clear, add, ids):
+        """Update frequency calculation on locations check/uncheck.
+        By default this function does nothing. Should be implemented by plugin,
+        if plugin frequencies change with location selection.
+
+        Args:
+            clear (bool): Whether to clear previously selected orders.
+            add (bool): Whether to add or remove ids from calculation.
+            ids (list[str]): list of ids considered in calculation.
+        """
+
+    def on_items_update(self, clear, add, ids):
+        """Update frequency calculation on items check/uncheck.
+        By default this function does nothing. Should be implemented by plugin,
+        if plugin frequencies change with item selection.
+
+        Args:
+            clear (bool): Whether to clear previously selected orders.
+            add (bool): Whether to add or remove ids from calculation.
+            ids (list[str]): list of ids considered in calculation.
+        """
+
+    def on_orders_update(self, clear, add, ids):
+        """Update frequency calculation on orders check/uncheck.
+        By default this function does nothing. Should be implemented by plugin,
+        if plugin frequencies change with order selection.
+
+        Args:
+            clear (bool): Whether to clear previously selected orders.
+            add (bool): Whether to add or remove ids from calculation.
+            ids (list[str]): list of ids considered in calculation.
+        """
 
     @abstractmethod
     def _calculate_freq(self, locations, items, orders):
@@ -61,11 +89,33 @@ class BasePlugin(ABC):
 class PluginManager:
     """Class loading and controlling all plugins and providing them to controller."""
 
-    def __init__(self):
+    def __init__(self, location_model, item_model, order_model):
         """Initialize PluginManager holding all plugins from plugins folder."""
         self.plugin_modules = PluginManager.load_plugins()
         self.plugins = {}
         self.active_plugin = "order_frequencies"
+
+        self._location_model = location_model
+        self._item_model = item_model
+        self._order_model = order_model
+
+        self._location_model.checkChanged.connect(
+            self._locations_update, Qt.DirectConnection
+        )
+        self._item_model.checkChanged.connect(self._items_update, Qt.DirectConnection)
+        self._order_model.checkChanged.connect(self._orders_update, Qt.DirectConnection)
+
+    def _locations_update(self, args):
+        """Update active plugin on locations update."""
+        self.plugins[self.active_plugin].on_locations_update(*args)
+
+    def _items_update(self, args):
+        """Update active plugin on items update."""
+        self.plugins[self.active_plugin].on_items_update(*args)
+
+    def _orders_update(self, args):
+        """Update active plugin on orders update."""
+        self.plugins[self.active_plugin].on_orders_update(*args)
 
     def set_data(self, locations, items, orders, inventory):
         """Set new warehouse date for all plugins."""
@@ -74,7 +124,11 @@ class PluginManager:
 
     def update(self):
         """Recalculate frequencies."""
-        self.plugins[self.active_plugin].calculate_frequencies()
+        self.plugins[self.active_plugin].calculate_frequencies(
+            self._location_model.checked,
+            self._item_model.checked,
+            self._order_model.checked,
+        )
 
     @staticmethod
     def _iter_namespace(ns_pkg):

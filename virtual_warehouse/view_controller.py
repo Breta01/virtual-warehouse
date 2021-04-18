@@ -157,7 +157,9 @@ class ViewController(QObject):
         self._item_model = UniversalListModel(TabItem)
         self._order_model = UniversalListModel(TabOrder)
 
-        self.plugin_manager = PluginManager()
+        self.plugin_manager = PluginManager(
+            self._location_model, self._item_model, self._order_model
+        )
 
         self.selected_idxs = {}
 
@@ -248,7 +250,7 @@ class ViewController(QObject):
         """Switch 2D - 3D model and update selection."""
         self._is2D = not self._is2D
         self.selected_idxs.clear()
-        for name in self._location_model._checked:
+        for name in self._location_model.checked:
             idx = self.model.name_to_idx[name]
             self.selected_idxs[idx] = self.selected_idxs.get(idx, 0) + 1
         self.itemSelected.emit()
@@ -318,8 +320,8 @@ class ViewController(QObject):
             if locations:
                 self._select_locations(names, checked=True, clear=True)
 
-        if src_tab_model._checked:
-            objs = [src_tab_model._objects[k]._i for k in src_tab_model._checked]
+        if src_tab_model.checked:
+            objs = [src_tab_model._objects[k]._i for k in src_tab_model.checked]
             if self._query_thread is None:
                 self._query_thread = QueryThread(connector, objs)
                 self._query_thread.dataReady.connect(callback, Qt.QueuedConnection)

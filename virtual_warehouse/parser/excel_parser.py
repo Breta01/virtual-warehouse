@@ -11,7 +11,7 @@ from virtual_warehouse.parser.data_model import (
     Location,
     Order,
 )
-from virtual_warehouse.parser.utils import estimate_sheet_type
+from virtual_warehouse.parser.utils import convert_date, estimate_sheet_type
 
 
 class Document:

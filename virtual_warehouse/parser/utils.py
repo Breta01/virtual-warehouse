@@ -64,8 +64,8 @@ def convert_weight(weight, uom):
 
 def convert_date(date, fmt="%d.%m.%Y"):
     """Convert string date to datetime."""
-    if type(date) == datetime:
+    if type(date) is datetime:
         return date
-    elif date:
+    if date:
         return datetime.strptime(date, fmt)
     return None
