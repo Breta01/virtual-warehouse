@@ -119,14 +119,16 @@ ApplicationWindow {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
 
+
             Button {
-                id: histogramSwitchButton
+                id: itemHistogramSwitchButton
                 text: qsTr("Heatmap")
                 icon.source: "qrc:/images/histogram_icon.png"
                 anchors.left: parent.left
-                anchors.bottom: viewSwitchButton.top
-                checked: ViewController.is_heatmap
+                anchors.bottom: orderHistogramSwitchButton.top
+                checked: ViewController.plugin_manager.active === "item_frequencies"
                 checkable: true
+                autoExclusive: true
                 display: AbstractButton.IconOnly
                 anchors.leftMargin: 20
                 anchors.bottomMargin: 0
@@ -147,7 +149,50 @@ ApplicationWindow {
                 }
 
                 onClicked: {
-                    ViewController.switch_heatmap()
+                    if (ViewController.plugin_manager.active === "item_frequencies") {
+                        ViewController.plugin_manager.active = null
+                        checked = false
+                    } else {
+                        ViewController.plugin_manager.active = "item_frequencies"
+                        checked = true
+                    }
+                }
+            }
+
+            Button {
+                id: orderHistogramSwitchButton
+                text: qsTr("Heatmap")
+                icon.source: "qrc:/images/histogram_icon.png"
+                anchors.left: parent.left
+                anchors.bottom: viewSwitchButton.top
+                checked: ViewController.plugin_manager.active === "order_frequencies"
+                checkable: true
+                autoExclusive: true
+                display: AbstractButton.IconOnly
+                anchors.leftMargin: 20
+                anchors.bottomMargin: 0
+                flat: true
+                Material.foreground: "white"
+                implicitWidth: 40
+                visible: mapView2D.visible
+                z: 1
+
+                background: Rectangle {
+                    implicitWidth: 40
+                    implicitHeight: 40
+                    opacity: parent.enabled ? 1 : 0.3
+                    color: parent.checked ? Material.accent : (parent.down ? "#6b7080" : "#848895")
+                    border.color: "#222840"
+                    border.width: 1
+                    radius: 5
+                }
+
+                onClicked: {
+                    if (ViewController.plugin_manager.active === "order_frequencies") {
+                        ViewController.plugin_manager.active = null
+                    } else {
+                        ViewController.plugin_manager.active = "order_frequencies"
+                    }
                 }
             }
 
@@ -269,6 +314,7 @@ ApplicationWindow {
         Rectangle {
             id: sidebarBg
             SplitView.preferredWidth: 300
+            SplitView.minimumWidth: 260
             z: 20
             anchors.bottom: parent.bottom
             anchors.top: parent.top

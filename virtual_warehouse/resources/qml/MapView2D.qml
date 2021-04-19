@@ -44,14 +44,16 @@ Canvas {
             }
         }
 
+        // Set global max_heat property
         max_heat = max
+        var is_heatmap = ViewController.is_heatmap
 
         for (row = 0; row < ViewController.model2D.rowCount(); row++) {
             item = ViewController.model2D.get(row)
 
             if (item.type !== "floor") {
                 ctx.fillStyle = item.color
-                if (ViewController.is_heatmap) {
+                if (is_heatmap) {
                     // is_heatmap() in future
                     if (item.type === "rack") {
                         heat = get_heat_color(heats[row], max)

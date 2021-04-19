@@ -393,14 +393,15 @@ class SideviewListModel(UniversalListModel):
 
     @Property(float, constant=False, notify=maxChanged)
     def max_heat(self):
+        """Get current max heat of selected/hovered location."""
         return self._hovered_max_heat if self._is_hovered else self._selected_max_heat
 
     @Slot()
     def update(self):
+        """Update maximal value, emit maxChanged signal which results in list redraw."""
         if self._selected:
             self._selected_max_heat = max(self._objects[k].heat for k in self._selected)
             self.maxChanged.emit()
-        self.layoutChanged.emit()
 
     def rowCount(self, parent=QModelIndex()):
         """Get number of items in list (required method)."""

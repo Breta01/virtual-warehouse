@@ -2,7 +2,7 @@ import importlib
 import pkgutil
 from abc import ABC, abstractmethod
 
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Property, QObject, Qt, Signal, Slot
 
 
 class BasePlugin(ABC):
@@ -86,14 +86,18 @@ class BasePlugin(ABC):
             v.has_freq = 0
 
 
-class PluginManager:
+class PluginManager(QObject):
     """Class loading and controlling all plugins and providing them to controller."""
+
+    pluginChanged = Signal()
 
     def __init__(self, location_model, item_model, order_model, update_signal):
         """Initialize PluginManager holding all plugins from plugins folder."""
+        QObject.__init__(self)
         self.plugin_modules = PluginManager.load_plugins()
         self.plugins = {}
-        self.active_plugin = "order_frequencies"
+        self.active_plugin = None
+        self._is_active = False
 
         self._location_model = location_model
         self._item_model = item_model
@@ -111,9 +115,15 @@ class PluginManager:
         """Set new warehouse data for all plugins."""
         for name, module in self.plugin_modules.items():
             self.plugins[name] = module.Plugin(locations, items, orders, inventory)
+        self._is_active = True
         self._update()
 
-    def active_plugin(self, plugin_name):
+    @Property(str, constant=False, notify=pluginChanged)
+    def active(self):
+        return self.active_plugin
+
+    @active.setter
+    def activate_plugin(self, plugin_name):
         """Activate selected plugin and update frequencies.
 
         Args:
@@ -122,6 +132,7 @@ class PluginManager:
         if self.active_plugin != plugin_name:
             self.active_plugin = plugin_name
             self._update()
+            self.pluginChanged.emit()
 
     def _locations_update(self, args):
         """Update active plugin on locations update."""
@@ -143,12 +154,14 @@ class PluginManager:
 
     def _update(self):
         """Recalculate frequencies using active plugin."""
-        if self.active_plugin:
+        if self.active_plugin and self._is_active:
             self.plugins[self.active_plugin].calculate_frequencies(
                 self._location_model.checked,
                 self._item_model.checked,
                 self._order_model.checked,
             )
+
+        if self._is_active:
             self.update_signal.emit()
 
     @staticmethod

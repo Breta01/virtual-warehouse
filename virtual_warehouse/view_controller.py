@@ -158,7 +158,7 @@ class ViewController(QObject):
         self._item_model = UniversalListModel(TabItem)
         self._order_model = UniversalListModel(TabOrder)
 
-        self.plugin_manager = PluginManager(
+        self._plugin_manager = PluginManager(
             self._location_model,
             self._item_model,
             self._order_model,
@@ -226,7 +226,7 @@ class ViewController(QObject):
     @Property(bool, constant=False, notify=drawModeChanged)
     def is_heatmap(self):
         """State of heat-map statistics."""
-        return self._is_heatmap
+        return bool(self._plugin_manager.active)
 
     @Property(float, constant=False, notify=progressChanged)
     def progress_value(self):
@@ -238,6 +238,10 @@ class ViewController(QObject):
         """Set progress bar value."""
         self._progress_value = val
         self.progressChanged.emit()
+
+    @Property(QObject, constant=False, notify=drawModeChanged)
+    def plugin_manager(self):
+        return self._plugin_manager
 
     @Slot(result=bool)
     def is2D(self):
@@ -303,7 +307,7 @@ class ViewController(QObject):
             self.selected_idxs[idx] = len(names)
             self._location_model.set_checked(names, control)
             self._sideview_model.set_selected(names)
-        else:
+        elif self._location_model.rowCount():
             self._location_model.set_checked([])
             self._sideview_model.set_selected([])
         self.itemSelected.emit()
@@ -493,7 +497,7 @@ class ViewController(QObject):
 
     def _load_frequencies(self):
         """Update frequencies (callback function)."""
-        self.plugin_manager.set_data(
+        self._plugin_manager.set_data(
             self.locations, self.items, self.orders, self.inventory
         )
 
