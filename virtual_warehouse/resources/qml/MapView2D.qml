@@ -8,6 +8,7 @@ Canvas {
     visible: true
 
     property var max_heat: 1
+    readonly property var sidebar_max: (ViewController.model2D.level === -1) ? ViewController.sideview_model.max_heat : max_heat
 
     // handler to override for drawing
     onPaint: {
@@ -142,7 +143,7 @@ Canvas {
 
                 Rectangle {
                     id: sideViewRect
-                    color: get_heat_color(model.object.heat, max_heat)
+                    color: get_heat_color(model.object.heat, sidebar_max)
                     anchors.top: parent.top
                     anchors.topMargin: 0
                     anchors.leftMargin: 0
@@ -155,7 +156,7 @@ Canvas {
                     id: sideViewLine
                     height: 1
                     width: 20
-                    color: get_heat_color(model.object.heat, max_heat)
+                    color: get_heat_color(model.object.heat, sidebar_max)
 
                     anchors.bottom: sideViewRect.bottom
                     anchors.left: sideViewRect.right
@@ -170,7 +171,7 @@ Canvas {
                     anchors.bottomMargin: -4
                     anchors.leftMargin: 4
                     font.pixelSize: 12
-                    color: get_heat_color(model.object.heat, max_heat)
+                    color: get_heat_color(model.object.heat, sidebar_max)
                 }
             }
         }
@@ -279,6 +280,8 @@ Canvas {
                 if (levelSwitch.checked) {
                     ViewController.model2D.level = value
                     mapView2D.requestPaint()
+                    // Update sideview max value after redraw
+                    ViewController.sideview_model.update()
                 }
             }
         }
@@ -350,6 +353,8 @@ Canvas {
         }
         function onDrawModeChanged() {
             mapView2D.requestPaint()
+            // Update sideview max value after redraw
+            ViewController.sideview_model.update()
         }
         function onItemSelected() {
             mapView2D.requestPaint()
@@ -424,7 +429,7 @@ Canvas {
 
     function get_heat_color(heat, max) {
         // Use value from predefined colors
-        return colors[Math.round((heat / max) * 255)]
+        return colors[Math.min(255, Math.round((heat / Math.max(1, max)) * 255))]
     }
 }
 

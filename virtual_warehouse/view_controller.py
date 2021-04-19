@@ -166,6 +166,7 @@ class ViewController(QObject):
         )
 
         self.selected_idxs = {}
+        self._hovered_idx = -1
 
         self.locations = None
         self.items = None
@@ -374,12 +375,14 @@ class ViewController(QObject):
     @Slot(int)
     def hover_item(self, idx):
         """Hover location on the map - displaying statistics in sideview."""
-        if idx >= 0:
-            names = self.model.get_idx(idx).names
-            self._sideview_model.set_hovered(names, True)
-        else:
-            self._sideview_model.set_hovered([], False)
-        self.sideviewChanged.emit()
+        if idx != self._hovered_idx:
+            self._hovered_idx = idx
+            if idx >= 0:
+                names = self.model.get_idx(idx).names
+                self._sideview_model.set_hovered(names, True)
+            else:
+                self._sideview_model.set_hovered([], False)
+            self.sideviewChanged.emit()
 
     @Slot(result="QVariantList")
     def get_selected(self):

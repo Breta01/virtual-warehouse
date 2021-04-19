@@ -144,6 +144,7 @@ class UniversalLocationListModel(QAbstractListModel):
     def set_level(self, level):
         """Set level property."""
         self._level = level
+        self.levelChanged.emit()
 
     @Slot(int, result=float)
     def get_heat(self, index):

@@ -341,6 +341,8 @@ class SideviewListModel(UniversalListModel):
 
     ObjectRole = Qt.UserRole + 1
 
+    maxChanged = Signal()
+
     def __init__(
         self,
         object_class,
@@ -363,6 +365,8 @@ class SideviewListModel(UniversalListModel):
         self._object_class = object_class
         self._selected = [] if selected_objects is None else selected_objects
         self._hovered = [] if hovered_objects is None else hovered_objects
+        self._selected_max_heat = 1
+        self._hovered_max_heat = 1
         self._is_hovered = False
 
         if objects is None:
@@ -373,12 +377,29 @@ class SideviewListModel(UniversalListModel):
     def set_selected(self, selected, check=False):
         """Set list of names of clicked locations."""
         self._selected = list(reversed(selected))
+        if self._selected:
+            self._selected_max_heat = max(self._objects[k].heat for k in self._selected)
+            self.maxChanged.emit()
         self.layoutChanged.emit()
 
     def set_hovered(self, hovered, is_hovered=True):
         """Set list of names of currently hovered locations."""
         self._is_hovered = is_hovered
         self._hovered = list(reversed(hovered))
+        if self._hovered:
+            self._hovered_max_heat = max(self._objects[k].heat for k in self._hovered)
+            self.maxChanged.emit()
+        self.layoutChanged.emit()
+
+    @Property(float, constant=False, notify=maxChanged)
+    def max_heat(self):
+        return self._hovered_max_heat if self._is_hovered else self._selected_max_heat
+
+    @Slot()
+    def update(self):
+        if self._selected:
+            self._selected_max_heat = max(self._objects[k].heat for k in self._selected)
+            self.maxChanged.emit()
         self.layoutChanged.emit()
 
     def rowCount(self, parent=QModelIndex()):
