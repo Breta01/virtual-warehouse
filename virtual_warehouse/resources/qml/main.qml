@@ -40,21 +40,30 @@ ApplicationWindow {
             }
         }
 
-        //        Menu {
-        //            title: qsTr("&Edit")
-
-        //            MenuItem {
-        //                text: qsTr("&Copy")
-        //            }
-        //            MenuItem {
-        //                text: qsTr("Cu&t")
-        //            }
-        //            MenuItem {
-        //                text: qsTr("&Paste")
-        //            }
-        //        }
         Menu {
-            title: qsTr("&Options")
+            title: qsTr("&Plugins")
+
+            MenuItem {
+                text: "&None"
+                checked: ViewController.plugin_manager.active === ""
+                autoExclusive: true
+                onTriggered: ViewController.plugin_manager.active = null
+            }
+
+            Repeater {
+                model: ViewController.plugin_manager.names
+
+                MenuItem {
+                    text: model.modelData["name"]
+                    autoExclusive: true
+                    checked: ViewController.plugin_manager.active === model.modelData["module"]
+                    onTriggered: ViewController.plugin_manager.active = model.modelData["module"]
+                }
+            }
+        }
+
+        Menu {
+            title: qsTr("Option&s")
 
             MenuItem {
                 text: qsTr("&Help")
@@ -409,9 +418,5 @@ ApplicationWindow {
     }
 }
 
-/*##^##
-Designer {
-    D{i:0;formeditorZoom:0.66}
-}
-##^##*/
+
 

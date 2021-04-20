@@ -2,7 +2,7 @@ import importlib
 import pkgutil
 from abc import ABC, abstractmethod
 
-from PySide2.QtCore import Property, QObject, Qt, Signal, Slot
+from PySide2.QtCore import Property, QObject, Qt, Signal
 
 
 class BasePlugin(ABC):
@@ -19,7 +19,10 @@ class BasePlugin(ABC):
 
     Attributes:
         locations (dict[str, Location]): always store dictionary of locations
+        display_name (str): name of plugin to display in Menu (must be overwritten)
     """
+
+    display_name: str
 
     def __init__(self, locations, items, orders, inventory):
         """Initialize plugin, all plugins must implement constructor with same arguments.
@@ -92,7 +95,14 @@ class PluginManager(QObject):
     pluginChanged = Signal()
 
     def __init__(self, location_model, item_model, order_model, update_signal):
-        """Initialize PluginManager holding all plugins from plugins folder."""
+        """Initialize PluginManager holding all plugins from plugins folder.
+
+        Args:
+            location_model (UniversalListModel): list model representing location tab
+            item_model (UniversalListModel): list model representing item tab
+            order_model (UniversalListModel): list model representing order tab
+            update_signal (Signal): signal to emit on plugin update (drawModeChanged)
+        """
         QObject.__init__(self)
         self.plugin_modules = PluginManager.load_plugins()
         self.plugins = {}
@@ -120,6 +130,7 @@ class PluginManager(QObject):
 
     @Property(str, constant=False, notify=pluginChanged)
     def active(self):
+        """Get name of active plugin."""
         return self.active_plugin
 
     @active.setter
@@ -136,19 +147,19 @@ class PluginManager(QObject):
 
     def _locations_update(self, args):
         """Update active plugin on locations update."""
-        if self.active_plugin and (args[0] or len(args[2])):
+        if self.active_plugin and (args[0] or len(args[2]) != 0):
             self.plugins[self.active_plugin].on_locations_update(*args)
             self.update_signal.emit()
 
     def _items_update(self, args):
         """Update active plugin on items update."""
-        if self.active_plugin and (args[0] or len(args[2])):
+        if self.active_plugin and (args[0] or len(args[2]) != 0):
             self.plugins[self.active_plugin].on_items_update(*args)
             self.update_signal.emit()
 
     def _orders_update(self, args):
         """Update active plugin on orders update."""
-        if self.active_plugin and (args[0] or len(args[2])):
+        if self.active_plugin and (args[0] or len(args[2]) != 0):
             self.plugins[self.active_plugin].on_orders_update(*args)
             self.update_signal.emit()
 
@@ -163,6 +174,13 @@ class PluginManager(QObject):
 
         if self._is_active:
             self.update_signal.emit()
+
+    @Property("QVariantList", constant=True)
+    def names(self):
+        return [
+            {"name": m.Plugin.display_name, "module": k}
+            for k, m in self.plugin_modules.items()
+        ]
 
     @staticmethod
     def _iter_namespace(ns_pkg):

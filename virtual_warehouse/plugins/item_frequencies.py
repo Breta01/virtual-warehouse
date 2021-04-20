@@ -9,7 +9,7 @@ class Plugin(BasePlugin):
     Calculate frequency as on-hand quantity of selected items.
     """
 
-    update_on_items = True
+    display_name = "&Item Histogram"
 
     def __init__(self, locations, items, orders, inventory):
         """Initialize plugin and save required parameters.

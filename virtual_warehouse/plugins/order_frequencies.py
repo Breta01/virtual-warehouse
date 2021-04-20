@@ -8,6 +8,8 @@ class Plugin(BasePlugin):
     Calculate frequency as frequency of item in order.
     """
 
+    display_name = "&Order Histogram"
+
     def __init__(self, locations, items, orders, inventory):
         """Initialize plugin and save required parameters.
 

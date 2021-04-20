@@ -241,6 +241,7 @@ class ViewController(QObject):
 
     @Property(QObject, constant=False, notify=drawModeChanged)
     def plugin_manager(self):
+        """Get plugin manager for controlling and activating stats plugins."""
         return self._plugin_manager
 
     @Slot(result=bool)

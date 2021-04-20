@@ -162,6 +162,7 @@ class TabOrder(QObject):
 
     @Property(int, constant=True)
     def num_items(self):
+        """Get number of items in order."""
         return len(self._i.has_ordered_items)
 
     @Property(bool, constant=False, notify=checkedChanged)
