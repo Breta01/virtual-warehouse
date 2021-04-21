@@ -177,6 +177,7 @@ class PluginManager(QObject):
 
     @Property("QVariantList", constant=True)
     def names(self):
+        """Get list of display names and module names."""
         return [
             {"name": m.Plugin.display_name, "module": k}
             for k, m in self.plugin_modules.items()
