@@ -2,7 +2,9 @@
 import datetime
 from typing import List
 
+import owlready2
 from owlready2 import (
+    ConstrainedDatatype,
     DataProperty,
     FunctionalProperty,
     ObjectProperty,
@@ -10,6 +12,7 @@ from owlready2 import (
     default_world,
     destroy_entity,
     get_ontology,
+    sync_reasoner,
 )
 
 from virtual_warehouse.parser.utils import (
@@ -41,6 +44,50 @@ def save_ontology(file_path):
         file_path (str): file url should be processed with QUrl(file_path)
     """
     onto.save(file_path, format="rdfxml")
+
+
+class OntoController:
+    """Class controlling ontology classes and reasoning."""
+
+    def __init__(self):
+        self.classes = {}
+
+    @property
+    def java(self):
+        """Get Java executable path for owlready reasoner."""
+        return owlready2.JAVA_EXE
+
+    @java.setter
+    def set_java(self, val):
+        """Set Java executable path for owlready reasoner."""
+        owlready2.JAVA_EXE = val
+
+    @staticmethod
+    def delete_class(cls):
+        """Destroy given ontology class.
+        This class just wraps destroy_entity(), but it unifies naming and allow future
+        modifications
+        """
+        destroy_entity(cls)
+
+    def create_class(self, name, cls, conditions):
+        """Construct new ontology class based on Location, Item or Order.
+
+        Args:
+            name (str): name of new class
+            cls (str): string describing class, possible values: "Location", "Item", "Order"
+            conditions (str): describing condition (later replace by more complex structure)
+        """
+        assert cls in ["Location", "Item", "Order"], "Invalid class type"
+
+        full_condition = f"[{cls} & {conditions}]"
+        with onto:
+            new_class = type(
+                name, (eval(cls),), {"equivalent_to": eval(full_condition)}
+            )
+            sync_reasoner(infer_property_values=True)
+        self.classes[cls] = new_class
+        return new_class
 
 
 with onto:
