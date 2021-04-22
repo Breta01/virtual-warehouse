@@ -1,6 +1,6 @@
 """Module with plug-in for calculating selected items frequencies."""
 
-from virtual_warehouse.parser.data_model import Inventory
+from virtual_warehouse.data.data_model import Inventory
 from virtual_warehouse.plugin import BasePlugin
 
 

@@ -4,14 +4,8 @@ from datetime import datetime
 import xlsxio
 from xlrd import open_workbook
 
-from virtual_warehouse.parser.data_model import (
-    Inventory,
-    Item,
-    ItemUnit,
-    Location,
-    Order,
-)
-from virtual_warehouse.parser.utils import convert_date, estimate_sheet_type
+from virtual_warehouse.data.data_model import Inventory, Item, ItemUnit, Location, Order
+from virtual_warehouse.data.utils import convert_date, estimate_sheet_type
 
 
 class Document:

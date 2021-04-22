@@ -1,6 +1,14 @@
 """Module providing ViewController class - connector class between QML and Python."""
 from PySide2.QtCore import Property, QObject, Qt, QThread, QUrl, Signal, Slot
 
+from virtual_warehouse.data.data_model import (
+    Inventory,
+    Item,
+    Location,
+    Order,
+    save_ontology,
+)
+from virtual_warehouse.data.excel_parser import Document
 from virtual_warehouse.location_models import (
     MultiLocation,
     SingleLocation,
@@ -8,14 +16,6 @@ from virtual_warehouse.location_models import (
 )
 from virtual_warehouse.location_utils import cluster_locations
 from virtual_warehouse.map import Map
-from virtual_warehouse.parser.data_model import (
-    Inventory,
-    Item,
-    Location,
-    Order,
-    save_ontology,
-)
-from virtual_warehouse.parser.excel_parser import Document
 from virtual_warehouse.plugin import PluginManager
 from virtual_warehouse.tab_controller import (
     SideviewListModel,

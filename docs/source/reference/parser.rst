@@ -4,23 +4,23 @@
 
 
 
-======
-Parser
-======
+====
+Data
+====
 
-Module for parsing input data from file (CSV or excel).
+Module for controlling and parsing input data from file (CSV or excel).
 
 Data Model
 ~~~~~~~~~~
 .. autosummary::
    :toctree: api/
 
-   parser.data_model.Coord
-   parser.data_model.Inventory
-   parser.data_model.Item
-   parser.data_model.ItemUnit
-   parser.data_model.Location
-   parser.data_model.Order
+   data.data_model.Coord
+   data.data_model.Inventory
+   data.data_model.Item
+   data.data_model.ItemUnit
+   data.data_model.Location
+   data.data_model.Order
 
 
 Excel Parser
@@ -29,7 +29,7 @@ Excel Parser
    :toctree: api/  
    :recursive:
 
-   parser.excel_parser
+   data.excel_parser
  
 
 Utils
@@ -38,5 +38,5 @@ Utils
    :toctree: api/  
    :recursive:
 
-   parser.utils
+   data.utils
    

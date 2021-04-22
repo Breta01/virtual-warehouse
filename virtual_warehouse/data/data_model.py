@@ -15,7 +15,7 @@ from owlready2 import (
     sync_reasoner,
 )
 
-from virtual_warehouse.parser.utils import (
+from virtual_warehouse.data.utils import (
     convert_date,
     convert_dim,
     convert_type,
