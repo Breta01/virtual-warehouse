@@ -408,17 +408,66 @@ ApplicationWindow {
                 transformOrigin: "TopLeft"
                 contentHeight: 30
                 rotation: 90
+                leftPadding: 5
+                spacing: 5
+
+                background: Rectangle {
+                    color: "#eee"
+                    Rectangle {
+                        color: Material.primary
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        height: 1
+                    }
+                }
 
                 TabButton {
                     id: sideTabBtn1
                     text: "Data"
                     width: 90
+
+                    background: Rectangle {
+                        color: "white"
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 1
+                        height: parent.height - 5
+                        border.color: Material.primary
+                        border.width: 0
+                        radius: 4
+
+                        Rectangle {
+                            color: parent.color
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            height: parent.radius
+                        }
+                    }
                 }
 
                 TabButton {
                     id: sideTabBtn2
                     text: "Classes"
                     width: 90
+
+                    background: Rectangle {
+                        color: "white"
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 1
+                        height: parent.height - 5
+                        border.color: Material.primary
+                        border.width: 0
+                        radius: 4
+
+                        Rectangle {
+                            color: parent.color
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            height: parent.radius
+                        }
+                    }
                 }
             }
         }

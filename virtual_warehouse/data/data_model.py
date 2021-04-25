@@ -50,6 +50,7 @@ class OntoController:
     """Class controlling ontology classes and reasoning."""
 
     def __init__(self):
+        """Initialize OntoController."""
         self.classes = {}
 
     @property
