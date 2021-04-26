@@ -324,14 +324,16 @@ class ViewController(QObject):
         """Select/unselect all locations from the tab list in the map."""
         self._select_locations(self.location_model._selected, select, clear=True)
 
-    @Slot(str, list)
-    def select_class(self, base_class, names):
+    @Slot(str, str)
+    def select_class(self, cls, base_class):
         """Check custom class instances in side bar.
 
         Args:
+            cls (str): name of custom class
             base_class (str): name of base classes
-            names (list[str]): list of instances names
         """
+        instances = self._onto_manager.get_instances(cls)
+        names = sorted([i.name for i in instances])
         if base_class == "Location":
             self._location_model.set_checked(names)
             self._select_locations(names, checked=True, clear=True)

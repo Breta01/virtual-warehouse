@@ -26,7 +26,6 @@ Item {
         }
     }
 
-
     ScrollView {
         anchors.top: parent.top
         anchors.bottom: classToolBar.top
@@ -77,6 +76,9 @@ Item {
                         width: 150
                         MenuItem {
                             text: "Select"
+                            onClicked: ViewController.select_class(
+                                           model.modelData["name"],
+                                           model.modelData["class"])
                         }
                         MenuItem {
                             text: "Delete"
@@ -141,3 +143,4 @@ Designer {
     D{i:0;autoSize:true;height:480;width:640}
 }
 ##^##*/
+

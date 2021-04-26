@@ -80,6 +80,20 @@ class OntoManager(QObject):
             destroy_entity(self._classes.pop(cls)[0])
             self.classesChanged.emit()
 
+    def get_instances(self, cls):
+        """Get instances of custom class.
+
+        Args:
+            cls (str): name of new classes
+
+        Returns:
+            list[Object]: list of class (Location/Item/Order) instances
+        """
+        return self._classes[cls][0].instances()
+
+    def _instances_names(instances):
+        return [i.name for i in instances]
+
     @Property("QVariantList", constant=False, notify=classesChanged)
     def classes(self):
         return [
