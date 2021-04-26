@@ -14,6 +14,7 @@ from owlready2 import (
     get_ontology,
     sync_reasoner,
 )
+from PySide2.QtCore import Property, QObject, Signal, Slot
 
 from virtual_warehouse.data.utils import (
     convert_date,
@@ -46,14 +47,18 @@ def save_ontology(file_path):
     onto.save(file_path, format="rdfxml")
 
 
-class OntoController:
+class OntoManager(QObject):
     """Class controlling ontology classes and reasoning."""
+
+    classesChanged = Signal()
+    javaChanged = Signal()
 
     def __init__(self):
         """Initialize OntoController."""
-        self.classes = {}
+        QObject.__init__(self)
+        self._classes = {}
 
-    @property
+    @Property(str, constant=False, notify=javaChanged)
     def java(self):
         """Get Java executable path for owlready reasoner."""
         return owlready2.JAVA_EXE
@@ -62,15 +67,27 @@ class OntoController:
     def set_java(self, val):
         """Set Java executable path for owlready reasoner."""
         owlready2.JAVA_EXE = val
+        self.javaChanged.emit()
 
-    @staticmethod
-    def delete_class(cls):
+    @Slot(str)
+    def delete_class(self, cls):
         """Destroy given ontology class.
-        This class just wraps destroy_entity(), but it unifies naming and allow future
-        modifications
-        """
-        destroy_entity(cls)
 
+        Args:
+            cls (str): name of new class for destruction
+        """
+        if cls in self._classes:
+            destroy_entity(self._classes.pop(cls)[0])
+            self.classesChanged.emit()
+
+    @Property("QVariantList", constant=False, notify=classesChanged)
+    def classes(self):
+        return [
+            {"name": k, "class": v[1], "count": len(v[0].instances())}
+            for k, v in self._classes.items()
+        ]
+
+    @Slot(str, str, str)
     def create_class(self, name, cls, conditions):
         """Construct new ontology class based on Location, Item or Order.
 
@@ -79,15 +96,22 @@ class OntoController:
             cls (str): string describing class, possible values: "Location", "Item", "Order"
             conditions (str): describing condition (later replace by more complex structure)
         """
+        # TODO: Checks, errors, background thread + loading
         assert cls in ["Location", "Item", "Order"], "Invalid class type"
+        print(repr(name), repr(cls), repr(conditions))
 
-        full_condition = f"[{cls} & {conditions}]"
+        if len(conditions.strip()) != 0:
+            full_condition = f"[{cls} & {conditions}]"
+        else:
+            full_condition = f"[{cls}]"
+
         with onto:
             new_class = type(
                 name, (eval(cls),), {"equivalent_to": eval(full_condition)}
             )
             sync_reasoner(infer_property_values=True)
-        self.classes[cls] = new_class
+        self._classes[name] = (new_class, cls)
+        self.classesChanged.emit()
         return new_class
 
 

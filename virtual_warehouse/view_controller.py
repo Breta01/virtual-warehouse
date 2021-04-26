@@ -5,6 +5,7 @@ from virtual_warehouse.data.data_model import (
     Inventory,
     Item,
     Location,
+    OntoManager,
     Order,
     save_ontology,
 )
@@ -112,7 +113,6 @@ class DataLoaderThread(QThread):
         # First query is always slower than rest (probably some initialization going on)
         Item.get_by_locations([self.locations[next(iter(self.locations))]])
 
-        # calculate_frequencies(self.locations, self.inventory, self.orders)
         self.frequenciesReady.emit()
         document.close()
 
@@ -164,6 +164,7 @@ class ViewController(QObject):
             self._order_model,
             self.drawModeChanged,
         )
+        self._onto_manager = OntoManager()
 
         self.selected_idxs = {}
         self._hovered_idx = -1
@@ -244,6 +245,11 @@ class ViewController(QObject):
         """Get plugin manager for controlling and activating stats plugins."""
         return self._plugin_manager
 
+    @Property(QObject, constant=True)
+    def onto_manager(self):
+        """Get ontology manager for controlling dynamic creation of classes."""
+        return self._onto_manager
+
     @Slot(result=bool)
     def is2D(self):
         """Select between 2D and 3D view."""
@@ -317,6 +323,22 @@ class ViewController(QObject):
     def select_all(self, select):
         """Select/unselect all locations from the tab list in the map."""
         self._select_locations(self.location_model._selected, select, clear=True)
+
+    @Slot(str, list)
+    def select_class(self, base_class, names):
+        """Check custom class instances in side bar.
+
+        Args:
+            base_class (str): name of base classes
+            names (list[str]): list of instances names
+        """
+        if base_class == "Location":
+            self._location_model.set_checked(names)
+            self._select_locations(names, checked=True, clear=True)
+        elif base_class == "Item":
+            self._item_model.set_checked(names)
+        elif base_class == "Order":
+            self._order_model.set_checked(names)
 
     # Connecting sidebar tabs
     def _connect_tabs(self, src_tab_model, dst_tab_model, connector, locations=False):

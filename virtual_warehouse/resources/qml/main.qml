@@ -398,6 +398,14 @@ ApplicationWindow {
                         }
                     }
                 }
+
+                Item {
+                    id: classSideTab
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    ClassView {}
+                }
             }
 
             TabBar {
