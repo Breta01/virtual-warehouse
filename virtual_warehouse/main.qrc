@@ -4,6 +4,7 @@
     </qresource>
     <qresource prefix="/qml">
         <file alias="main.qml">resources/qml/main.qml</file>
+        <file alias="ClassView.qml">resources/qml/ClassView.qml</file>
         <file alias="ConnectionsMenu.qml">resources/qml/ConnectionsMenu.qml</file>
         <file alias="CustomItem.qml">resources/qml/CustomItem.qml</file>
         <file alias="Dialogs.qml">resources/qml/Dialogs.qml</file>

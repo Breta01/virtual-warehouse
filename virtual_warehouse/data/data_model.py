@@ -2,7 +2,9 @@
 import datetime
 from typing import List
 
+import owlready2
 from owlready2 import (
+    ConstrainedDatatype,
     DataProperty,
     FunctionalProperty,
     ObjectProperty,
@@ -10,9 +12,11 @@ from owlready2 import (
     default_world,
     destroy_entity,
     get_ontology,
+    sync_reasoner,
 )
+from PySide2.QtCore import Property, QObject, Signal, Slot
 
-from virtual_warehouse.parser.utils import (
+from virtual_warehouse.data.utils import (
     convert_date,
     convert_dim,
     convert_type,
@@ -41,6 +45,88 @@ def save_ontology(file_path):
         file_path (str): file url should be processed with QUrl(file_path)
     """
     onto.save(file_path, format="rdfxml")
+
+
+class OntoManager(QObject):
+    """Class controlling ontology classes and reasoning."""
+
+    classesChanged = Signal()
+    javaChanged = Signal()
+
+    def __init__(self):
+        """Initialize OntoController."""
+        QObject.__init__(self)
+        self._classes = {}
+
+    @Property(str, constant=False, notify=javaChanged)
+    def java(self):
+        """Get Java executable path for owlready reasoner."""
+        return owlready2.JAVA_EXE
+
+    @java.setter
+    def set_java(self, val):
+        """Set Java executable path for owlready reasoner."""
+        owlready2.JAVA_EXE = val
+        self.javaChanged.emit()
+
+    @Slot(str)
+    def delete_class(self, cls):
+        """Destroy given ontology class.
+
+        Args:
+            cls (str): name of new class for destruction
+        """
+        if cls in self._classes:
+            destroy_entity(self._classes.pop(cls)[0])
+            self.classesChanged.emit()
+
+    def get_instances(self, cls):
+        """Get instances of custom class.
+
+        Args:
+            cls (str): name of new classes
+
+        Returns:
+            list[Object]: list of class (Location/Item/Order) instances
+        """
+        return self._classes[cls][0].instances()
+
+    def _instances_names(instances):
+        return [i.name for i in instances]
+
+    @Property("QVariantList", constant=False, notify=classesChanged)
+    def classes(self):
+        return [
+            {"name": k, "class": v[1], "count": len(v[0].instances())}
+            for k, v in self._classes.items()
+        ]
+
+    @Slot(str, str, str)
+    def create_class(self, name, cls, conditions):
+        """Construct new ontology class based on Location, Item or Order.
+
+        Args:
+            name (str): name of new class
+            cls (str): string describing class, possible values: "Location", "Item", "Order"
+            conditions (str): describing condition (later replace by more complex structure)
+        """
+        # TODO: Checks, errors, background thread + loading
+        assert cls in ["Location", "Item", "Order"], "Invalid class type"
+        print(repr(name), repr(cls), repr(conditions))
+
+        if len(conditions.strip()) != 0:
+            full_condition = f"[{cls} & {conditions}]"
+        else:
+            full_condition = f"[{cls}]"
+
+        with onto:
+            new_class = type(
+                name, (eval(cls),), {"equivalent_to": eval(full_condition)}
+            )
+            sync_reasoner(infer_property_values=True)
+        self._classes[name] = (new_class, cls)
+        self.classesChanged.emit()
+        return new_class
 
 
 with onto:

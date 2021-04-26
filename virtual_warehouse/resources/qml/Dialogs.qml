@@ -18,6 +18,12 @@ Item {
         saveFileDialog.open()
     }
 
+    function openCreateClassDialog() {
+        classDialogTextArea.text = ""
+        classNameField.text = ""
+        createClassDialog.open()
+    }
+
     Dialog {
         id: helpDialog
         title: "Help"
@@ -265,6 +271,95 @@ Item {
 
                 onAccepted: fileImportSettings.accepted()
                 onRejected: fileImportSettings.close()
+            }
+        }
+    }
+
+
+    Dialog {
+        id: createClassDialog
+        title: "Create Class"
+        standardButtons: StandardButton.Cancle | StandardButton.Ok
+
+        contentItem: Rectangle {
+            implicitWidth: 500
+            implicitHeight: 400
+            color: "#eee"
+
+
+            Text {
+                id: nameClassText
+                anchors.left: parent.left
+                anchors.baseline: classNameField.baseline
+                anchors.margins: 8
+                text: "Name:"
+            }
+
+            TextField {
+                id: classNameField
+                anchors.left: nameClassText.right
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: 8
+                placeholderText: "NameOfNewClass"
+                text: ""
+            }
+
+            Text {
+                id: baseClassText
+                anchors.left: parent.left
+                anchors.verticalCenter: classComboBox.verticalCenter
+                anchors.margins: 8
+                text: "Base class:"
+            }
+
+            ComboBox {
+                id: classComboBox
+                anchors.left: baseClassText.right
+                anchors.top: classNameField.bottom
+                anchors.margins: 8
+                textRole: "type"
+
+                model: ListModel {
+                    ListElement { type: "Location" }
+                    ListElement { type: "Item" }
+                    ListElement { type: "Order" }
+                }
+            }
+
+            TextArea {
+                id: classDialogTextArea
+                anchors.top: classComboBox.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: classDialogButtons.top
+                anchors.margins: 4
+                wrapMode: Text.Wrap
+                padding: 8
+                placeholderText: "Conditions..."
+                text: qsTr("")
+
+                background: Rectangle {
+                    color: "white"
+                }
+            }
+
+            DialogButtonBox {
+                id: classDialogButtons
+                position: DialogButtonBox.Footer
+
+                anchors.bottom: parent.bottom
+                width: parent.width
+                standardButtons: DialogButtonBox.Close | DialogButtonBox.Save
+
+                onRejected: createClassDialog.close()
+                onAccepted: {
+                    ViewController.onto_manager.create_class(
+                                classNameField.text,
+                                classComboBox.currentText,
+                                classDialogTextArea.text)
+                    createClassDialog.close()
+                }
             }
         }
     }

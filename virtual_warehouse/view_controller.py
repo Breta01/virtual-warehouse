@@ -1,6 +1,15 @@
 """Module providing ViewController class - connector class between QML and Python."""
 from PySide2.QtCore import Property, QObject, Qt, QThread, QUrl, Signal, Slot
 
+from virtual_warehouse.data.data_model import (
+    Inventory,
+    Item,
+    Location,
+    OntoManager,
+    Order,
+    save_ontology,
+)
+from virtual_warehouse.data.excel_parser import Document
 from virtual_warehouse.location_models import (
     MultiLocation,
     SingleLocation,
@@ -8,14 +17,6 @@ from virtual_warehouse.location_models import (
 )
 from virtual_warehouse.location_utils import cluster_locations
 from virtual_warehouse.map import Map
-from virtual_warehouse.parser.data_model import (
-    Inventory,
-    Item,
-    Location,
-    Order,
-    save_ontology,
-)
-from virtual_warehouse.parser.excel_parser import Document
 from virtual_warehouse.plugin import PluginManager
 from virtual_warehouse.tab_controller import (
     SideviewListModel,
@@ -112,7 +113,6 @@ class DataLoaderThread(QThread):
         # First query is always slower than rest (probably some initialization going on)
         Item.get_by_locations([self.locations[next(iter(self.locations))]])
 
-        # calculate_frequencies(self.locations, self.inventory, self.orders)
         self.frequenciesReady.emit()
         document.close()
 
@@ -164,6 +164,7 @@ class ViewController(QObject):
             self._order_model,
             self.drawModeChanged,
         )
+        self._onto_manager = OntoManager()
 
         self.selected_idxs = {}
         self._hovered_idx = -1
@@ -244,6 +245,11 @@ class ViewController(QObject):
         """Get plugin manager for controlling and activating stats plugins."""
         return self._plugin_manager
 
+    @Property(QObject, constant=True)
+    def onto_manager(self):
+        """Get ontology manager for controlling dynamic creation of classes."""
+        return self._onto_manager
+
     @Slot(result=bool)
     def is2D(self):
         """Select between 2D and 3D view."""
@@ -317,6 +323,24 @@ class ViewController(QObject):
     def select_all(self, select):
         """Select/unselect all locations from the tab list in the map."""
         self._select_locations(self.location_model._selected, select, clear=True)
+
+    @Slot(str, str)
+    def select_class(self, cls, base_class):
+        """Check custom class instances in side bar.
+
+        Args:
+            cls (str): name of custom class
+            base_class (str): name of base classes
+        """
+        instances = self._onto_manager.get_instances(cls)
+        names = sorted([i.name for i in instances])
+        if base_class == "Location":
+            self._location_model.set_checked(names)
+            self._select_locations(names, checked=True, clear=True)
+        elif base_class == "Item":
+            self._item_model.set_checked(names)
+        elif base_class == "Order":
+            self._order_model.set_checked(names)
 
     # Connecting sidebar tabs
     def _connect_tabs(self, src_tab_model, dst_tab_model, connector, locations=False):

@@ -128,7 +128,6 @@ ApplicationWindow {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
 
-
             Button {
                 id: itemHistogramSwitchButton
                 text: qsTr("Heatmap")
@@ -268,7 +267,8 @@ ApplicationWindow {
                     id: surfacePlot
                     width: mapView3D.width
                     height: mapView3D.height
-                    selectionMode: AbstractGraph3D.SelectionSlice | AbstractGraph3D.SelectionItemAndRow
+                    selectionMode: AbstractGraph3D.SelectionSlice
+                                   | AbstractGraph3D.SelectionItemAndRow
                     scene.activeCamera.cameraPreset: Camera3D.CameraPresetIsometricLeft
                     theme: Theme3D {
                         type: Theme3D.ThemeStoneMoss
@@ -322,67 +322,159 @@ ApplicationWindow {
 
         Rectangle {
             id: sidebarBg
-            SplitView.preferredWidth: 300
-            SplitView.minimumWidth: 260
+            SplitView.preferredWidth: 330
+            SplitView.minimumWidth: 290
             z: 20
             anchors.bottom: parent.bottom
             anchors.top: parent.top
 
             color: Material.background
 
-            Column {
-                id: sidebar
-                anchors.fill: parent
+            StackLayout {
+                anchors.left: parent.left
+                width: parent.width - sideTabbar.height
+                height: parent.height
+                currentIndex: sideTabbar.currentIndex
 
-                TabBar {
-                    id: tabBar
-                    y: 0
-                    width: sidebar.width
+                Item {
+                    id: dataSideTab
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
-                    TabButton {
-                        id: tabButton
-                        text: qsTr("Locations")
-                    }
+                    Column {
+                        id: sidebar
+                        anchors.fill: parent
 
-                    TabButton {
-                        id: tabButton1
-                        text: qsTr("Items")
-                    }
+                        TabBar {
+                            id: tabBar
+                            y: 0
+                            width: sidebar.width
 
-                    TabButton {
-                        id: tabButton2
-                        text: qsTr("Orders")
+                            TabButton {
+                                id: tabButton
+                                text: qsTr("Locations")
+                            }
+
+                            TabButton {
+                                id: tabButton1
+                                text: qsTr("Items")
+                            }
+
+                            TabButton {
+                                id: tabButton2
+                                text: qsTr("Orders")
+                            }
+                        }
+
+                        StackLayout {
+                            y: tabBar.height
+                            width: parent.width
+                            height: parent.height - tabBar.height
+                            currentIndex: tabBar.currentIndex
+
+                            Item {
+                                id: locationTab
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+
+                                LocationListView {}
+                            }
+                            Item {
+                                id: itemTab
+
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+
+                                ItemListView {}
+                            }
+                            Item {
+                                id: orderTab
+
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+
+                                OrderListView {}
+                            }
+                        }
                     }
                 }
 
-                StackLayout {
-                    y: tabBar.height
-                    width: parent.width
-                    height: parent.height - tabBar.height
-                    currentIndex: tabBar.currentIndex
+                Item {
+                    id: classSideTab
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
-                    Item {
-                        id: locationTab
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
+                    ClassView {}
+                }
+            }
 
-                        LocationListView {}
+            TabBar {
+                id: sideTabbar
+                width: parent.height
+                anchors.left: parent.right
+                anchors.top: parent.top
+                transformOrigin: "TopLeft"
+                contentHeight: 30
+                rotation: 90
+                leftPadding: 5
+                spacing: 5
+
+                background: Rectangle {
+                    color: "#eee"
+                    Rectangle {
+                        color: Material.primary
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        height: 1
                     }
-                    Item {
-                        id: itemTab
+                }
 
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
+                TabButton {
+                    id: sideTabBtn1
+                    text: "Data"
+                    width: 90
 
-                        ItemListView {}
+                    background: Rectangle {
+                        color: "white"
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 1
+                        height: parent.height - 5
+                        border.color: Material.primary
+                        border.width: 0
+                        radius: 4
+
+                        Rectangle {
+                            color: parent.color
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            height: parent.radius
+                        }
                     }
-                    Item {
-                        id: orderTab
+                }
 
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
+                TabButton {
+                    id: sideTabBtn2
+                    text: "Classes"
+                    width: 90
 
-                        OrderListView {}
+                    background: Rectangle {
+                        color: "white"
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 1
+                        height: parent.height - 5
+                        border.color: Material.primary
+                        border.width: 0
+                        radius: 4
+
+                        Rectangle {
+                            color: parent.color
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            height: parent.radius
+                        }
                     }
                 }
             }
@@ -408,7 +500,6 @@ ApplicationWindow {
 
                 surfacePlot.addCustomItem(instance)
             }
-
         }
 
         function onItemSelected() {// TODO: select items based on 2D map
@@ -417,6 +508,3 @@ ApplicationWindow {
         Component.onCompleted: onModelChanged()
     }
 }
-
-
-

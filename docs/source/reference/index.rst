@@ -11,7 +11,7 @@ methods.
 .. toctree::
    :maxdepth: 2
 
-   parser
+   data
    view_controller
 
 
