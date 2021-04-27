@@ -130,7 +130,7 @@ ApplicationWindow {
 
             Button {
                 id: itemHistogramSwitchButton
-                text: qsTr("Heatmap")
+                text: qsTr("Item Heatmap")
                 icon.source: "qrc:/images/histogram_icon.png"
                 anchors.left: parent.left
                 anchors.bottom: orderHistogramSwitchButton.top
@@ -146,6 +146,16 @@ ApplicationWindow {
                 visible: mapView2D.visible
                 z: 1
 
+                Text {
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.margins: 8
+                    anchors.rightMargin: 6
+                    text: qsTr("Item")
+                    color: "white"
+                    font.pixelSize: 10
+                }
+
                 background: Rectangle {
                     implicitWidth: 40
                     implicitHeight: 40
@@ -159,17 +169,15 @@ ApplicationWindow {
                 onClicked: {
                     if (ViewController.plugin_manager.active === "item_frequencies") {
                         ViewController.plugin_manager.active = null
-                        checked = false
                     } else {
                         ViewController.plugin_manager.active = "item_frequencies"
-                        checked = true
                     }
                 }
             }
 
             Button {
                 id: orderHistogramSwitchButton
-                text: qsTr("Heatmap")
+                text: qsTr("Order Heatmap")
                 icon.source: "qrc:/images/histogram_icon.png"
                 anchors.left: parent.left
                 anchors.bottom: viewSwitchButton.top
@@ -193,6 +201,16 @@ ApplicationWindow {
                     border.color: "#222840"
                     border.width: 1
                     radius: 5
+                }
+
+                Text {
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.margins: 8
+                    anchors.rightMargin: 4
+                    text: qsTr("Ord.")
+                    color: "white"
+                    font.pixelSize: 10
                 }
 
                 onClicked: {
