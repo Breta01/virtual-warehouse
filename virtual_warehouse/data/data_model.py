@@ -87,12 +87,9 @@ class OntoManager(QObject):
             cls (str): name of new classes
 
         Returns:
-            list[Object]: list of class (Location/Item/Order) instances
+            list[Object]: list of class (RackLocation/Item/Order) instances
         """
         return self._classes[cls][0].instances()
-
-    def _instances_names(instances):
-        return [i.name for i in instances]
 
     @Property("QVariantList", constant=False, notify=classesChanged)
     def classes(self):
@@ -103,16 +100,15 @@ class OntoManager(QObject):
 
     @Slot(str, str, str)
     def create_class(self, name, cls, conditions):
-        """Construct new ontology class based on Location, Item or Order.
+        """Construct new ontology class based on RackLocation, Item or Order.
 
         Args:
             name (str): name of new class
-            cls (str): string describing class, possible values: "Location", "Item", "Order"
+            cls (str): string describing class, possible values: "RackLocation", "Item", "Order"
             conditions (str): describing condition (later replace by more complex structure)
         """
         # TODO: Checks, errors, background thread + loading
-        assert cls in ["Location", "Item", "Order"], "Invalid class type"
-        print(repr(name), repr(cls), repr(conditions))
+        assert cls in ["RackLocation", "Item", "Order"], "Invalid class type"
 
         if len(conditions.strip()) != 0:
             full_condition = f"[{cls} & {conditions}]"
@@ -123,7 +119,7 @@ class OntoManager(QObject):
             new_class = type(
                 name, (eval(cls),), {"equivalent_to": eval(full_condition)}
             )
-            sync_reasoner(infer_property_values=True)
+            sync_reasoner(debug=0, infer_property_values=False)
         self._classes[name] = (new_class, cls)
         self.classesChanged.emit()
         return new_class
@@ -140,14 +136,30 @@ with onto:
 
         pass
 
-    class Inventory(Thing):
+    class PhysicalObject(Thing):
+        """Class representing physical object with dimensions.
+
+        Attributes:
+            has_length (float): length of packaging (in meters)
+            has_width (float): width of packaging (in meters)
+            has_height (float): height of packaging (in meters)
+        """
+
+    class ItemInstance(Thing):
+        """Class instantiating item in some quantity.
+
+        Attributes:
+            has_item (Item): instantiated item
+        """
+
+    class Inventory(ItemInstance):
         """Description of inventory balance instance for given (date, location, item).
 
         Attributes:
             name (str): unique ID of inventory object
             has_date (datetime.datetime): date of the inventory status
-            has_location (Location): location object related to this inventory status
-            has_ltype (str): location type
+            has_location (RackLocation): location object related to this inventory status
+            # has_ltype (str): location type
             has_item (Item): item on given location
             has_expiry_date (datetime.datetime): date of the item expiration
             has_available_qty (int): available quantity of the item
@@ -181,7 +193,7 @@ with onto:
                 f"{date.strftime('%Y:%m:%d')}-{location_id}-{item_id}",
                 has_date=date_t,
                 has_location=location,
-                has_ltype=ltype,
+                # has_ltype=ltype,
                 has_item=item,
                 has_expiry_date=expiry_date,
                 has_available_qty=available_qty,
@@ -209,13 +221,13 @@ with onto:
             """
             return onto.search(type=Inventory, has_item=item)
 
-    class ItemUnit(Thing):
+    class ItemUnit(PhysicalObject):
         """Represents different packaging units of item.
 
         Attributes:
             name (str): unique id (item_id-unit_lvl)
             has_conversion_qty (int): number of packages inside base unit
-            has_qty_uom (str): name of unit
+            has_ref_qty_uom (str): name of reference quantity unit of measure
             has_length (float): length of packaging (in meters)
             has_width (float): width of packaging (in meters)
             has_height (float): height of packaging (in meters)
@@ -243,7 +255,7 @@ with onto:
             return cls(
                 _id,
                 has_conversion_qty=conversion_qty,
-                has_qty_uom=qty_uom,
+                has_ref_qty_uom=qty_uom,
                 has_length=length,
                 has_width=width,
                 has_height=height,
@@ -257,7 +269,7 @@ with onto:
             name (str): id of item
             has_description (str): description of items
             has_gtype (str): type of goods
-            has_zone (str): required zone for storing item
+            has_required_zone (str): required zone for storing item
             has_base_unit (ItemUnit): base packaging unit
             has_unit_levels (List[ItemUnit]): list of all different packaging units
         """
@@ -276,7 +288,7 @@ with onto:
                 _id,
                 has_description=description,
                 has_gtype=gtype,
-                has_zone=zone,
+                has_required_zone=zone,
                 has_base_unit=base_unit,
                 has_unit_levels=unit_levels,
             )
@@ -292,7 +304,7 @@ with onto:
             """Get list of items stored at given location.
 
             Args:
-                locations (List[Location]): list of locations to look for.
+                locations (List[RackLocation]): list of locations to look for.
 
             Returns:
                 List[Item]: list of items stored at locations
@@ -324,7 +336,7 @@ with onto:
             query = "SELECT DISTINCT ?item WHERE { " + i1 + i2 + i3 + " }"
             return list(default_world.sparql_query(query))
 
-    class Location(Thing):
+    class Location(PhysicalObject):
         """Description of location in warehouse.
 
         Attributes:
@@ -399,6 +411,25 @@ with onto:
             """Destroy all instances of Location class."""
             destroy_all(cls)
 
+    class RackLocation(Location):
+        """Description of location which can store items.
+
+        Attributes:
+            name (str): unique id of location
+            has_ltype (str): type of location
+            has_lclass (str): class of location
+            has_lsubclass (str): subclass of location
+            has_length (float): length of location
+            has_width (float): width of location
+            has_height (float): height of location
+            has_max_weight (float): maximal weight which can location hold
+            has_zone (str): zone where is location located
+            has_x (float): x coordinate of location
+            has_y (float): y coordinate of location
+            has_z (float): z coordinate of location
+            has_freq (int): frequency calculated for heat map displaying
+        """
+
         @staticmethod
         def get_by_orders(orders):
             """Get list of locations which are potentially accessed by given orders.
@@ -407,7 +438,7 @@ with onto:
                 locations (List[Order]): list of locations to inspect
 
             Returns:
-                List[Location]: list of locations containing ordered items
+                List[RackLocation]: list of locations containing ordered items
             """
             # TODO: speed up this query (reverse property???)
             values = " ".join(map(lambda x: f"<{x.iri}>", orders))
@@ -428,7 +459,7 @@ with onto:
                 items (List[Item]): list of items to locate items.
 
             Returns:
-                List[Location]: list of locations storing items
+                List[RackLocation]: list of locations storing items
             """
             values = " ".join(map(lambda x: f"<{x.iri}>", items))
             i1 = "VALUES ?item { " + values + " } .\n"
@@ -438,7 +469,7 @@ with onto:
             query = "SELECT DISTINCT ?loc WHERE { " + i1 + i2 + i3 + " }"
             return list(default_world.sparql_query(query))
 
-    class OrderedItem(Thing):
+    class OrderedItem(ItemInstance):
         """Description of item instance in order.
 
         Attributes:
@@ -446,7 +477,7 @@ with onto:
             has_item (Item): item object instantiated by this order
             has_requested_qty (int): requested amount of item inside ordered
             has_total_qty (int): amount of item provided inside order
-            qty_uom (int): unit of measure of quantities
+            has_qty_uom (str): unit of measure of quantities
         """
 
         pass
@@ -553,7 +584,7 @@ with onto:
             """Get list of orders which potentially access given locations.
 
             Args:
-                locations (List[Location]): list of locations to inspect
+                locations (List[RackLocation]): list of locations to inspect
 
             Returns:
                 List[Order]: list of orders containing items stored at given locations
@@ -591,11 +622,8 @@ with onto:
         """List of OrderedItem (instances of Item) inside Order."""
 
     # OrderedItem properties
-    class has_item(ObjectProperty, FunctionalProperty):
+    class has_item(ItemInstance >> Item, FunctionalProperty):
         """Item which is instantiated."""
-
-        domain = [OrderedItem, Inventory]
-        range = [Item]
 
     class in_order(OrderedItem >> Order, FunctionalProperty):
         """Pointer to Order which contains this OrderedItem."""
@@ -608,11 +636,8 @@ with onto:
     class has_total_qty(OrderedItem >> int, FunctionalProperty):
         """Total quantity of Item."""
 
-    class has_qty_uom(DataProperty, FunctionalProperty):
+    class has_qty_uom(OrderedItem >> str, FunctionalProperty):
         """Quantity unit of measure used for total_qty and requested_qty."""
-
-        domain = [OrderedItem, ItemUnit]
-        range = [str]
 
     # ItemUnit properties
     class has_conversion_qty(ItemUnit >> int, FunctionalProperty):
@@ -621,23 +646,18 @@ with onto:
     class has_weight(ItemUnit >> float, FunctionalProperty):
         """Conversion quantity of ItemUnit."""
 
+    class has_ref_qty_uom(ItemUnit >> str, FunctionalProperty):
+        """Quantity unit of measure used for total_qty and requested_qty."""
+
     # Item properties
-    class in_ordered_item(Item >> OrderedItem):
-        """List of OrderedItems (Item instantiations) where Item appears."""
-
-        inverse_property = has_item
-
     class has_description(Item >> str, FunctionalProperty):
         """Description of Item."""
 
     class has_gtype(Item >> str, FunctionalProperty):
         """Good type of Item."""
 
-    class has_zone(DataProperty, FunctionalProperty):
-        """Zone required by Item or Zone of Location."""
-
-        domain = [Item, Location]
-        range = [str]
+    class has_required_zone(Item >> str, FunctionalProperty):
+        """Zone required by Item."""
 
     class has_base_unit(Item >> ItemUnit, FunctionalProperty):
         """Base ItemUnit of Item."""
@@ -645,36 +665,25 @@ with onto:
     class has_unit_levels(Item >> ItemUnit):
         """List of ItemUnits (unit levels) of Item."""
 
-    # Location properties
-    class has_ltype(DataProperty, FunctionalProperty):
-        """Location type."""
+    # PhysicalObject properties
+    class has_length(PhysicalObject >> float, FunctionalProperty):
+        """Length of Object."""
 
-        domain = [Location, Inventory]
-        range = [str]
+    class has_width(PhysicalObject >> float, FunctionalProperty):
+        """Width of Object."""
+
+    class has_height(PhysicalObject >> float, FunctionalProperty):
+        """Height of Object."""
+
+    # Location properties
+    class has_ltype(Location >> str, FunctionalProperty):
+        """Location type."""
 
     class has_lclass(Location >> str, FunctionalProperty):
         """Location class."""
 
     class has_lsubclass(Location >> str, FunctionalProperty):
         """Location subclass."""
-
-    class has_length(DataProperty, FunctionalProperty):
-        """Length of Location/ItemUnit."""
-
-        domain = [Location, ItemUnit]
-        range = [float]
-
-    class has_width(DataProperty, FunctionalProperty):
-        """Width of Location/ItemUnit."""
-
-        domain = [Location, ItemUnit]
-        range = [float]
-
-    class has_height(DataProperty, FunctionalProperty):
-        """Height of Location/ItemUnit."""
-
-        domain = [Location, ItemUnit]
-        range = [float]
 
     class has_max_weight(Location >> float, FunctionalProperty):
         """Max weight which Location can hold."""
@@ -691,11 +700,14 @@ with onto:
     class has_z(Location >> float, FunctionalProperty):
         """z coordinate of Location."""
 
+    class has_zone(Location >> str, FunctionalProperty):
+        """Zone where is Location located."""
+
     # Inventory properties
     class has_date(Inventory >> datetime.datetime, FunctionalProperty):
         """Date of Inventory report."""
 
-    class has_location(Inventory >> Location, FunctionalProperty):
+    class has_location(Inventory >> RackLocation, FunctionalProperty):
         """Location described by Inventory."""
 
     class has_expiry_date(Inventory >> datetime.datetime, FunctionalProperty):

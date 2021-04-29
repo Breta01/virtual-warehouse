@@ -321,7 +321,7 @@ Item {
                 textRole: "type"
 
                 model: ListModel {
-                    ListElement { type: "Location" }
+                    ListElement { type: "RackLocation" }
                     ListElement { type: "Item" }
                     ListElement { type: "Order" }
                 }

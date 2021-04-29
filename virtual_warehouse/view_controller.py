@@ -7,6 +7,7 @@ from virtual_warehouse.data.data_model import (
     Location,
     OntoManager,
     Order,
+    RackLocation,
     save_ontology,
 )
 from virtual_warehouse.data.excel_parser import Document
@@ -334,7 +335,7 @@ class ViewController(QObject):
         """
         instances = self._onto_manager.get_instances(cls)
         names = sorted([i.name for i in instances])
-        if base_class == "Location":
+        if base_class == "RackLocation":
             self._location_model.set_checked(names)
             self._select_locations(names, checked=True, clear=True)
         elif base_class == "Item":
@@ -391,14 +392,14 @@ class ViewController(QObject):
     def checked_orders_to_locations(self):
         """Connect orders -> locations tabs."""
         self._connect_tabs(
-            self._order_model, self._location_model, Location.get_by_orders, True
+            self._order_model, self._location_model, RackLocation.get_by_orders, True
         )
 
     @Slot()
     def checked_items_to_locations(self):
         """Connect items -> locations tabs."""
         self._connect_tabs(
-            self._item_model, self._location_model, Location.get_by_items, True
+            self._item_model, self._location_model, RackLocation.get_by_items, True
         )
 
     @Slot(int)

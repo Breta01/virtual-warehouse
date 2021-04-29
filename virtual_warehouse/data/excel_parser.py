@@ -4,8 +4,15 @@ from datetime import datetime
 import xlsxio
 from xlrd import open_workbook
 
-from virtual_warehouse.data.data_model import Inventory, Item, ItemUnit, Location, Order
-from virtual_warehouse.data.utils import convert_date, estimate_sheet_type
+from virtual_warehouse.data.data_model import (
+    Inventory,
+    Item,
+    ItemUnit,
+    Location,
+    Order,
+    RackLocation,
+)
+from virtual_warehouse.data.utils import convert_date, convert_type, estimate_sheet_type
 
 
 class Document:
@@ -55,7 +62,10 @@ class Document:
                         continue
 
                     location_id = row[0]
-                    self.locations[location_id] = Location.create(*row[:11])
+                    if convert_type(row[1]) == "rack":
+                        self.locations[location_id] = RackLocation.create(*row[:11])
+                    else:
+                        self.locations[location_id] = Location.create(*row[:11])
 
         else:
             sheet = self.doc.sheet_by_name(sheet_name)
@@ -65,9 +75,11 @@ class Document:
                 if not location_id:
                     continue
 
-                self.locations[location_id] = Location.create(
-                    *(sheet.cell(row, i).value for i in range(11))
-                )
+                values = [sheet.cell(row, i).value for i in range(11)]
+                if convert_type(values[1]) == "rack":
+                    self.locations[location_id] = Location.create(*values)
+                else:
+                    self.locations[location_id] = RackLocation.create(*values)
 
         return self.locations
 
