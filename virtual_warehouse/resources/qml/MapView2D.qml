@@ -2,6 +2,8 @@ import QtQuick 2.14
 import QtQuick.Controls 2.14
 import QtQuick.Controls.Material 2.14
 
+import 'qrc:/js/utils.js' as Utils
+
 Canvas {
     id: mapView2D
     anchors.fill: parent
@@ -9,6 +11,11 @@ Canvas {
 
     property var max_heat: 1
     readonly property var sidebar_max: (ViewController.model2D.level === -1) ? ViewController.sideview_model.max_heat : max_heat
+
+    AgentVisualizer {
+        z: 10
+
+    }
 
     // handler to override for drawing
     onPaint: {
@@ -24,7 +31,7 @@ Canvas {
         // Drawing items
         var min_x = ViewController.map.min_x
         var min_y = ViewController.map.min_y
-        var params = getDrawParams()
+        var params = Utils.getDrawParams(mapView2D.height, mapView2D.width, ViewController)
         var item, heat, max = 1
         var heats = []
 
@@ -296,7 +303,7 @@ Canvas {
         onPressed: {
             var min_x = ViewController.map.min_x
             var min_y = ViewController.map.min_y
-            var params = getDrawParams()
+            var params = Utils.getDrawParams(mapView2D.height, mapView2D.width, ViewController)
             var x1, y1, x2, y2
 
             for (var row = 0; row < ViewController.model2D.rowCount(); row++) {
@@ -327,7 +334,7 @@ Canvas {
         onPositionChanged: {
             var min_x = ViewController.map.min_x
             var min_y = ViewController.map.min_y
-            var params = getDrawParams()
+            var params = Utils.getDrawParams(mapView2D.height, mapView2D.width, ViewController)
             var x1, y1, x2, y2
 
             for (var row = 0; row < ViewController.model2D.rowCount(); row++) {
@@ -360,34 +367,6 @@ Canvas {
         }
         function onItemSelected() {
             mapView2D.requestPaint()
-        }
-    }
-
-    function getDrawParams() {
-        // Get size coefficient and paddings
-        var coef, padding_x = 20, padding_y = 20
-
-        var min_x = ViewController.map.min_x
-        var min_y = ViewController.map.min_y
-
-        var width = (ViewController.map.max_x - min_x)
-        var height = (ViewController.map.max_y - min_y)
-
-        var coef_x = (mapView2D.width - 2 * padding_x) / width
-        var coef_y = (mapView2D.height - 2 * padding_y) / height
-
-        if (coef_x < coef_y) {
-            coef = coef_x
-            padding_y = (mapView2D.height - coef * height) / 2
-        } else {
-            coef = coef_y
-            padding_x = (mapView2D.width - coef * width) / 2
-        }
-
-        return {
-            "coef": coef,
-            "padding_x": padding_x,
-            "padding_y": padding_y
         }
     }
 

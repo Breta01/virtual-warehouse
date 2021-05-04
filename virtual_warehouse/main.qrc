@@ -4,6 +4,7 @@
     </qresource>
     <qresource prefix="/qml">
         <file alias="main.qml">resources/qml/main.qml</file>
+        <file alias="AgentVisualizer.qml">resources/qml/AgentVisualizer.qml</file>
         <file alias="ClassView.qml">resources/qml/ClassView.qml</file>
         <file alias="ConnectionsMenu.qml">resources/qml/ConnectionsMenu.qml</file>
         <file alias="CustomItem.qml">resources/qml/CustomItem.qml</file>
@@ -11,6 +12,7 @@
         <file alias="ItemListView.qml">resources/qml/ItemListView.qml</file>
         <file alias="LocationListView.qml">resources/qml/LocationListView.qml</file>
         <file alias="MapView2D.qml">resources/qml/MapView2D.qml</file>
+        <file alias="MapView3D.qml">resources/qml/MapView3D.qml</file>
         <file alias="OrderListView.qml">resources/qml/OrderListView.qml</file>
         <file alias="FilterMenu.qml">resources/qml/FilterMenu.qml</file>
     </qresource>
@@ -31,5 +33,8 @@
     <qresource prefix="/objects">
         <file alias="rack.obj">resources/objects/rack.obj</file>
         <file alias="floor.obj">resources/objects/floor.obj</file>
+    </qresource>
+    <qresource prefix="/js">
+        <file alias="utils.js">resources/js/utils.js</file>
     </qresource>
 </RCC>

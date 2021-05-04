@@ -1,12 +1,11 @@
 import QtQuick 2.14
 import QtQuick.Controls 2.14
 import QtQuick.Window 2.14
-import QtDataVisualization 1.3
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.3
 import QtQml.Models 2.2
 import QtQuick.Controls.Material 2.14
-import QtGraphicalEffects 1.12
+
 
 ApplicationWindow {
     id: window
@@ -256,85 +255,8 @@ ApplicationWindow {
                 id: mapView2D
             }
 
-            Item {
+            MapView3D {
                 id: mapView3D
-                width: contentView.width
-                height: contentView.height
-                anchors.top: window.top
-                anchors.left: window.left
-                visible: false
-
-                ColorGradient {
-                    id: surfaceGradient
-                    ColorGradientStop {
-                        position: 0.0
-                        color: "darkslategray"
-                    }
-                    ColorGradientStop {
-                        id: middleGradient
-                        position: 0.25
-                        color: "peru"
-                    }
-                    ColorGradientStop {
-                        position: 1.0
-                        color: "red"
-                    }
-                }
-
-                Surface3D {
-                    id: surfacePlot
-                    width: mapView3D.width
-                    height: mapView3D.height
-                    selectionMode: AbstractGraph3D.SelectionSlice
-                                   | AbstractGraph3D.SelectionItemAndRow
-                    scene.activeCamera.cameraPreset: Camera3D.CameraPresetIsometricLeft
-                    theme: Theme3D {
-                        type: Theme3D.ThemeStoneMoss
-                        font.family: "STCaiyun"
-                        font.pointSize: 35
-                        colorStyle: Theme3D.ColorStyleRangeGradient
-                        baseGradients: [surfaceGradient]
-                    }
-                    // TODO: Automatically set values
-                    axisX: ValueAxis3D {
-                        max: 30
-                        min: 0
-                    }
-                    // Y is up
-                    axisY: ValueAxis3D {
-                        max: 10
-                        min: 0
-                    }
-                    axisZ: ValueAxis3D {
-                        max: 30
-                        min: 0
-                        reversed: true
-                    }
-
-                    customItemList: []
-
-                    // TODO: add hover effect using inputHandler
-                    onSelectedElementChanged: {
-                        // TODO: Control - selection of multiple locations
-                        var control = false
-                        var selected_idxs = ViewController.get_selected()
-                        for (var i = 0; !control
-                             && i < selected_idxs.length; i++) {
-                            var idx = selected_idxs[i]
-                            if (idx >= 0) {
-                                surfacePlot.customItemList[idx].textureFile
-                                        = ":/textures/default.png"
-                            }
-                        }
-
-                        if (surfacePlot.selectedCustomItemIndex() !== -1) {
-                            let item = surfacePlot.selectedCustomItem()
-                            let idx = surfacePlot.selectedCustomItemIndex()
-                            item.textureFile = ":/textures/red.png"
-                            ViewController.select_map_location(idx, control)
-                        }
-                    }
-                }
             }
         }
 
@@ -497,32 +419,5 @@ ApplicationWindow {
                 }
             }
         }
-    }
-
-    Connections {
-        target: ViewController
-
-        function onModelChanged() {
-            surfacePlot.removeCustomItems()
-            for (var row = 0; row < ViewController.model3D.rowCount(); row++) {
-                var item = ViewController.model3D.get(row)
-                var component = Qt.createComponent("qrc:/qml/CustomItem.qml")
-                var instance = component.createObject(surfacePlot, {
-                                                          "objectName": item.name,
-                                                          "meshFile": item.mesh_file,
-                                                          "position": Qt.vector3d(
-                                                                          item.x,
-                                                                          item.z,
-                                                                          item.y)
-                                                      })
-
-                surfacePlot.addCustomItem(instance)
-            }
-        }
-
-        function onItemSelected() {// TODO: select items based on 2D map
-        }
-
-        Component.onCompleted: onModelChanged()
     }
 }

@@ -123,10 +123,16 @@ class PluginManager(QObject):
 
     def set_data(self, locations, items, orders, inventory):
         """Set new warehouse data for all plugins."""
-        for name, module in self.plugin_modules.items():
-            self.plugins[name] = module.Plugin(locations, items, orders, inventory)
-        self._is_active = True
-        self._update()
+        if (
+            locations is not None
+            and items is not None
+            and orders is not None
+            and inventory is not None
+        ):
+            for name, module in self.plugin_modules.items():
+                self.plugins[name] = module.Plugin(locations, items, orders, inventory)
+            self._is_active = True
+            self._update()
 
     @Property(str, constant=False, notify=pluginChanged)
     def active(self):

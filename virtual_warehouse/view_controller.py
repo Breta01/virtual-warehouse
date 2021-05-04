@@ -1,6 +1,7 @@
 """Module providing ViewController class - connector class between QML and Python."""
 from PySide2.QtCore import Property, QObject, Qt, QThread, QUrl, Signal, Slot
 
+from virtual_warehouse.data.agent_parser import AgentManager
 from virtual_warehouse.data.data_model import (
     Inventory,
     Item,
@@ -159,6 +160,8 @@ class ViewController(QObject):
         self._item_model = UniversalListModel(TabItem)
         self._order_model = UniversalListModel(TabOrder)
 
+        self._agent_manager = AgentManager()
+
         self._plugin_manager = PluginManager(
             self._location_model,
             self._item_model,
@@ -250,6 +253,11 @@ class ViewController(QObject):
     def onto_manager(self):
         """Get ontology manager for controlling dynamic creation of classes."""
         return self._onto_manager
+
+    @Property(QObject, constant=True)
+    def agent_manager(self):
+        """Get picking agent manager for displaying positions and animation."""
+        return self._agent_manager
 
     @Slot(result=bool)
     def is2D(self):
@@ -523,9 +531,11 @@ class ViewController(QObject):
 
     def _load_frequencies(self):
         """Update frequencies (callback function)."""
+        print("here1")
         self._plugin_manager.set_data(
             self.locations, self.items, self.orders, self.inventory
         )
+        print("here2")
 
         self.progress_value = 1
         self.drawModeChanged.emit()
