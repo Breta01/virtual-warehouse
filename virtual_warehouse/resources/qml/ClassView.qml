@@ -7,13 +7,11 @@ Item {
 
     ToolBar {
         id: classToolBar
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 0
+        anchors.top: parent.top
+        anchors.topMargin: 0
         width: parent.width
 
-        Material.background: "white"
-        Material.foreground: Material.BlueGrey
-        Material.elevation: 0
+        Material.elevation: 1
 
         ToolButton {
             id: toolButton1
@@ -41,6 +39,7 @@ Item {
             anchors.rightMargin: 8
             anchors.leftMargin: 8
             topMargin: 8
+            bottomMargin: 8
             clip: true
             spacing: 8
 

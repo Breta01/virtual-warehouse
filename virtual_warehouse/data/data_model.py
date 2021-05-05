@@ -93,6 +93,7 @@ class OntoManager(QObject):
 
     @Property("QVariantList", constant=False, notify=classesChanged)
     def classes(self):
+        """Get list of classes for displaying in sideview."""
         return [
             {"name": k, "class": v[1], "count": len(v[0].instances())}
             for k, v in self._classes.items()

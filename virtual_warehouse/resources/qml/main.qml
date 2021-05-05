@@ -375,7 +375,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    ClassView {}
+                    AgentView {}
                 }
             }
 

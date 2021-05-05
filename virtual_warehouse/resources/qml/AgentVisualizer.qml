@@ -40,6 +40,18 @@ Canvas {
                     false);
             ctx.fillStyle = colors[i];
             ctx.fill();
+
+            if (steps[i][2]) {
+                ctx.beginPath();
+                ctx.arc((steps[i][0] + 0.5) * params.coef + params.padding_x,
+                        (steps[i][1] + 0.5) * params.coef + params.padding_y,
+                        0.25 * params.coef, // Radius
+                        0,
+                        2 * Math.PI,
+                        false);
+                ctx.strokeStyle = "black";
+                ctx.stroke();
+            }
         }
     }
 
@@ -111,6 +123,10 @@ Canvas {
     Connections {
         target: ViewController.agent_manager
         function onAgentsChanged() {
+            agentView.requestPaint()
+        }
+
+        function onActiveAgentsChanged() {
             agentView.requestPaint()
         }
     }

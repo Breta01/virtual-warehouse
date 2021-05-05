@@ -2,6 +2,7 @@
 import csv
 
 from PySide2.QtCore import Property, QObject, QUrl, Signal, Slot
+from PySide2.QtGui import QColor
 
 
 class Color:
@@ -15,6 +16,11 @@ class Color:
         """Get color in hsla() formatted string."""
         h, s, l, a = self._color
         return f"hsla({h}, {s}%, {l}%, {a})"
+
+    def obj(self):
+        """Get Qt color object."""
+        h, s, l, a = self._color
+        return QColor.fromHsl(360 * h / 360, 255 * s / 100, 255 * l / 100, 255 * a)
 
 
 class AgentManager(QObject):
@@ -31,9 +37,16 @@ class AgentManager(QObject):
         self._max_time = 0
         self._active = False
 
+    def _sorted_keys(self):
+        """Sort keys for displaying ALL agents in list in nice order."""
+        try:
+            return map(str, sorted(map(int, self.agents.keys())))
+        except Exception:
+            return sorted(self.agents.keys())
+
     @Property(int, constant=False, notify=agentsChanged)
     def max_time(self):
-        """Get maximal time """
+        """Get maximal time."""
         return self._max_time
 
     @Property(bool, constant=False, notify=agentsChanged)
@@ -42,21 +55,33 @@ class AgentManager(QObject):
         return self._active
 
     @Property("QVariantList", constant=False, notify=agentsChanged)
-    def agents_list(self):
+    def agent_list(self):
         """Get description of agents for list visualization."""
-        return self.keys
+        agents = []
+        for k in self._sorted_keys():
+            a = self.agents[k]
+            agents.append(
+                {
+                    "name": k,
+                    "color": a["color"].obj(),
+                    "steps": len(a["steps"]),
+                    "checked": k in self.keys,
+                }
+            )
+        return agents
 
-    @Slot(str)
-    def toggle_agent(self, key):
+    @Slot(str, bool)
+    def toggle_agent(self, key, checked):
         """Toggle agent from active agents set.
 
         Args:
             key (str): name/key of agent to toggle.
         """
-        if key in self.keys:
-            self.keys.remove(key)
-        else:
+        if checked:
             self.keys.add(key)
+        elif key in self.keys:
+            self.keys.remove(key)
+        self.activeAgentsChanged.emit()
 
     @Slot(result="QVariantList")
     def get_colors(self):
@@ -89,7 +114,10 @@ class AgentManager(QObject):
         Args:
             file_path (QUrl): file path to CSV file
         """
+        # First clean the list
         self.agents = {}
+        self.agentsChanged.emit()
+
         with open(file_path.toLocalFile(), newline="") as csvfile:
             reader = csv.DictReader(csvfile)
             for r in reader:
@@ -127,7 +155,7 @@ class AgentManager(QObject):
 
         self._max_time = max(
             self.agents[a]["offset"] + len(self.agents[a]["steps"]) - 1
-            for a in self.agents.keys()
+            for a in self.agents
         )
         self.keys = set(self.agents.keys())
         self._active = True
