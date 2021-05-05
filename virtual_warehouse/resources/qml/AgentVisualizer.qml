@@ -7,11 +7,9 @@ import 'qrc:/js/utils.js' as Utils
 Canvas {
     id: agentView
     anchors.fill: parent
-    visible: true
+    visible: ViewController.agent_manager.active
 
-    property int num_agents: ViewController.agent_manager.num_agents
     property int time: 0
-
 
     // handler to override for drawing
     onPaint: {
@@ -30,32 +28,47 @@ Canvas {
         var item, heat, max = 1
         var heats = []
 
+        var colors = ViewController.agent_manager.get_colors()
         var steps = ViewController.agent_manager.get_timestep(time)
-        for (let i = 0; i < num_agents; i++) {
+        for (let i = 0; i < steps.length; i++) {
             ctx.beginPath();
             ctx.arc((steps[i][0] + 0.5) * params.coef + params.padding_x,
                     (steps[i][1] + 0.5) * params.coef + params.padding_y,
-                    0.2 * params.coef, // Radius
+                    0.25 * params.coef, // Radius
                     0,
                     2 * Math.PI,
                     false);
-            ctx.fillStyle = 'red';
+            ctx.fillStyle = colors[i];
             ctx.fill();
         }
     }
 
     Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 8
+        anchors.top: parent.bottom
         width: parent.width
-        height: 20
+        height: (ViewController.agent_manager.active) ? 40 : 0
         z: 10
         color: "white"
 
+        Button {
+            id: playButton
+            anchors.left: parent.left
+            anchors.margins: 4
+            anchors.verticalCenter: parent.verticalCenter
+            bottomPadding: 16
+            text: (checked) ? qsTr("❚❚") : qsTr("▶")
+            implicitHeight: 45
+            implicitWidth: 40
+            highlighted: true
+            flat: true
+            checkable: true
+            display: AbstractButton.TextBesideIcon
+        }
+
         Timer {
             interval: 50
-            running: true && slider.value <= slider.to
+            running: playButton.checked && slider.value <= slider.to
             repeat: true
             onTriggered: {
                 time += 1
@@ -65,11 +78,10 @@ Canvas {
 
         Slider {
             id: slider
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 8
-            width: parent.width
-            height: 10
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: playButton.right
+            anchors.right: parent.right
+            anchors.margins: 8
 
             visible: true
             enabled: true
@@ -104,3 +116,9 @@ Canvas {
     }
 
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:480;width:640}
+}
+##^##*/

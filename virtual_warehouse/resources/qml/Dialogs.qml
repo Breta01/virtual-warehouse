@@ -14,6 +14,10 @@ Item {
         importFileDialog.open()
     }
 
+    function openImportAgentsDialog() {
+        importAgentsDialog.open()
+    }
+
     function openSaveFileDialog() {
         saveFileDialog.open()
     }
@@ -97,6 +101,17 @@ Item {
         selectExisting: false
         nameFilters: ["RDF/XML format (*.rdf)"]
         onAccepted: ViewController.save_ontology(saveFileDialog.fileUrl)
+    }
+
+    FileDialog {
+        id: importAgentsDialog
+        modality: Qt.WindowModal
+        title: "Please select a file with picker agents description"
+        nameFilters: ["CSV file (*.csv)"]
+        folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        onAccepted: {
+            ViewController.agent_manager.load_data(importAgentsDialog.fileUrl)
+        }
     }
 
     FileDialog {

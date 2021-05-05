@@ -6,7 +6,6 @@ import QtQuick.Dialogs 1.3
 import QtQml.Models 2.2
 import QtQuick.Controls.Material 2.14
 
-
 ApplicationWindow {
     id: window
     title: qsTr("Virtual Warehouse")
@@ -28,6 +27,10 @@ ApplicationWindow {
             MenuItem {
                 text: qsTr("&Open")
                 onTriggered: dialogs.openImportFileDialog()
+            }
+            MenuItem {
+                text: qsTr("&Import Agents")
+                onTriggered: dialogs.openImportAgentsDialog()
             }
             MenuItem {
                 text: qsTr("&Export Ontology")
@@ -65,12 +68,12 @@ ApplicationWindow {
             title: qsTr("Option&s")
 
             MenuItem {
+                text: qsTr("&Settings")
+            }
+            MenuItem {
                 text: qsTr("&Help")
                 onTriggered: dialogs.openHelpDialog()
             }
-            //            MenuItem {
-            //                text: qsTr("&Settings")
-            //            }
         }
     }
 
@@ -127,136 +130,156 @@ ApplicationWindow {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
 
-            Button {
-                id: itemHistogramSwitchButton
-                text: qsTr("Item Heatmap")
-                icon.source: "qrc:/images/histogram_icon.png"
-                anchors.left: parent.left
-                anchors.bottom: orderHistogramSwitchButton.top
-                checked: ViewController.plugin_manager.active === "item_frequencies"
-                checkable: true
-                autoExclusive: true
-                display: AbstractButton.IconOnly
-                anchors.leftMargin: 20
-                anchors.bottomMargin: 0
-                flat: true
-                Material.foreground: "white"
-                implicitWidth: 40
-                visible: mapView2D.visible
-                z: 1
+            Item {
+                id: mapView
+                width: parent.width
+                anchors.top: parent.top
+                anchors.bottom: timelinePlaceholder.top
 
-                Text {
-                    anchors.top: parent.top
-                    anchors.right: parent.right
-                    anchors.margins: 8
-                    anchors.rightMargin: 6
-                    text: qsTr("Item")
-                    color: "white"
-                    font.pixelSize: 10
-                }
-
-                background: Rectangle {
+                Button {
+                    id: itemHistogramSwitchButton
+                    text: qsTr("Item Heatmap")
+                    icon.source: "qrc:/images/histogram_icon.png"
+                    anchors.left: parent.left
+                    anchors.bottom: orderHistogramSwitchButton.top
+                    checked: ViewController.plugin_manager.active === "item_frequencies"
+                    checkable: true
+                    autoExclusive: true
+                    display: AbstractButton.IconOnly
+                    anchors.leftMargin: 20
+                    anchors.bottomMargin: 0
+                    flat: true
+                    Material.foreground: "white"
                     implicitWidth: 40
-                    implicitHeight: 40
-                    opacity: parent.enabled ? 1 : 0.3
-                    color: parent.checked ? Material.accent : (parent.down ? "#6b7080" : "#848895")
-                    border.color: "#222840"
-                    border.width: 1
-                    radius: 5
+                    visible: mapView2D.visible
+                    z: 1
+
+                    Text {
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        anchors.margins: 8
+                        anchors.rightMargin: 6
+                        text: qsTr("Item")
+                        color: "white"
+                        font.pixelSize: 10
+                    }
+
+                    background: Rectangle {
+                        implicitWidth: 40
+                        implicitHeight: 40
+                        opacity: parent.enabled ? 1 : 0.3
+                        color: parent.checked ? Material.accent : (parent.down ? "#6b7080" : "#848895")
+                        border.color: "#222840"
+                        border.width: 1
+                        radius: 5
+                    }
+
+                    onClicked: {
+                        if (ViewController.plugin_manager.active === "item_frequencies") {
+                            ViewController.plugin_manager.active = null
+                        } else {
+                            ViewController.plugin_manager.active = "item_frequencies"
+                        }
+                    }
                 }
 
-                onClicked: {
-                    if (ViewController.plugin_manager.active === "item_frequencies") {
-                        ViewController.plugin_manager.active = null
-                    } else {
-                        ViewController.plugin_manager.active = "item_frequencies"
+                Button {
+                    id: orderHistogramSwitchButton
+                    text: qsTr("Order Heatmap")
+                    icon.source: "qrc:/images/histogram_icon.png"
+                    anchors.left: parent.left
+                    anchors.bottom: viewSwitchButton.top
+                    checked: ViewController.plugin_manager.active === "order_frequencies"
+                    checkable: true
+                    autoExclusive: true
+                    display: AbstractButton.IconOnly
+                    anchors.leftMargin: 20
+                    anchors.bottomMargin: 0
+                    flat: true
+                    Material.foreground: "white"
+                    implicitWidth: 40
+                    visible: mapView2D.visible
+                    z: 1
+
+                    background: Rectangle {
+                        implicitWidth: 40
+                        implicitHeight: 40
+                        opacity: parent.enabled ? 1 : 0.3
+                        color: parent.checked ? Material.accent : (parent.down ? "#6b7080" : "#848895")
+                        border.color: "#222840"
+                        border.width: 1
+                        radius: 5
                     }
+
+                    Text {
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        anchors.margins: 8
+                        anchors.rightMargin: 4
+                        text: qsTr("Ord.")
+                        color: "white"
+                        font.pixelSize: 10
+                    }
+
+                    onClicked: {
+                        if (ViewController.plugin_manager.active === "order_frequencies") {
+                            ViewController.plugin_manager.active = null
+                        } else {
+                            ViewController.plugin_manager.active = "order_frequencies"
+                        }
+                    }
+                }
+
+                Button {
+                    id: viewSwitchButton
+                    anchors.left: parent.left
+                    anchors.bottom: parent.bottom
+                    anchors.leftMargin: 20
+                    anchors.bottomMargin: 20
+                    text: "3D"
+                    flat: true
+                    Material.foreground: "white"
+                    implicitWidth: 40
+                    z: 1
+
+                    background: Rectangle {
+                        implicitWidth: 40
+                        implicitHeight: 40
+                        opacity: enabled ? 1 : 0.3
+                        color: parent.down ? "#6b7080" : "#848895"
+                        border.color: "#222840"
+                        border.width: 1
+                        radius: 5
+                    }
+
+                    onClicked: {
+                        mapView2D.visible = mapView3D.visible
+                        mapView3D.visible = !mapView3D.visible
+                        viewSwitchButton.text = (mapView3D.visible) ? "2D" : "3D"
+                        ViewController.switch_view()
+                    }
+                }
+
+                MapView2D {
+                    id: mapView2D
+                }
+
+                MapView3D {
+                    id: mapView3D
                 }
             }
 
-            Button {
-                id: orderHistogramSwitchButton
-                text: qsTr("Order Heatmap")
-                icon.source: "qrc:/images/histogram_icon.png"
-                anchors.left: parent.left
-                anchors.bottom: viewSwitchButton.top
-                checked: ViewController.plugin_manager.active === "order_frequencies"
-                checkable: true
-                autoExclusive: true
-                display: AbstractButton.IconOnly
-                anchors.leftMargin: 20
-                anchors.bottomMargin: 0
-                flat: true
-                Material.foreground: "white"
-                implicitWidth: 40
-                visible: mapView2D.visible
-                z: 1
-
-                background: Rectangle {
-                    implicitWidth: 40
-                    implicitHeight: 40
-                    opacity: parent.enabled ? 1 : 0.3
-                    color: parent.checked ? Material.accent : (parent.down ? "#6b7080" : "#848895")
-                    border.color: "#222840"
-                    border.width: 1
-                    radius: 5
-                }
-
-                Text {
-                    anchors.top: parent.top
-                    anchors.right: parent.right
-                    anchors.margins: 8
-                    anchors.rightMargin: 4
-                    text: qsTr("Ord.")
-                    color: "white"
-                    font.pixelSize: 10
-                }
-
-                onClicked: {
-                    if (ViewController.plugin_manager.active === "order_frequencies") {
-                        ViewController.plugin_manager.active = null
-                    } else {
-                        ViewController.plugin_manager.active = "order_frequencies"
-                    }
-                }
-            }
-
-            Button {
-                id: viewSwitchButton
-                anchors.left: parent.left
+            Rectangle {
+                id: timelinePlaceholder
+                height: (ViewController.agent_manager.active) ? 40 : 0
+                width: parent.width
                 anchors.bottom: parent.bottom
-                anchors.leftMargin: 20
-                anchors.bottomMargin: 20
-                text: "3D"
-                flat: true
-                Material.foreground: "white"
-                implicitWidth: 40
-                z: 1
+                color: "white"
+                z: -1
 
-                background: Rectangle {
-                    implicitWidth: 40
-                    implicitHeight: 40
-                    opacity: enabled ? 1 : 0.3
-                    color: parent.down ? "#6b7080" : "#848895"
-                    border.color: "#222840"
-                    border.width: 1
-                    radius: 5
+                Behavior on height {
+                    NumberAnimation {}
                 }
-
-                onClicked: {
-                    mapView2D.visible = mapView3D.visible
-                    mapView3D.visible = !mapView3D.visible
-                    viewSwitchButton.text = (mapView3D.visible) ? "2D" : "3D"
-                    ViewController.switch_view()
-                }
-            }
-
-            MapView2D {
-                id: mapView2D
-            }
-
-            MapView3D {
-                id: mapView3D
             }
         }
 
@@ -346,6 +369,14 @@ ApplicationWindow {
 
                     ClassView {}
                 }
+
+                Item {
+                    id: agentsSideTab
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    ClassView {}
+                }
             }
 
             TabBar {
@@ -397,6 +428,30 @@ ApplicationWindow {
                 TabButton {
                     id: sideTabBtn2
                     text: "Classes"
+                    width: 90
+
+                    background: Rectangle {
+                        color: "white"
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 1
+                        height: parent.height - 5
+                        border.color: Material.primary
+                        border.width: 0
+                        radius: 4
+
+                        Rectangle {
+                            color: parent.color
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            height: parent.radius
+                        }
+                    }
+                }
+
+                TabButton {
+                    id: sideTabBtn3
+                    text: "Agents"
                     width: 90
 
                     background: Rectangle {

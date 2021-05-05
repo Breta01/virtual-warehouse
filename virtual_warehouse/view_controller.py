@@ -161,6 +161,8 @@ class ViewController(QObject):
         self._order_model = UniversalListModel(TabOrder)
 
         self._agent_manager = AgentManager()
+        # DEBUG
+        # self._agent_manager.load_data(QUrl('file:./data/agent_data.csv'))
 
         self._plugin_manager = PluginManager(
             self._location_model,
@@ -531,11 +533,9 @@ class ViewController(QObject):
 
     def _load_frequencies(self):
         """Update frequencies (callback function)."""
-        print("here1")
         self._plugin_manager.set_data(
             self.locations, self.items, self.orders, self.inventory
         )
-        print("here2")
 
         self.progress_value = 1
         self.drawModeChanged.emit()
