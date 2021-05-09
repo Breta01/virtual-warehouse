@@ -13,6 +13,7 @@ from owlready2 import (
     destroy_entity,
     get_ontology,
     sync_reasoner,
+    sync_reasoner_pellet,
 )
 from PySide2.QtCore import Property, QObject, Signal, Slot
 
@@ -120,7 +121,7 @@ class OntoManager(QObject):
             new_class = type(
                 name, (eval(cls),), {"equivalent_to": eval(full_condition)}
             )
-            sync_reasoner(debug=0, infer_property_values=False)
+            sync_reasoner_pellet(debug=0, infer_property_values=False)
         self._classes[name] = (new_class, cls)
         self.classesChanged.emit()
         return new_class

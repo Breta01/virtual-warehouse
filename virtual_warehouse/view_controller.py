@@ -162,7 +162,7 @@ class ViewController(QObject):
 
         self._agent_manager = AgentManager()
         # DEBUG
-        self._agent_manager.load_data(QUrl("file:./data/agent_data.csv"))
+        # self._agent_manager.load_data(QUrl("file:./data/agent_data.csv"))
 
         self._plugin_manager = PluginManager(
             self._location_model,

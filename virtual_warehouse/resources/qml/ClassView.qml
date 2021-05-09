@@ -25,8 +25,8 @@ Item {
     }
 
     ScrollView {
-        anchors.top: parent.top
-        anchors.bottom: classToolBar.top
+        anchors.top: classToolBar.bottom
+        anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.left: parent.left
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
