@@ -372,7 +372,6 @@ with onto:
             has_x (float): x coordinate of location
             has_y (float): y coordinate of location
             has_z (float): z coordinate of location
-            has_freq (int): frequency calculated for heat map displaying
         """
 
         @classmethod
@@ -393,7 +392,6 @@ with onto:
             x: float = None,
             y: float = None,
             z: float = None,
-            freq: int = 0,
         ):
             ltype = convert_type(ltype)
             length = convert_dim(length, dim_uom)
@@ -415,7 +413,6 @@ with onto:
                 has_x=x,
                 has_y=y,
                 has_z=z,
-                has_freq=freq,
             )
 
         def set_coord(self, x: float, y: float, z: float):
@@ -447,8 +444,10 @@ with onto:
             has_x (float): x coordinate of location
             has_y (float): y coordinate of location
             has_z (float): z coordinate of location
-            has_freq (int): frequency calculated for heat map displaying
+            has_freq (float): frequency calculated for heat map displaying
         """
+
+        has_freq: float = 0
 
         @staticmethod
         def get_by_orders(orders):
@@ -708,8 +707,8 @@ with onto:
     class has_max_weight(Location >> float, FunctionalProperty):
         """Max weight which Location can hold."""
 
-    class has_freq(Location >> int, FunctionalProperty):
-        """Frequency calculated for the location."""
+    # class has_freq(Location >> int, FunctionalProperty):
+    #     """Frequency calculated for the location."""
 
     class has_x(Location >> float, FunctionalProperty):
         """x coordinate of Location."""
