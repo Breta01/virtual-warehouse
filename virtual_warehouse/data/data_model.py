@@ -1,5 +1,6 @@
 """Data model using Owlready2 ontology."""
 import datetime
+from subprocess import DEVNULL, check_call
 from typing import List
 
 import owlready2
@@ -58,6 +59,7 @@ class OntoManager(QObject):
         """Initialize OntoController."""
         QObject.__init__(self)
         self._classes = {}
+        self._check_java()
 
     @Property(str, constant=False, notify=javaChanged)
     def java(self):
@@ -68,7 +70,23 @@ class OntoManager(QObject):
     def set_java(self, val):
         """Set Java executable path for owlready reasoner."""
         owlready2.JAVA_EXE = val
+        self._check_java()
         self.javaChanged.emit()
+
+    @Property(bool, constant=False, notify=javaChanged)
+    def java_correct(self):
+        """Get true java path is correct."""
+        return self._java_correct
+
+    def _check_java(self):
+        """Check if java path is set correctly."""
+        try:
+            check_call(
+                [owlready2.JAVA_EXE, "--version"], stdout=DEVNULL, stderr=DEVNULL
+            )
+            self._java_correct = True
+        except Exception:
+            self._java_correct = False
 
     @Slot(str)
     def delete_class(self, cls):

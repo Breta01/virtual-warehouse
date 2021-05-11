@@ -1,6 +1,7 @@
 import Qt.labs.platform 1.1
 import QtQuick 2.0
 import QtQuick.Controls 2.14
+import QtQuick.Controls.Material 2.14
 import QtQuick.Dialogs 1.3
 import QtQml 2.2
 
@@ -8,6 +9,10 @@ Item {
 
     function openHelpDialog() {
         helpDialog.open()
+    }
+
+    function openSettingsDialog() {
+        settingsDialog.open()
     }
 
     function openImportFileDialog() {
@@ -94,6 +99,85 @@ Item {
         }
     }
 
+    Dialog {
+        id: settingsDialog
+        title: "Settings"
+        standardButtons: StandardButton.Close
+
+        contentItem: Rectangle {
+            implicitWidth: 600
+            implicitHeight: 200
+            color: "#eee"
+
+            Text {
+                id: sTitle
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.margins: 8
+                font.capitalization: Font.AllUppercase
+                font.pointSize: 10
+                color: "#333"
+                text: "Java Settings"
+            }
+
+            Text {
+                id: sText
+                anchors.top: sTitle.bottom
+                anchors.left: parent.left
+                anchors.margins: 8
+                text: "Java executable:"
+            }
+
+            TextField {
+                id: javaExec
+                anchors.left: sText.right
+                anchors.right: parent.right
+                anchors.baseline: sText.baseline
+                anchors.margins: 8
+                anchors.rightMargin: 32
+                text: ""
+                placeholderText: "Java path (e.g. C:\\Program Files\\Java\\jdk1.8.0\\bin\\java.exe)"
+                font.pixelSize: 12
+
+                onTextChanged: ViewController.onto_manager.java = text
+
+                Component.onCompleted: text = ViewController.onto_manager.java
+            }
+
+            Rectangle {
+                radius: 8
+                height: 16
+                width: 16
+                anchors.bottom: sText.baseline
+                anchors.left: javaExec.right
+                color: ViewController.onto_manager.java_correct ? Material.accent : "red"
+
+                Text {
+                    id: sTextCheck
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.margins: 8
+                    text: ViewController.onto_manager.java_correct ? "✔️" : "✕"
+                    color: "white"
+                }
+            }
+
+
+
+
+
+            DialogButtonBox {
+                position: DialogButtonBox.Footer
+
+                anchors.bottom: parent.bottom
+                width: parent.width
+                standardButtons: DialogButtonBox.Close
+
+                onRejected: settingsDialog.close()
+            }
+        }
+    }
+
     FileDialog {
         id: saveFileDialog
         modality: Qt.WindowModal
@@ -118,7 +202,8 @@ Item {
         id: importFileDialog
         modality: Qt.WindowModal
         title: "Please select a warehouse file"
-        nameFilters: ["Excel file (*.xls *.xlsx)", "CSV file (*.csv)"]
+        // nameFilters: ["Excel file (*.xls *.xlsx)", "CSV file (*.csv)"]
+        nameFilters: ["Excel file (*.xls *.xlsx)"]
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         onAccepted: {
             fileImportSettings.open()
@@ -380,9 +465,5 @@ Item {
     }
 }
 
-/*##^##
-Designer {
-    D{i:0;autoSize:true;height:480;width:640}
-}
-##^##*/
+
 

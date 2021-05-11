@@ -68,7 +68,8 @@ ApplicationWindow {
             title: qsTr("Option&s")
 
             MenuItem {
-                text: qsTr("&Settings")
+                text: qsTr("S&ettings")
+                onTriggered: dialogs.openSettingsDialog()
             }
             MenuItem {
                 text: qsTr("&Help")

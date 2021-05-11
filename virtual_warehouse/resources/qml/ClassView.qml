@@ -17,6 +17,7 @@ Item {
             id: toolButton1
             text: qsTr("Create")
             anchors.left: parent.left
+            enabled: ViewController.onto_manager.java_correct
 
             onClicked: {
                 dialogs.openCreateClassDialog()
@@ -24,8 +25,23 @@ Item {
         }
     }
 
-    ScrollView {
+    Text {
+        id: cErrorText
         anchors.top: classToolBar.bottom
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.margins: 8
+        visible: !ViewController.onto_manager.java_correct
+        height: visible ? 50 : 0
+        font.pixelSize: 11
+        wrapMode: Text.Wrap
+        text: "Your Java path is incorrect. Please go to the \"Options > Settings\" and set correct path."
+        color: "red"
+    }
+
+    ScrollView {
+        anchors.top: cErrorText.bottom
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.left: parent.left
