@@ -6,7 +6,7 @@ LOCATION_TYPE_MAP = {
     "rack": {"color": "#62ca5f", "gray_color": "gray", "mesh": ":/objects/rack.obj",},
     "wall": {"color": "black", "gray_color": "black", "mesh": ":/objects/floor.obj",},
     "inbound_door": {
-        "color": "#62ca5f",
+        "color": "#fde724",
         "gray_color": "#222",
         "mesh": ":/objects/floor.obj",
     },
@@ -21,7 +21,7 @@ LOCATION_TYPE_MAP = {
         "mesh": ":/objects/floor.obj",
     },
     "custom": {
-        "color": "#fde724",
+        "color": "#ca5f5f",
         "gray_color": "white",
         "mesh": ":/objects/floor.obj",
     },
