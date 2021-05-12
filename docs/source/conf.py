@@ -42,7 +42,13 @@ extensions = [
     "sphinx.ext.linkcode",
     "sphinx_inline_tabs",
     "sphinx.ext.autosectionlabel",
+    "sphinx_panels",
 ]
+
+
+# sphinx-panels shouldn't add bootstrap css since the pydata-sphinx-theme
+# already loads it
+panels_add_bootstrap_css = False
 
 
 autosectionlabel_maxdepth = 2

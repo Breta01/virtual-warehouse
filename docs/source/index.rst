@@ -30,3 +30,43 @@ Application of visualisation of warehouse.
 - :ref:`api` - API description of main functions and classes.
 
 
+Quick Start
+-----------
+
+For quick start you can download pre-build standalone application. Just download and run it! For more info read :ref:`intro`
+
+.. panels::
+    :card: + intro-card text-center
+    :img-top-cls: p-5
+    :column: col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex
+
+    ---
+    :img-top: _static/linux_color.svg
+
+    Linux Executable
+    ^^^^^^^^^^^^^^^^
+
+    Standalone application ready to run on most Linux systems.
+
+    +++
+
+    .. link-button:: https://drive.google.com/file/d/1ABhmw5eDQxY55qfiys1DiB1bvxh-VTRD/view?usp=sharing
+            :type: url
+            :text: Download
+            :classes: btn-block btn-secondary stretched-link
+
+    ---
+    :img-top: _static/win_color.svg
+
+    Windows Executable
+    ^^^^^^^^^^^^^^^^^^
+
+    Standalone application ready to run on most Windows systems.
+
+    +++
+
+    .. link-button:: https://drive.google.com/file/d/1zo_-yG9v8CYGb2lkn22rYTLze-gDO3Z_/view?usp=sharing
+            :type: url
+            :text: Download
+            :classes: btn-block btn-secondary stretched-link
+

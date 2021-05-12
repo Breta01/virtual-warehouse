@@ -1,7 +1,6 @@
-.. _api.parser:
+.. _api.data:
 
 .. currentmodule:: virtual_warehouse
-
 
 
 ====
@@ -15,7 +14,6 @@ Data Model
 .. autosummary::
    :toctree: api/
 
-   data.data_model.Coord
    data.data_model.Inventory
    data.data_model.Item
    data.data_model.ItemUnit
