@@ -57,7 +57,8 @@ lint: venv
 package: resources
 	${VENV_ACTIVATE}; pyinstaller --name="Virtual Warehouse" --windowed --clean \
 		--onedir main.py --icon="virtual_warehouse/resources/images/icon.png" \
-		--add-data $(shell $(PYTHON) -c "import owlready2 as _; print(_.__file__[:-11])")/pellet:owlready2/pellet
+		--add-data $(shell $(PYTHON) -c "import owlready2 as _; print(_.__file__[:-11])")/pellet:owlready2/pellet \
+		--add-data virtual_warehouse/plugins:virtual_warehouse/plugins
 	cd dist; tar -zcvf virtual-warehouse.tar.gz "Virtual Warehouse"
 # ${VENV_ACTIVATE}; nuitka3 main.py --show-progress --standalone --plugin-enable=pyside2 --include-qt-plugins=all --windows-disable-console
 
