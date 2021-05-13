@@ -21,11 +21,12 @@ except ImportError:
 
 def run():
     """Start Virtual Warehouse application."""
+    QGuiApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     app = QGuiApplication(sys.argv)
     app.setOrganizationName("Bretislav Hajek")
     app.setOrganizationDomain("bretahajek.com")
     app.setApplicationName("Virtual Warehouse")
-    app.setApplicationVersion("0.1")
+    app.setApplicationVersion(__version__)
     engine = QQmlApplicationEngine()
 
     controller = ViewController()

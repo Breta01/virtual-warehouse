@@ -128,6 +128,7 @@ Canvas {
                 text: "Side View"
                 color: "white"
                 font.bold: true
+                font.pixelSize: 12
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
             }
