@@ -77,9 +77,9 @@ class Document:
 
                 values = [sheet.cell(row, i).value for i in range(11)]
                 if convert_type(values[1]) == "rack":
-                    self.locations[location_id] = Location.create(*values)
-                else:
                     self.locations[location_id] = RackLocation.create(*values)
+                else:
+                    self.locations[location_id] = Location.create(*values)
 
         return self.locations
 
@@ -195,7 +195,9 @@ class Document:
                     self.balance[date][location_id] = []
 
                 self.balance[date][location_id].append(
-                    Inventory.create(*(sheet.cell(row, i).value for i in range(10)))
+                    Inventory.create(
+                        date, *(sheet.cell(row, i).value for i in range(1, 10))
+                    )
                 )
 
         return self.balance

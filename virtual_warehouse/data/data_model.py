@@ -192,7 +192,7 @@ with onto:
         @classmethod
         def create(
             cls,
-            date: str,
+            date: datetime.datetime,
             location_id: str,
             ltype: str,
             item_id: str,
@@ -203,7 +203,6 @@ with onto:
             allocated_qty: int,
             suspense_qty: int,
         ):
-            date_t = convert_date(date, "%d.%m.%Y")
             expiry_date = convert_date(expiry_date, "%d.%m.%Y")
 
             item = onto.search_one(iri=f"{BASE_IRI}#{item_id}")
@@ -211,7 +210,7 @@ with onto:
 
             return cls(
                 f"{date.strftime('%Y:%m:%d')}-{location_id}-{item_id}",
-                has_date=date_t,
+                has_date=date,
                 has_location=location,
                 # has_ltype=ltype,
                 has_item=item,
