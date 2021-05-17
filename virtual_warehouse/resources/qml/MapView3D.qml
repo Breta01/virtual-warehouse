@@ -12,6 +12,7 @@ Item {
     anchors.left: window.left
     visible: false
 
+
     ColorGradient {
         id: surfaceGradient
         ColorGradientStop {
@@ -45,17 +46,17 @@ Item {
         }
         // TODO: Automatically set values
         axisX: ValueAxis3D {
-            max: 30
-            min: 0
+            max: ViewController.map.max
+            min: ViewController.map.min
         }
         // Y is up
         axisY: ValueAxis3D {
-            max: 30
-            min: 0
+            max: ViewController.map.max
+            min: ViewController.map.min
         }
         axisZ: ValueAxis3D {
-            max: 30
-            min: 0
+            max: ViewController.map.max
+            min: ViewController.map.min
             reversed: true
         }
 
@@ -63,11 +64,8 @@ Item {
 
         // TODO: add hover effect using inputHandler
         onSelectedElementChanged: {
-            // TODO: Control - selection of multiple locations
-            var control = false
             var selected_idxs = ViewController.get_selected()
-            for (var i = 0; !control
-                 && i < selected_idxs.length; i++) {
+            for (var i = 0; !splitView.controlKey && i < selected_idxs.length; i++) {
                 var idx = selected_idxs[i]
                 if (idx >= 0) {
                     surfacePlot.customItemList[idx].textureFile

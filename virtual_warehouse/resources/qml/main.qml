@@ -124,6 +124,19 @@ ApplicationWindow {
 
     SplitView {
         anchors.fill: parent
+        id: splitView
+
+        focus: true
+
+        property bool controlKey: false
+
+        Keys.onPressed: {
+            controlKey = event.modifiers & Qt.ControlModifier
+        }
+
+        Keys.onReleased: {
+            controlKey = event.modifiers & Qt.ControlModifier
+        }
 
         Item {
             id: contentView
