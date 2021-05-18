@@ -53,12 +53,14 @@ class OntoManager(QObject):
     """Class controlling ontology classes and reasoning."""
 
     classesChanged = Signal()
+    queriesChanged = Signal()
     javaChanged = Signal()
 
     def __init__(self):
         """Initialize OntoController."""
         QObject.__init__(self)
         self._classes = {}
+        self._queries = {}
         self._check_java()
 
     @Property(str, constant=False, notify=javaChanged)
@@ -113,6 +115,7 @@ class OntoManager(QObject):
     @Property("QVariantList", constant=False, notify=classesChanged)
     def classes(self):
         """Get list of classes for displaying in sideview."""
+        print("classes", self._classes)
         return [
             {"name": k, "class": v[1], "count": len(v[0].instances())}
             for k, v in self._classes.items()
@@ -143,6 +146,59 @@ class OntoManager(QObject):
         self._classes[name] = (new_class, cls)
         self.classesChanged.emit()
         return new_class
+
+    def _construct_query(self, cls, query):
+        """Construct SPARQL query based on RackLocation, Item or Order."""
+        i1 = "PREFIX : <http://warehouse/onto.owl> .\n"
+        i2 = "SELECT DISTINCT ?obj WHERE {\n"
+        i3 = f"?obj a :{cls} . \n"
+        return i1 + i2 + i3 + query + " }"
+
+    @Slot(str, str, str)
+    def create_query(self, name, cls, query):
+        """Create new query and get instances.
+
+        Args:
+            name (str): name of new query
+            cls (str): string describing class, possible values: "RackLocation", "Item", "Order"
+            query (str): describing SPARQL query (later replace by more complex structure)
+        """
+        assert cls in ["RackLocation", "Item", "Order"], "Invalid class type"
+
+        q = _construct_query(cls, query)
+
+        self._queries[name] = (list(default_world.sparql_query(q)), cls)
+        self.queriesChanged.emit()
+
+    @Slot(str)
+    def delete_query(self, name):
+        """Destroy given SPARQL query.
+
+        Args:
+            name (str): name of new query for destruction
+        """
+        if name in self._queries:
+            del self._queries[name]
+            self.queriesChanged.emit()
+
+    def get_instances(self, name):
+        """Get instances of custom query.
+
+        Args:
+            name (str): name of new query
+
+        Returns:
+            list[Object]: list of class (RackLocation/Item/Order) instances
+        """
+        return self._queries[cls][0]
+
+    @Property("QVariantList", constant=False, notify=queriesChanged)
+    def queries(self):
+        """Get list of queries for displaying in sideview."""
+        return [
+            {"name": k, "class": v[1], "count": len(v[0])}
+            for k, v in self._queries.items()
+        ]
 
 
 with onto:
@@ -427,6 +483,9 @@ with onto:
             """Destroy all instances of Location class."""
             destroy_all(cls)
 
+    class has_ltype(Location >> str, FunctionalProperty):
+        """Location type."""
+
     class RackLocation(Location):
         """Description of location which can store items.
 
@@ -443,10 +502,12 @@ with onto:
             has_x (float): x coordinate of location
             has_y (float): y coordinate of location
             has_z (float): z coordinate of location
-            has_freq (float): frequency calculated for heat map displaying
+            has_freq (float): frequency calculated for heat map displaying (not ontology)
         """
 
         has_freq: float = 0
+
+        equivalent_to = [Location & has_ltype.value("rack")]
 
         @staticmethod
         def get_by_orders(orders):
@@ -694,8 +755,8 @@ with onto:
         """Height of Object."""
 
     # Location properties
-    class has_ltype(Location >> str, FunctionalProperty):
-        """Location type."""
+    # class has_ltype(Location >> str, FunctionalProperty):
+    #     """Location type."""
 
     class has_lclass(Location >> str, FunctionalProperty):
         """Location class."""

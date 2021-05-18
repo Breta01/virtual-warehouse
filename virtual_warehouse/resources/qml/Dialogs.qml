@@ -33,6 +33,12 @@ Item {
         createClassDialog.open()
     }
 
+    function openCreateQueryDialog() {
+        queryDialogTextArea.text = ""
+        queryNameField.text = ""
+        createQueryDialog.open()
+    }
+
     Dialog {
         id: helpDialog
         title: "Help"
@@ -459,6 +465,95 @@ Item {
                                 classComboBox.currentText,
                                 classDialogTextArea.text)
                     createClassDialog.close()
+                }
+            }
+        }
+    }
+
+
+    Dialog {
+        id: createQueryDialog
+        title: "Create SPARQL Query"
+        standardButtons: StandardButton.Cancle | StandardButton.Ok
+
+        contentItem: Rectangle {
+            implicitWidth: 500
+            implicitHeight: 400
+            color: "#eee"
+
+
+            Text {
+                id: nameQueryText
+                anchors.left: parent.left
+                anchors.baseline: queryNameField.baseline
+                anchors.margins: 8
+                text: "Name:"
+            }
+
+            TextField {
+                id: queryNameField
+                anchors.left: nameQueryText.right
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: 8
+                placeholderText: "Name of query"
+                text: ""
+            }
+
+            Text {
+                id: baseQueryText
+                anchors.left: parent.left
+                anchors.verticalCenter: queryComboBox.verticalCenter
+                anchors.margins: 8
+                text: "Base class:"
+            }
+
+            ComboBox {
+                id: queryComboBox
+                anchors.left: baseQueryText.right
+                anchors.top: queryNameField.bottom
+                anchors.margins: 8
+                textRole: "type"
+
+                model: ListModel {
+                    ListElement { type: "RackLocation" }
+                    ListElement { type: "Item" }
+                    ListElement { type: "Order" }
+                }
+            }
+
+            TextArea {
+                id: queryDialogTextArea
+                anchors.top: queryComboBox.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: queryDialogButtons.top
+                anchors.margins: 4
+                wrapMode: Text.Wrap
+                padding: 8
+                placeholderText: "Conditions..."
+                text: qsTr("")
+
+                background: Rectangle {
+                    color: "white"
+                }
+            }
+
+            DialogButtonBox {
+                id: queryDialogButtons
+                position: DialogButtonBox.Footer
+
+                anchors.bottom: parent.bottom
+                width: parent.width
+                standardButtons: DialogButtonBox.Close | DialogButtonBox.Save
+
+                onRejected: createQueryDialog.close()
+                onAccepted: {
+                    ViewController.onto_manager.create_query(
+                                queryNameField.text,
+                                queryComboBox.currentText,
+                                queryDialogTextArea.text)
+                    createQueryDialog.close()
                 }
             }
         }
