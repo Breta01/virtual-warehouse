@@ -12,6 +12,8 @@ Item {
     anchors.left: window.left
     visible: false
 
+    property var selectedIdxs: []
+
 
     ColorGradient {
         id: surfaceGradient
@@ -77,7 +79,7 @@ Item {
                 let item = surfacePlot.selectedCustomItem()
                 let idx = surfacePlot.selectedCustomItemIndex()
                 item.textureFile = ":/textures/red.png"
-                ViewController.select_map_location(idx, control)
+                ViewController.select_map_location(idx, splitView.controlKey)
             }
         }
     }
@@ -104,6 +106,22 @@ Item {
         }
 
         function onItemSelected() {// TODO: select items based on 2D map
+            for (var i = 0; !splitView.controlKey && i < selectedIdxs.length; i++) {
+                var idx = selectedIdxs[i]
+                if (idx >= 0) {
+                    surfacePlot.customItemList[idx].textureFile
+                            = ":/textures/default.png"
+                }
+            }
+
+            selectedIdxs = ViewController.get_selected()
+            for (var i = 0; !splitView.controlKey && i < selectedIdxs.length; i++) {
+                var idx = selectedIdxs[i]
+                if (idx >= 0) {
+                    surfacePlot.customItemList[idx].textureFile
+                            = ":/textures/red.png"
+                }
+            }
         }
 
         Component.onCompleted: onModelChanged()

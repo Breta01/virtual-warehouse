@@ -324,7 +324,10 @@ class ViewController(QObject):
             names = self.model.get_idx(idx).names
             self.selected_idxs[idx] = len(names)
             self._location_model.set_checked(names, control)
-            self._sideview_model.set_selected(names)
+            if self._is2D:
+                self._sideview_model.set_selected(names)
+            else:
+                self._sideview_model.set_selected([])
         elif self._location_model.rowCount():
             self._location_model.set_checked([])
             self._sideview_model.set_selected([])
