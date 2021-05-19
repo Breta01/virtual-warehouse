@@ -28,7 +28,6 @@ Item {
     Text {
         id: cErrorText
         anchors.top: classToolBar.bottom
-        anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.margins: 8
