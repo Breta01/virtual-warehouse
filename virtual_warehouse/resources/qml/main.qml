@@ -78,48 +78,11 @@ ApplicationWindow {
         }
     }
 
-    Item {
-        id: loadingOverlay
+    LoadingOverlay {
+        progressValue: ViewController.progress_value
         width: parent.width
         anchors.top: menuBar.bottom
         anchors.bottom: parent.bottom
-        z: 300
-        visible: progressBar.value != 1
-
-        Rectangle {
-            opacity: 0.4
-            anchors.fill: parent
-            color: "#29323c"
-            border.width: 0
-
-            MouseArea {
-                anchors.fill: parent
-                propagateComposedEvents: false
-                hoverEnabled: true
-                preventStealing: true
-            }
-        }
-
-        Rectangle {
-            height: 20
-            width: 220
-            color: "white"
-            border.width: 0
-            radius: 2
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-
-            ProgressBar {
-                id: progressBar
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                value: ViewController.progress_value
-                indeterminate: (value == 0)
-                Behavior on value {
-                    NumberAnimation {}
-                }
-            }
-        }
     }
 
     SplitView {
@@ -441,8 +404,8 @@ ApplicationWindow {
 
                 TabButton {
                     id: sideTabBtn2
-                    text: "Classes"
-                    width: 90
+                    text: "Ontology"
+                    width: 120
 
                     background: Rectangle {
                         color: "white"

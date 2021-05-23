@@ -6,12 +6,12 @@ from virtual_warehouse.data.data_model import (
     Inventory,
     Item,
     Location,
-    OntoManager,
     Order,
     RackLocation,
     save_ontology,
 )
 from virtual_warehouse.data.excel_parser import Document
+from virtual_warehouse.data.onto_manager import OntoManager
 from virtual_warehouse.location_models import (
     MultiLocation,
     SingleLocation,
@@ -338,15 +338,16 @@ class ViewController(QObject):
         """Select/unselect all locations from the tab list in the map."""
         self._select_locations(self.location_model._selected, select, clear=True)
 
-    @Slot(str, str)
-    def select_class(self, cls, base_class):
+    @Slot(bool, str, str)
+    def select_class(self, is_class, name, base_class):
         """Check custom class instances in side bar.
 
         Args:
-            cls (str): name of custom class
+            is_class (bool): True if class, False if query
+            name (str): name of custom class/ontology
             base_class (str): name of base classes
         """
-        instances = self._onto_manager.get_instances(cls)
+        instances = self._onto_manager.get_instances(is_class, name)
         names = sorted([i.name for i in instances])
         if base_class == "RackLocation":
             self._location_model.set_checked(names)

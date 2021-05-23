@@ -1,5 +1,5 @@
 import Qt.labs.platform 1.1
-import QtQuick 2.0
+import QtQuick 2.14
 import QtQuick.Controls 2.14
 import QtQuick.Controls.Material 2.14
 import QtQuick.Dialogs 1.3
@@ -30,12 +30,14 @@ Item {
     function openCreateClassDialog() {
         classDialogTextArea.text = ""
         classNameField.text = ""
+        cErrorText.text = ""
         createClassDialog.open()
     }
 
     function openCreateQueryDialog() {
         queryDialogTextArea.text = ""
         queryNameField.text = ""
+        qErrorText.text = ""
         createQueryDialog.open()
     }
 
@@ -167,10 +169,6 @@ Item {
                     color: "white"
                 }
             }
-
-
-
-
 
             DialogButtonBox {
                 position: DialogButtonBox.Footer
@@ -392,7 +390,6 @@ Item {
             implicitHeight: 400
             color: "#eee"
 
-
             Text {
                 id: nameClassText
                 anchors.left: parent.left
@@ -438,7 +435,7 @@ Item {
                 anchors.top: classComboBox.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.bottom: classDialogButtons.top
+                anchors.bottom: cErrorText.top
                 anchors.margins: 4
                 wrapMode: Text.Wrap
                 padding: 8
@@ -450,6 +447,22 @@ Item {
                 }
             }
 
+            Text {
+                id: cErrorText
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: classDialogButtons.top
+                padding: 8
+                height: (text === "") ? 0 : 50
+                Behavior on height {
+                    NumberAnimation {}
+                }
+                font.pixelSize: 12
+                wrapMode: Text.Wrap
+                text: ""
+                color: "red"
+            }
+
             DialogButtonBox {
                 id: classDialogButtons
                 position: DialogButtonBox.Footer
@@ -458,13 +471,23 @@ Item {
                 width: parent.width
                 standardButtons: DialogButtonBox.Close | DialogButtonBox.Save
 
-                onRejected: createClassDialog.close()
+                onRejected: {
+                    createClassDialog.close()
+                }
                 onAccepted: {
-                    ViewController.onto_manager.create_class(
+                    cErrorText.text = ""
+                    cErrorText.text = ViewController.onto_manager.check_create_class(
                                 classNameField.text,
                                 classComboBox.currentText,
                                 classDialogTextArea.text)
-                    createClassDialog.close()
+
+                    if (cErrorText.text === "") {
+                        ViewController.onto_manager.create_class(
+                                    classNameField.text,
+                                    classComboBox.currentText,
+                                    classDialogTextArea.text)
+                        createClassDialog.close()
+                    }
                 }
             }
         }
@@ -481,6 +504,9 @@ Item {
             implicitHeight: 400
             color: "#eee"
 
+            LoadingOverlay {
+                progressValue: ViewController.onto_manager.progress_value
+            }
 
             Text {
                 id: nameQueryText
@@ -527,16 +553,33 @@ Item {
                 anchors.top: queryComboBox.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.bottom: queryDialogButtons.top
+                anchors.bottom: qErrorText.top
                 anchors.margins: 4
                 wrapMode: Text.Wrap
                 padding: 8
-                placeholderText: "Conditions..."
+                placeholderText: "SPARQL Query..."
                 text: qsTr("")
 
                 background: Rectangle {
                     color: "white"
                 }
+            }
+
+
+            Text {
+                id: qErrorText
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: queryDialogButtons.top
+                padding: 8
+                height: (text === "") ? 0 : 50
+                Behavior on height {
+                    NumberAnimation {}
+                }
+                font.pixelSize: 12
+                wrapMode: Text.Wrap
+                text: ""
+                color: "red"
             }
 
             DialogButtonBox {
@@ -549,11 +592,20 @@ Item {
 
                 onRejected: createQueryDialog.close()
                 onAccepted: {
-                    ViewController.onto_manager.create_query(
+                    ViewController.onto_manager.progress_value = 0
+                    qErrorText.text = ""
+                    qErrorText.text = ViewController.onto_manager.check_create_query(
                                 queryNameField.text,
                                 queryComboBox.currentText,
                                 queryDialogTextArea.text)
-                    createQueryDialog.close()
+
+                    if (qErrorText.text === "") {
+                        ViewController.onto_manager.create_query(
+                                    queryNameField.text,
+                                    queryComboBox.currentText,
+                                    queryDialogTextArea.text)
+                        createQueryDialog.close()
+                    }
                 }
             }
         }

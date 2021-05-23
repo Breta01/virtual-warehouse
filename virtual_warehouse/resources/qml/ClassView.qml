@@ -5,6 +5,10 @@ import QtQuick.Controls.Material 2.14
 Item {
     anchors.fill: parent
 
+    LoadingOverlay {
+        progressValue: ViewController.onto_manager.progress_value
+    }
+
     ToolBar {
         id: classToolBar
         anchors.top: parent.top
@@ -15,8 +19,29 @@ Item {
 
         ToolButton {
             id: toolButton1
-            text: qsTr("Create")
+            text: qsTr("Create:")
             anchors.left: parent.left
+            enabled: false
+
+            onClicked: {
+                dialogs.openCreateClassDialog()
+            }
+        }
+
+        ToolButton {
+            id: toolButton2
+            text: qsTr("Query")
+            anchors.left: toolButton1.right
+
+            onClicked: {
+                dialogs.openCreateQueryDialog()
+            }
+        }
+
+        ToolButton {
+            id: toolButton3
+            text: qsTr("Class")
+            anchors.left: toolButton2.right
             enabled: ViewController.onto_manager.java_correct
 
             onClicked: {
@@ -91,6 +116,7 @@ Item {
                         MenuItem {
                             text: "Select"
                             onClicked: ViewController.select_class(
+                                           true,
                                            model.modelData["name"],
                                            model.modelData["class"])
                         }

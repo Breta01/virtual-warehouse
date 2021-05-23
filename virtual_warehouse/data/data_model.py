@@ -1,9 +1,7 @@
 """Data model using Owlready2 ontology."""
 import datetime
-from subprocess import DEVNULL, check_call
 from typing import List
 
-import owlready2
 from owlready2 import (
     ConstrainedDatatype,
     DataProperty,
@@ -16,7 +14,6 @@ from owlready2 import (
     sync_reasoner,
     sync_reasoner_pellet,
 )
-from PySide2.QtCore import Property, QObject, Signal, Slot
 
 from virtual_warehouse.data.utils import (
     convert_date,
@@ -47,158 +44,6 @@ def save_ontology(file_path):
         file_path (str): file url should be processed with QUrl(file_path)
     """
     onto.save(file_path, format="rdfxml")
-
-
-class OntoManager(QObject):
-    """Class controlling ontology classes and reasoning."""
-
-    classesChanged = Signal()
-    queriesChanged = Signal()
-    javaChanged = Signal()
-
-    def __init__(self):
-        """Initialize OntoController."""
-        QObject.__init__(self)
-        self._classes = {}
-        self._queries = {}
-        self._check_java()
-
-    @Property(str, constant=False, notify=javaChanged)
-    def java(self):
-        """Get Java executable path for owlready reasoner."""
-        return owlready2.JAVA_EXE
-
-    @java.setter
-    def set_java(self, val):
-        """Set Java executable path for owlready reasoner."""
-        owlready2.JAVA_EXE = val
-        self._check_java()
-        self.javaChanged.emit()
-
-    @Property(bool, constant=False, notify=javaChanged)
-    def java_correct(self):
-        """Get true java path is correct."""
-        return self._java_correct
-
-    def _check_java(self):
-        """Check if java path is set correctly."""
-        try:
-            check_call(
-                [owlready2.JAVA_EXE, "--version"], stdout=DEVNULL, stderr=DEVNULL
-            )
-            self._java_correct = True
-        except Exception:
-            self._java_correct = False
-
-    @Slot(str)
-    def delete_class(self, cls):
-        """Destroy given ontology class.
-
-        Args:
-            cls (str): name of new class for destruction
-        """
-        if cls in self._classes:
-            destroy_entity(self._classes.pop(cls)[0])
-            self.classesChanged.emit()
-
-    def get_instances(self, cls):
-        """Get instances of custom class.
-
-        Args:
-            cls (str): name of new classes
-
-        Returns:
-            list[Object]: list of class (RackLocation/Item/Order) instances
-        """
-        return self._classes[cls][0].instances()
-
-    @Property("QVariantList", constant=False, notify=classesChanged)
-    def classes(self):
-        """Get list of classes for displaying in sideview."""
-        print("classes", self._classes)
-        return [
-            {"name": k, "class": v[1], "count": len(v[0].instances())}
-            for k, v in self._classes.items()
-        ]
-
-    @Slot(str, str, str)
-    def create_class(self, name, cls, conditions):
-        """Construct new ontology class based on RackLocation, Item or Order.
-
-        Args:
-            name (str): name of new class
-            cls (str): string describing class, possible values: "RackLocation", "Item", "Order"
-            conditions (str): describing condition (later replace by more complex structure)
-        """
-        # TODO: Checks, errors, background thread + loading
-        assert cls in ["RackLocation", "Item", "Order"], "Invalid class type"
-
-        if len(conditions.strip()) != 0:
-            full_condition = f"[{cls} & {conditions}]"
-        else:
-            full_condition = f"[{cls}]"
-
-        with onto:
-            new_class = type(
-                name, (eval(cls),), {"equivalent_to": eval(full_condition)}
-            )
-            sync_reasoner_pellet(debug=0, infer_property_values=False)
-        self._classes[name] = (new_class, cls)
-        self.classesChanged.emit()
-        return new_class
-
-    def _construct_query(self, cls, query):
-        """Construct SPARQL query based on RackLocation, Item or Order."""
-        i1 = "PREFIX : <http://warehouse/onto.owl> .\n"
-        i2 = "SELECT DISTINCT ?obj WHERE {\n"
-        i3 = f"?obj a :{cls} . \n"
-        return i1 + i2 + i3 + query + " }"
-
-    @Slot(str, str, str)
-    def create_query(self, name, cls, query):
-        """Create new query and get instances.
-
-        Args:
-            name (str): name of new query
-            cls (str): string describing class, possible values: "RackLocation", "Item", "Order"
-            query (str): describing SPARQL query (later replace by more complex structure)
-        """
-        assert cls in ["RackLocation", "Item", "Order"], "Invalid class type"
-
-        q = _construct_query(cls, query)
-
-        self._queries[name] = (list(default_world.sparql_query(q)), cls)
-        self.queriesChanged.emit()
-
-    @Slot(str)
-    def delete_query(self, name):
-        """Destroy given SPARQL query.
-
-        Args:
-            name (str): name of new query for destruction
-        """
-        if name in self._queries:
-            del self._queries[name]
-            self.queriesChanged.emit()
-
-    def get_instances(self, name):
-        """Get instances of custom query.
-
-        Args:
-            name (str): name of new query
-
-        Returns:
-            list[Object]: list of class (RackLocation/Item/Order) instances
-        """
-        return self._queries[cls][0]
-
-    @Property("QVariantList", constant=False, notify=queriesChanged)
-    def queries(self):
-        """Get list of queries for displaying in sideview."""
-        return [
-            {"name": k, "class": v[1], "count": len(v[0])}
-            for k, v in self._queries.items()
-        ]
 
 
 with onto:

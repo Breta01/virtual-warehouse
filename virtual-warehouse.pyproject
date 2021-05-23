@@ -1,3 +1,3 @@
 {
-    "files": ["virtual_warehouse/resources/qml/Dialogs.qml","virtual_warehouse/resources/qml/AgentVisualizer.qml","virtual_warehouse/resources/qml/ClassView.qml","app.py","virtual_warehouse/resources/qml/FilterMenu.qml","virtual_warehouse/resources/qml/MapView3D.qml","virtual_warehouse/resources/qml/ConnectionsMenu.qml","src/main.qrc","virtual_warehouse/resources/js/utils.js","virtual_warehouse/resources/qml/AgentView.qml"]
+    "files": ["virtual_warehouse/resources/qml/AgentVisualizer.qml","virtual_warehouse/resources/qml/ClassView.qml","virtual_warehouse/resources/js/utils.js","virtual_warehouse/resources/qml/AgentView.qml","virtual_warehouse/resources/qml/ConnectionsMenu.qml","src/main.qrc","app.py","virtual_warehouse/resources/qml/FilterMenu.qml","virtual_warehouse/resources/qml/Dialogs.qml","virtual_warehouse/resources/qml/MapView3D.qml","virtual_warehouse/resources/qml/LoadingOverlay.qml"]
 }

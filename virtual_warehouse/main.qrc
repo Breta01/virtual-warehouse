@@ -15,6 +15,7 @@
         <file alias="MapView2D.qml">resources/qml/MapView2D.qml</file>
         <file alias="MapView3D.qml">resources/qml/MapView3D.qml</file>
         <file alias="OrderListView.qml">resources/qml/OrderListView.qml</file>
+        <file alias="LoadingOverlay.qml">resources/qml/LoadingOverlay.qml</file>
         <file alias="FilterMenu.qml">resources/qml/FilterMenu.qml</file>
     </qresource>
     <qresource prefix="/textures">
