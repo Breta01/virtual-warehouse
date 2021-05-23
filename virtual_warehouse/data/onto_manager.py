@@ -6,7 +6,7 @@ from owlready2 import ConstrainedDatatype, sync_reasoner_pellet
 from PySide2.QtCore import Property, QObject, Qt, QThread, Signal, Slot
 from rdflib.plugins.sparql import prepareQuery
 
-from virtual_warehouse.data.data_model import *
+from virtual_warehouse.data.data_model import *  # skipcq: PYL-W0614
 
 
 class OperationThread(QThread):
@@ -58,7 +58,7 @@ class OntoManager(QObject):
         self.progressChanged.emit()
 
     @Property(str, constant=False, notify=javaChanged)
-    def java(self):
+    def java(self):  # skipcq: PYL-R0201
         """Get Java executable path for owlready reasoner."""
         return owlready2.JAVA_EXE
 
@@ -81,7 +81,7 @@ class OntoManager(QObject):
                 [owlready2.JAVA_EXE, "--version"], stdout=DEVNULL, stderr=DEVNULL
             )
             self._java_correct = True
-        except Exception:
+        except Exception:  # skipcq: PYL-W0703
             self._java_correct = False
 
     @Slot(str)
@@ -118,7 +118,7 @@ class OntoManager(QObject):
         ]
 
     @Slot(str, str, str, result=str)
-    def check_create_class(self, name, cls, conditions):
+    def check_create_class(self, name, cls, conditions):  # skipcq: PYL-R0201
         """Check if constuction parameters are correct.
 
         Args:
@@ -127,8 +127,10 @@ class OntoManager(QObject):
             conditions (str): describing condition (later replace by more complex structure)
         """
         try:
-            assert len(name.strip()) > 0, "Invalid name"
-            assert cls in ["RackLocation", "Item", "Order"], "Invalid class type"
+            if len(name.strip()) > 0:
+                return "Invalid name"
+            if cls in ["RackLocation", "Item", "Order"]:
+                return "Invalid class type"
 
             if len(conditions.strip()) != 0:
                 full_condition = f"[{cls} & {conditions}]"
@@ -137,7 +139,7 @@ class OntoManager(QObject):
             # Test validity of conditions
             eval(full_condition)
             return None
-        except Exception as e:
+        except Exception as e:  # skipcq: PYL-W0703
             return str(e)
 
     @Slot(str, str, str)
@@ -176,7 +178,8 @@ class OntoManager(QObject):
         self._thread.finished.connect(callback, Qt.QueuedConnection)
         self._thread.start()
 
-    def _construct_query(self, cls, query):
+    @staticmethod
+    def _construct_query(cls, query):
         """Construct SPARQL query based on RackLocation, Item or Order."""
         i1 = "PREFIX : <http://warehouse/onto.owl>\n"
         i2 = "SELECT DISTINCT ?obj WHERE {\n"
@@ -194,13 +197,15 @@ class OntoManager(QObject):
         """
         self.progress_value = 0
         try:
-            assert len(name.strip()) > 0, "Invalid name"
-            assert cls in ["RackLocation", "Item", "Order"], "Invalid class type"
+            if len(name.strip()) > 0:
+                return "Invalid name"
+            if cls in ["RackLocation", "Item", "Order"]:
+                return "Invalid class type"
             # Test validity of query
             prepareQuery(self._construct_query(cls, query))
             self.progress_value = 1
             return None
-        except Exception as e:
+        except Exception as e:  # skipcq: PYL-W0703
             self.progress_value = 1
             return "Invalid query: " + str(e)
 

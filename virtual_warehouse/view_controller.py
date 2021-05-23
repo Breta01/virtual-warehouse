@@ -434,7 +434,7 @@ class ViewController(QObject):
         return list(self.selected_idxs.keys())
 
     @Slot(QUrl, result="QVariantList")
-    def get_sheets(self, file_path):
+    def get_sheets(self, file_path):  # skipcq: PYL-R0201
         """Get names of sheets inside the file and expected type.
 
         Args:
@@ -446,7 +446,7 @@ class ViewController(QObject):
         return Document.get_sheet_names(file_path.toLocalFile())
 
     @Slot(QUrl)
-    def save_ontology(self, file_path):
+    def save_ontology(self, file_path):  # skipcq: PYL-R0201
         """Save ontology in RDF/XML format.
 
         Args:

@@ -41,7 +41,7 @@ class AgentManager(QObject):
         """Sort keys for displaying ALL agents in list in nice order."""
         try:
             return map(str, sorted(map(int, self.agents.keys())))
-        except Exception:
+        except Exception:  # skipcq: PYL-W0703
             return sorted(self.agents.keys())
 
     @Property(int, constant=False, notify=agentsChanged)
