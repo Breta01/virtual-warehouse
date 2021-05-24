@@ -1,12 +1,18 @@
 """Module managing working with ontology e.g. creating queries and classes."""
+from multiprocessing import Process
 from subprocess import DEVNULL, check_call
 
 import owlready2
 from owlready2 import ConstrainedDatatype, sync_reasoner_pellet
-from PySide2.QtCore import Property, QObject, Qt, QThread, Signal, Slot
+from PySide2.QtCore import Property, QObject, Qt, QThread, QTimer, Signal, Slot
 from rdflib.plugins.sparql import prepareQuery
 
 from virtual_warehouse.data.data_model import *  # skipcq: PYL-W0614
+
+
+def sync():
+    with onto:
+        sync_reasoner_pellet(debug=0, infer_property_values=False)
 
 
 class OperationThread(QThread):
@@ -127,9 +133,9 @@ class OntoManager(QObject):
             conditions (str): describing condition (later replace by more complex structure)
         """
         try:
-            if len(name.strip()) > 0:
+            if len(name.strip()) == 0:
                 return "Invalid name"
-            if cls in ["RackLocation", "Item", "Order"]:
+            if cls not in ["RackLocation", "Item", "Order"]:
                 return "Invalid class type"
 
             if len(conditions.strip()) != 0:
@@ -157,20 +163,25 @@ class OntoManager(QObject):
         else:
             full_condition = f"[{cls}]"
 
-        def creation():
-            """Create new class."""
-            with onto:
-                new_class = type(
-                    name, (eval(cls),), {"equivalent_to": eval(full_condition)}
-                )
-                sync_reasoner_pellet(debug=0, infer_property_values=False)
-            return new_class
+        with onto:
+            new_class = type(
+                name, (eval(cls),), {"equivalent_to": eval(full_condition)}
+            )
 
-        def callback(new_class):
+        p = Process(target=sync)
+        p.start()
+
+        def creation():
+            # 30 seconds timeout and shutdown the process
+            p.join(30)
+            p.terminate()
+            return p.exitcode == 0
+
+        def callback(is_finished):
             """Save output of the thread."""
-            self._classes[name] = (new_class, cls)
-            self.classesChanged.emit()
-            # self._thread = None
+            if is_finished:
+                self._classes[name] = (new_class, cls)
+                self.classesChanged.emit()
             self.progress_value = 1
 
         self.progress_value = 0
@@ -197,9 +208,9 @@ class OntoManager(QObject):
         """
         self.progress_value = 0
         try:
-            if len(name.strip()) > 0:
+            if len(name.strip()) == 0:
                 return "Invalid name"
-            if cls in ["RackLocation", "Item", "Order"]:
+            if cls not in ["RackLocation", "Item", "Order"]:
                 return "Invalid class type"
             # Test validity of query
             prepareQuery(self._construct_query(cls, query))
