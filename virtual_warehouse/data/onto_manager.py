@@ -4,13 +4,23 @@ from subprocess import DEVNULL, check_call
 
 import owlready2
 from owlready2 import ConstrainedDatatype, sync_reasoner_pellet
-from PySide2.QtCore import Property, QObject, Qt, QThread, QTimer, Signal, Slot
+from PySide2.QtCore import (
+    Property,
+    QObject,
+    QSettings,
+    Qt,
+    QThread,
+    QTimer,
+    Signal,
+    Slot,
+)
 from rdflib.plugins.sparql import prepareQuery
 
 from virtual_warehouse.data.data_model import *  # skipcq: PYL-W0614
 
 
 def sync():
+    """Run reasoning on ontology."""
     with onto:
         sync_reasoner_pellet(debug=0, infer_property_values=False)
 
@@ -38,14 +48,16 @@ class OperationThread(QThread):
 class OntoManager(QObject):
     """Class controlling ontology classes and reasoning."""
 
-    classesChanged = Signal()
-    queriesChanged = Signal()
+    objectsChanged = Signal()
     javaChanged = Signal()
     progressChanged = Signal()
 
     def __init__(self):
         """Initialize OntoController."""
         QObject.__init__(self)
+        self.settings = QSettings()
+        owlready2.JAVA_EXE = self.settings.value("javaPath", owlready2.JAVA_EXE)
+
         self._classes = {}
         self._queries = {}
         self._check_java()
@@ -72,6 +84,7 @@ class OntoManager(QObject):
     def set_java(self, val):
         """Set Java executable path for owlready reasoner."""
         owlready2.JAVA_EXE = val
+        self.settings.setValue("javaPath", val)
         self._check_java()
         self.javaChanged.emit()
 
@@ -90,16 +103,19 @@ class OntoManager(QObject):
         except Exception:  # skipcq: PYL-W0703
             self._java_correct = False
 
-    @Slot(str)
-    def delete_class(self, cls):
+    @Slot(bool, str)
+    def delete(self, is_class, cls):
         """Destroy given ontology class.
 
         Args:
-            cls (str): name of new class for destruction
+            is_class (bool): True if class, False if query
+            cls (str): name of new class/query for destruction
         """
-        if cls in self._classes:
+        if is_class and cls in self._classes:
             destroy_entity(self._classes.pop(cls)[0])
-            self.classesChanged.emit()
+        elif not is_class and name in self._queries:
+            del self._queries[name]
+        self.objectsChanged.emit()
 
     def get_instances(self, is_class, name):
         """Get instances of custom class or query.
@@ -115,11 +131,14 @@ class OntoManager(QObject):
             return self._classes[name][0].instances()
         return self._queries[name][0]
 
-    @Property("QVariantList", constant=False, notify=classesChanged)
-    def classes(self):
-        """Get list of classes for displaying in sideview."""
+    @Property("QVariantList", constant=False, notify=objectsChanged)
+    def objects(self):
+        """Get list of queries and classes for displaying in sideview."""
         return [
-            {"name": k, "class": v[1], "count": len(v[0].instances())}
+            {"name": k, "class": v[1], "count": len(v[0]), "is_class": False}
+            for k, v in self._queries.items()
+        ] + [
+            {"name": k, "class": v[1], "count": len(v[0].instances()), "is_class": True}
             for k, v in self._classes.items()
         ]
 
@@ -172,6 +191,7 @@ class OntoManager(QObject):
         p.start()
 
         def creation():
+            """Execute wait on process finish in separate thread."""
             # 30 seconds timeout and shutdown the process
             p.join(30)
             p.terminate()
@@ -181,7 +201,7 @@ class OntoManager(QObject):
             """Save output of the thread."""
             if is_finished:
                 self._classes[name] = (new_class, cls)
-                self.classesChanged.emit()
+                self.objectsChanged.emit()
             self.progress_value = 1
 
         self.progress_value = 0
@@ -206,7 +226,6 @@ class OntoManager(QObject):
             cls (str): string describing class, possible values: "RackLocation", "Item", "Order"
             query (str): describing SPARQL query (later replace by more complex structure)
         """
-        self.progress_value = 0
         try:
             if len(name.strip()) == 0:
                 return "Invalid name"
@@ -214,10 +233,8 @@ class OntoManager(QObject):
                 return "Invalid class type"
             # Test validity of query
             prepareQuery(self._construct_query(cls, query))
-            self.progress_value = 1
             return None
         except Exception as e:  # skipcq: PYL-W0703
-            self.progress_value = 1
             return "Invalid query: " + str(e)
 
     @Slot(str, str, str)
@@ -243,7 +260,7 @@ class OntoManager(QObject):
         def callback(instances):
             """Save output of the thread."""
             self._queries[name] = (instances, cls)
-            self.queriesChanged.emit()
+            self.objectsChanged.emit()
             # self._thread = None
             self.progress_value = 1
 
@@ -251,22 +268,3 @@ class OntoManager(QObject):
         self._thread = OperationThread(creation)
         self._thread.finished.connect(callback, Qt.QueuedConnection)
         self._thread.start()
-
-    @Slot(str)
-    def delete_query(self, name):
-        """Destroy given SPARQL query.
-
-        Args:
-            name (str): name of new query for destruction
-        """
-        if name in self._queries:
-            del self._queries[name]
-            self.queriesChanged.emit()
-
-    @Property("QVariantList", constant=False, notify=queriesChanged)
-    def queries(self):
-        """Get list of queries for displaying in sideview."""
-        return [
-            {"name": k, "class": v[1], "count": len(v[0])}
-            for k, v in self._queries.items()
-        ]

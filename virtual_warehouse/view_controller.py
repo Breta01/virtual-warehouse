@@ -338,24 +338,25 @@ class ViewController(QObject):
         """Select/unselect all locations from the tab list in the map."""
         self._select_locations(self.location_model._selected, select, clear=True)
 
-    @Slot(bool, str, str)
-    def select_class(self, is_class, name, base_class):
-        """Check custom class instances in side bar.
+    @Slot(bool, str, str, bool)
+    def select_onto_objects(self, is_class, name, base_class, clear=True):
+        """Check custom class/query instances in side bar.
 
         Args:
             is_class (bool): True if class, False if query
             name (str): name of custom class/ontology
             base_class (str): name of base classes
+            clear (bool): If true, clear all previous selections
         """
         instances = self._onto_manager.get_instances(is_class, name)
         names = sorted([i.name for i in instances])
         if base_class == "RackLocation":
-            self._location_model.set_checked(names)
-            self._select_locations(names, checked=True, clear=True)
+            self._location_model.set_checked(names, not clear)
+            self._select_locations(names, checked=True, clear=clear)
         elif base_class == "Item":
-            self._item_model.set_checked(names)
+            self._item_model.set_checked(names, not clear)
         elif base_class == "Order":
-            self._order_model.set_checked(names)
+            self._order_model.set_checked(names, not clear)
 
     # Connecting sidebar tabs
     def _connect_tabs(self, src_tab_model, dst_tab_model, connector, locations=False):

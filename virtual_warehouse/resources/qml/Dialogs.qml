@@ -549,16 +549,59 @@ Item {
             }
 
             TextArea {
-                id: queryDialogTextArea
+                id: queryDialogStartTextArea
                 anchors.top: queryComboBox.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.margins: 4
+                wrapMode: Text.Wrap
+                readOnly: true
+                padding: 8
+                text: "PREFIX : <http://warehouse/onto.owl>\n" +
+                      "SELECT DISTINCT ?obj WHERE {\n  ?obj a :" +
+                      queryComboBox.currentText + " ."
+
+                background: Rectangle {
+                    color: "white"
+                }
+            }
+
+            ScrollView {
+                id: view
+                clip: true
+                anchors.top: queryDialogStartTextArea.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: queryDialogEndTextArea.top
+                anchors.topMargin: 1
+                anchors.bottomMargin: 1
+                anchors.margins: 4
+
+                TextArea {
+                    id: queryDialogTextArea
+
+                    wrapMode: Text.Wrap
+                    padding: 8
+                    leftPadding: 16
+                    placeholderText: "SPARQL Query..."
+                    text: qsTr("")
+
+                    background: Rectangle {
+                        color: "white"
+                    }
+                }
+            }
+
+            TextArea {
+                id: queryDialogEndTextArea
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: qErrorText.top
                 anchors.margins: 4
                 wrapMode: Text.Wrap
+                readOnly: true
                 padding: 8
-                placeholderText: "SPARQL Query..."
-                text: qsTr("")
+                text: "}"
 
                 background: Rectangle {
                     color: "white"
@@ -592,13 +635,11 @@ Item {
 
                 onRejected: createQueryDialog.close()
                 onAccepted: {
-                    ViewController.onto_manager.progress_value = 0
                     qErrorText.text = ""
                     qErrorText.text = ViewController.onto_manager.check_create_query(
                                 queryNameField.text,
                                 queryComboBox.currentText,
                                 queryDialogTextArea.text)
-
                     if (qErrorText.text === "") {
                         ViewController.onto_manager.create_query(
                                     queryNameField.text,
@@ -614,3 +655,9 @@ Item {
 
 
 
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:480;width:640}
+}
+##^##*/

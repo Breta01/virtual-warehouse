@@ -83,7 +83,7 @@ Item {
             clip: true
             spacing: 8
 
-            model: ViewController.onto_manager.classes
+            model: ViewController.onto_manager.objects
 
             delegate: Item {
                 id: classItem
@@ -92,7 +92,7 @@ Item {
 
                 Rectangle {
                     id: rectangle
-                    color: "#eeeeee"
+                    color: model.modelData["is_class"] ? "#eeeeee" : "#eeeefe"
                     anchors.fill: parent
                 }
 
@@ -115,14 +115,32 @@ Item {
                         width: 150
                         MenuItem {
                             text: "Select"
-                            onClicked: ViewController.select_class(
-                                           true,
+                            onClicked: {
+                                ViewController.select_onto_objects(
+                                           model.modelData["is_class"],
                                            model.modelData["name"],
-                                           model.modelData["class"])
+                                           model.modelData["class"],
+                                           true)
+                                sideTabbar.currentIndex = 0
+                                tabBar.currentIndex = ((model.modelData["class"] === "RackLocation") ? 0 : ((model.modelData["class"] === "Item") ? 1 : 2))
+                            }
+                        }
+                        MenuItem {
+                            text: "Add to selection"
+                            onClicked: {
+                                ViewController.select_onto_objects(
+                                           model.modelData["is_class"],
+                                           model.modelData["name"],
+                                           model.modelData["class"],
+                                           false)
+                                sideTabbar.currentIndex = 0
+                                tabBar.currentIndex = ((model.modelData["class"] === "RackLocation") ? 0 : ((model.modelData["class"] === "Item") ? 1 : 2))
+                            }
                         }
                         MenuItem {
                             text: "Delete"
-                            onClicked: ViewController.onto_manager.delete_class(
+                            onClicked: ViewController.onto_manager.delete(
+                                           model.modelData["is_class"],
                                            model.modelData["name"])
                         }
                     }
