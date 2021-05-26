@@ -1,9 +1,15 @@
 """Module managing working with ontology e.g. creating queries and classes."""
+import tempfile
 from multiprocessing import Process
 from subprocess import DEVNULL, check_call
 
 import owlready2
-from owlready2 import ConstrainedDatatype, sync_reasoner_pellet
+from owlready2 import (
+    ConstrainedDatatype,
+    PropertyChain,
+    sync_reasoner,
+    sync_reasoner_pellet,
+)
 from PySide2.QtCore import (
     Property,
     QObject,
@@ -19,10 +25,11 @@ from rdflib.plugins.sparql import prepareQuery
 from virtual_warehouse.data.data_model import *  # skipcq: PYL-W0614
 
 
-def sync():
+def sync(tmp_file):
     """Run reasoning on ontology."""
     with onto:
         sync_reasoner_pellet(debug=0, infer_property_values=False)
+    onto.save(tmp_file.name)
 
 
 class OperationThread(QThread):
@@ -187,7 +194,8 @@ class OntoManager(QObject):
                 name, (eval(cls),), {"equivalent_to": eval(full_condition)}
             )
 
-        p = Process(target=sync)
+        tmp_file = tempfile.NamedTemporaryFile()
+        p = Process(target=sync, args=(tmp_file,))
         p.start()
 
         def creation():
@@ -195,6 +203,8 @@ class OntoManager(QObject):
             # 30 seconds timeout and shutdown the process
             p.join(30)
             p.terminate()
+            onto = get_ontology(tmp_file.name).load()
+            tmp_file.close()
             return p.exitcode == 0
 
         def callback(is_finished):
@@ -259,6 +269,7 @@ class OntoManager(QObject):
 
         def callback(instances):
             """Save output of the thread."""
+            print("Q instances", instances)
             self._queries[name] = (instances, cls)
             self.objectsChanged.emit()
             # self._thread = None

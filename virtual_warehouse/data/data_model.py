@@ -3,16 +3,11 @@ import datetime
 from typing import List
 
 from owlready2 import (
-    ConstrainedDatatype,
-    DataProperty,
     FunctionalProperty,
-    ObjectProperty,
     Thing,
     default_world,
     destroy_entity,
     get_ontology,
-    sync_reasoner,
-    sync_reasoner_pellet,
 )
 
 from virtual_warehouse.data.utils import (
