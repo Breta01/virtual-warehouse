@@ -138,6 +138,13 @@ Item {
                             }
                         }
                         MenuItem {
+                            text: "Edit"
+                            visible: !model.modelData["is_class"]
+                            enabled: visible
+                            height: visible ? implicitHeight : 0
+                            onClicked: dialogs.openCreateQueryDialog(model.modelData["name"], model.modelData["class"], model.modelData["query"])
+                        }
+                        MenuItem {
                             text: "Delete"
                             onClicked: ViewController.onto_manager.delete(
                                            model.modelData["is_class"],

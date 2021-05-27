@@ -34,9 +34,11 @@ Item {
         createClassDialog.open()
     }
 
-    function openCreateQueryDialog() {
-        queryDialogTextArea.text = ""
-        queryNameField.text = ""
+    function openCreateQueryDialog(name="", cls="", query="") {
+        queryNameField.text = name
+        queryDialogTextArea.text = query
+        let idx = queryComboBox.find(cls)
+        queryComboBox.currentIndex = (idx === -1) ? queryComboBox.currentIndex : idx
         qErrorText.text = ""
         createQueryDialog.open()
     }
@@ -138,6 +140,7 @@ Item {
 
             TextField {
                 id: javaExec
+                selectByMouse: true
                 anchors.left: sText.right
                 anchors.right: parent.right
                 anchors.baseline: sText.baseline
@@ -274,6 +277,7 @@ Item {
 
                 TextField {
                     id: fileUrlText
+                    selectByMouse: true
                     anchors.left: fileUrlTitle.right
                     anchors.right: parent.right
                     anchors.top: parent.top
@@ -400,6 +404,7 @@ Item {
 
             TextField {
                 id: classNameField
+                selectByMouse: true
                 anchors.left: nameClassText.right
                 anchors.top: parent.top
                 anchors.right: parent.right
@@ -432,6 +437,7 @@ Item {
 
             TextArea {
                 id: classDialogTextArea
+                selectByMouse: true
                 anchors.top: classComboBox.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -518,6 +524,7 @@ Item {
 
             TextField {
                 id: queryNameField
+                selectByMouse: true
                 anchors.left: nameQueryText.right
                 anchors.top: parent.top
                 anchors.right: parent.right
@@ -557,9 +564,8 @@ Item {
                 wrapMode: Text.Wrap
                 readOnly: true
                 padding: 8
-                text: "PREFIX : <http://warehouse/onto.owl>\n" +
-                      "SELECT DISTINCT ?obj WHERE {\n  ?obj a :" +
-                      queryComboBox.currentText + " ."
+                text: "PREFIX : <http://warehouse/onto.owl#>\n" +
+                      "SELECT DISTINCT ?obj WHERE {"
 
                 background: Rectangle {
                     color: "white"
@@ -579,6 +585,7 @@ Item {
 
                 TextArea {
                     id: queryDialogTextArea
+                    selectByMouse: true
 
                     wrapMode: Text.Wrap
                     padding: 8
@@ -601,7 +608,7 @@ Item {
                 wrapMode: Text.Wrap
                 readOnly: true
                 padding: 8
-                text: "}"
+                text: "  ?obj a :" + queryComboBox.currentText + " .\n}"
 
                 background: Rectangle {
                     color: "white"

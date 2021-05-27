@@ -67,6 +67,7 @@ ToolBar {
 
     TextField {
         id: searchText
+        selectByMouse: true
         opacity: searchButton.checked ? 1 : 0;
         Behavior on opacity { NumberAnimation{} }
         visible: opacity ? true : false

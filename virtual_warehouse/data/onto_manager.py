@@ -111,15 +111,15 @@ class OntoManager(QObject):
             self._java_correct = False
 
     @Slot(bool, str)
-    def delete(self, is_class, cls):
+    def delete(self, is_class, name):
         """Destroy given ontology class.
 
         Args:
             is_class (bool): True if class, False if query
-            cls (str): name of new class/query for destruction
+            name (str): name of new class/query for destruction
         """
-        if is_class and cls in self._classes:
-            destroy_entity(self._classes.pop(cls)[0])
+        if is_class and name in self._classes:
+            destroy_entity(self._classes.pop(name)[0])
         elif not is_class and name in self._queries:
             del self._queries[name]
         self.objectsChanged.emit()
@@ -142,10 +142,22 @@ class OntoManager(QObject):
     def objects(self):
         """Get list of queries and classes for displaying in sideview."""
         return [
-            {"name": k, "class": v[1], "count": len(v[0]), "is_class": False}
+            {
+                "name": k,
+                "class": v[1],
+                "count": len(v[0]),
+                "is_class": False,
+                "query": v[2],
+            }
             for k, v in self._queries.items()
         ] + [
-            {"name": k, "class": v[1], "count": len(v[0].instances()), "is_class": True}
+            {
+                "name": k,
+                "class": v[1],
+                "count": len(v[0].instances()),
+                "is_class": True,
+                "query": "",
+            }
             for k, v in self._classes.items()
         ]
 
@@ -222,10 +234,10 @@ class OntoManager(QObject):
     @staticmethod
     def _construct_query(cls, query):
         """Construct SPARQL query based on RackLocation, Item or Order."""
-        i1 = "PREFIX : <http://warehouse/onto.owl>\n"
+        i1 = "PREFIX : <http://warehouse/onto.owl#>\n"
         i2 = "SELECT DISTINCT ?obj WHERE {\n"
-        i3 = f"?obj a :{cls} . \n"
-        return i1 + i2 + i3 + query + " }"
+        i3 = f"\n?obj a :{cls} . \n"
+        return i1 + i2 + query + i3 + " }"
 
     @Slot(str, str, str, result=str)
     def check_create_query(self, name, cls, query):
@@ -259,18 +271,13 @@ class OntoManager(QObject):
         name = name.strip()
         q = self._construct_query(cls, query)
 
-        print("---- QUERY ----")
-        print(q)
-        print("---- END QUERY ----")
-
         def creation():
             """Execute the query."""
-            return list(default_world.sparql_query(q))
+            return [i[0] for i in default_world.sparql_query(q)]
 
         def callback(instances):
             """Save output of the thread."""
-            print("Q instances", instances)
-            self._queries[name] = (instances, cls)
+            self._queries[name] = (instances, cls, query)
             self.objectsChanged.emit()
             # self._thread = None
             self.progress_value = 1
