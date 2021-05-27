@@ -66,7 +66,7 @@ GOTO error
 		'python -c "import owlready2 as _; print(_.__file__[:-11])"'
 	) do (
 		ECHO %%a
-		pyinstaller --name="Virtual Warehouse" --windowed --clean --onedir main.py --icon="virtual_warehouse/resources/images/icon.ico" --add-data %%apellet;owlready2\pellet --add-data virtual_warehouse/plugins:virtual_warehouse/plugins
+		pyinstaller --name="Virtual Warehouse" --windowed --clean --onedir main.py --icon="virtual_warehouse/resources/images/icon.ico" --add-data %%apellet;owlready2\pellet --add-data virtual_warehouse\plugins;virtual_warehouse\plugins
 	)
 
 	PUSHD dist
