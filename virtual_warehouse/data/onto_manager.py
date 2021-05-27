@@ -25,11 +25,12 @@ from rdflib.plugins.sparql import prepareQuery
 from virtual_warehouse.data.data_model import *  # skipcq: PYL-W0614
 
 
-def sync(tmp_file):
+def sync(tmp_file, java_path):
     """Run reasoning on ontology."""
+    owlready2.JAVA_EXE = java_path
     with onto:
         sync_reasoner_pellet(debug=0, infer_property_values=False)
-    onto.save(tmp_file.name)
+    onto.save(tmp_file)
 
 
 class OperationThread(QThread):
@@ -104,7 +105,7 @@ class OntoManager(QObject):
         """Check if java path is set correctly."""
         try:
             check_call(
-                [owlready2.JAVA_EXE, "--version"], stdout=DEVNULL, stderr=DEVNULL
+                [owlready2.JAVA_EXE], stdout=DEVNULL, stderr=DEVNULL
             )
             self._java_correct = True
         except Exception:  # skipcq: PYL-W0703
@@ -207,7 +208,7 @@ class OntoManager(QObject):
             )
 
         tmp_file = tempfile.NamedTemporaryFile()
-        p = Process(target=sync, args=(tmp_file,))
+        p = Process(target=sync, args=(tmp_file.name, owlready2.JAVA_EXE))
         p.start()
 
         def creation():
@@ -215,8 +216,9 @@ class OntoManager(QObject):
             # 30 seconds timeout and shutdown the process
             p.join(30)
             p.terminate()
-            onto = get_ontology(tmp_file.name).load()
-            tmp_file.close()
+            if p.exitcode == 0:
+                onto = get_ontology(tmp_file.name).load()
+                tmp_file.close()
             return p.exitcode == 0
 
         def callback(is_finished):
