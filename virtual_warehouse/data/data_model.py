@@ -644,7 +644,7 @@ with onto:
     class has_allocated_qty(Inventory >> int, FunctionalProperty):
         """Allocated quantity of Item."""
 
-    class has_supsense_qty(Inventory >> int, FunctionalProperty):
+    class has_suspense_qty(Inventory >> int, FunctionalProperty):
         """Suspense quantity of Item."""
 
 
