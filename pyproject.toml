@@ -11,7 +11,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "virtual-warehouse"
-version = "0.1.0"
+version = "0.2.0"
 description = "Warehouse visualisation app"
 authors = ["Břetislav Hájek <info@bretahajek.com>"]
 readme = "README.md"
@@ -43,7 +43,7 @@ virtual-warehouse = "virtual_warehouse.__main__:main"
 [tool.briefcase]
 project_name = "virtual_warehouse"
 bundle = "com.bretahajek.virtual-warehouse"
-version = "0.1.0"
+version = "0.2.0"
 url = "https://github.com/Breta01/virtual-warehouse"
 license = ""
 author = 'Bretislav Hajek'
