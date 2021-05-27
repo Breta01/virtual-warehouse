@@ -104,9 +104,7 @@ class OntoManager(QObject):
     def _check_java(self):
         """Check if java path is set correctly."""
         try:
-            check_call(
-                [owlready2.JAVA_EXE], stdout=DEVNULL, stderr=DEVNULL
-            )
+            check_call([owlready2.JAVA_EXE, "-version"], stdout=DEVNULL, stderr=DEVNULL)
             self._java_correct = True
         except Exception:  # skipcq: PYL-W0703
             self._java_correct = False
