@@ -3,3 +3,4 @@ xlrd==2.0.1
 Owlready2==0.30
 rdflib
 python-xlsxio
+requests

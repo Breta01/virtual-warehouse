@@ -34,6 +34,8 @@ xlrd = "2.0.1"
 Owlready2 = "0.30"
 rdflib = "^5.0.0"
 python-xlsxio = "^0.1.3"
+# Only because rdflib is missing this package
+requests = "^2.25.1"
 
 
 [tool.poetry.scripts]
@@ -60,7 +62,10 @@ requires = [
     'xlrd==2.0.1',
     'Owlready2==0.30',
     'rdflib',
-    'python-xlsxio',]
+    'python-xlsxio',
+    # Only because rdflib is missing this package
+    'requests',
+]
 
 
 [tool.briefcase.app.virtual_warehouse.macOS]
