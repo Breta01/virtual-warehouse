@@ -11,7 +11,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "virtual-warehouse"
-version = "0.2.0"
+version = "0.2.1"
 description = "Warehouse visualisation app"
 authors = ["Břetislav Hájek <info@bretahajek.com>"]
 readme = "README.md"
@@ -30,10 +30,11 @@ classifiers = [
 [tool.poetry.dependencies]
 python = ">=3.6,<3.9"
 PySide2 = "5.15.0"
-xlrd = "1.2.0"
+xlrd = "2.0.1"
 Owlready2 = "0.30"
 rdflib = "^5.0.0"
-openpyxl = "^3.0.7"
+python-xlsxio = "^0.1.3"
+
 
 [tool.poetry.scripts]
 virtual-warehouse = "virtual_warehouse.__main__:main"
@@ -43,7 +44,7 @@ virtual-warehouse = "virtual_warehouse.__main__:main"
 [tool.briefcase]
 project_name = "virtual_warehouse"
 bundle = "com.bretahajek.virtual-warehouse"
-version = "0.2.0"
+version = "0.2.1"
 url = "https://github.com/Breta01/virtual-warehouse"
 license = ""
 author = 'Bretislav Hajek'
@@ -56,10 +57,10 @@ icon = "virtual_warehouse/resources/images/icon"
 sources = ['virtual_warehouse']
 requires = [
     'PySide2==5.15.0',
-    'xlrd==1.2.0',
-    'Owlready2==0.29',
+    'xlrd==2.0.1',
+    'Owlready2==0.30',
     'rdflib',
-    'openpyxl',]
+    'python-xlsxio',]
 
 
 [tool.briefcase.app.virtual_warehouse.macOS]
